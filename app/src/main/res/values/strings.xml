@@ -1,3 +1,64 @@
 <resources>
     <string name="app_name">SemSemGallery</string>
+
+    <!-- ==================================================== -->
+    <!-- ==                                                == -->
+    <!-- == THIẾU GÌ THÌ CỨ BỔ SUNG VÀO TRONG LÚC CODE     == -->
+    <!-- == VÌ APP RẤT LỚN, KO THỂ LIỆT KÊ HẾT 1 LẦN ĐC    == -->
+    <!-- == CỨ THÊM THEO SYNTAX :                          == -->
+    <!-- == <string name="snake_case">Snake case</string>  == -->
+    <!-- ==                                                == -->
+    <!-- ==================================================== -->
+
+    <!-- Navigation Bar -->
+    <string name="pictures">Pictures</string>
+    <string name="albums">Albums</string>
+    <string name="favorites">Favorites</string>
+
+    <!-- Common texts (Alphabet Sort) -->
+    <string name="cancel">Cancel</string>
+    <string name="camera">Camera</string>
+    <string name="copy">Copy</string>
+
+    <string name="date">Date</string>
+    <string name="delete">Delete</string>
+    <string name="details">Details</string>
+
+    <string name="edit">Edit</string>
+
+    <string name="images">Images</string>
+    <string name="images_low">images</string>
+    <string name="image">Image</string>
+
+    <string name="locations">Locations</string>
+
+    <string name="move">Move</string>
+    <string name="my_albums">My albums</string>
+
+    <string name="name">Name</string>
+    <string name="no">No</string>
+
+    <string name="ok">Ok</string>
+
+    <string name="properties">Properties</string>
+
+    <string name="recent">Recent</string>
+    <string name="rename">Rename</string>
+
+    <string name="search">Search</string>
+    <string name="select_all">Select all</string>
+    <string name="settings">Settings</string>
+    <string name="share">Share</string>
+    <string name="size">Size</string>
+
+    <string name="trash">Trash</string>
+    <string name="type">Type</string>
+
+    <string name="video">Video</string>
+    <string name="videos">Videos</string>
+    
+    <string name="yes">Yes</string>
+
+
+
 </resources>
