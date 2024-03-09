@@ -8,4 +8,6 @@
     tools:context=".MainActivity">
 
     <include layout="@layout/top_bar_albums" />
+
+
 </LinearLayout>

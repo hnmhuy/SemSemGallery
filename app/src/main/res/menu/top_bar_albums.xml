@@ -10,7 +10,7 @@
     <item
         android:id="@+id/search"
         android:title="@string/search"
-        android:icon="@drawable/ic_search"
+        android:icon="@drawable/ic_heart"
         app:showAsAction="ifRoom" />
 
     <item
@@ -27,4 +27,6 @@
         android:id="@+id/hide_album"
         android:title="@string/hide_albums"
         app:showAsAction="never" />
+
+
 </menu>
