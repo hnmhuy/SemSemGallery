@@ -1,6 +1,7 @@
-package com.example.semsemgallery;
+package com.example.semsemgallery.models;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
@@ -10,25 +11,21 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.semsemgallery.R;
 import com.google.android.material.materialswitch.MaterialSwitch;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 
-public class MainActivity extends AppCompatActivity {
-
+public class ControllerSettings extends AppCompatActivity {
     private MaterialSwitch materialSwitch;
     private TextView syncStatus;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-        materialSwitch = findViewById(R.id.switch_main);
-        syncStatus = (TextView) findViewById(R.id.sync_status);
+        setContentView(R.layout.activity_setting);
+        View include = (View) findViewById(R.id.included_setting);
+
+
+        materialSwitch = include.findViewById(R.id.switch_main);
+        syncStatus = (TextView) include.findViewById(R.id.sync_status);
         materialSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {

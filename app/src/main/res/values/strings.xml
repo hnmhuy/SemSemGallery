@@ -65,5 +65,12 @@
     <string name="add">Add</string>
     <string name="hide_albums">Hide albums</string>
 
+    <!--  Setting screen  -->
+    <string name="sync_title">Sync with OneDrive </string>
+    <string name="sync_description">Sync your pictures and videos with the SemSem Gallery folder in OneDrive.</string>
+    <string name="sync_switch_status_off">Auto sync turn off</string>
+
+
+
 
 </resources>

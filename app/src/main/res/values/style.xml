@@ -1,0 +1,9 @@
+<resources>
+    <style name="Widget.Material3.CompoundButton.MaterialSwitch" parent="Widget.AppCompat.CompoundButton.Switch">
+        <item name="android:thumb">@drawable/ic_thumb</item>
+        <item name="track">@drawable/ic_track</item>
+        <item name="trackDecorationTint">@android:color/transparent</item>
+        <item name="switchPadding">50dp</item>
+        <item name="android:textAppearance">?attr/textAppearanceBodyMedium</item>
+    </style>
+</resources>

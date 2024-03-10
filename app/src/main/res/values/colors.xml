@@ -2,4 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="track_on">#ff9999</color>
+    <color name="track_off">#9a999e</color>
+    <color name="thumb_color">#fdfdfd</color>
 </resources>

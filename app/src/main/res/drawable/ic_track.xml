@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="true">
+        <shape android:shape="rectangle">
+            <!-- Set the color for the checked state -->
+            <solid android:color="@color/track_on" />
+            <size android:height="22dp" android:width="40dp" />
+            <corners android:radius="100dp" />
+        </shape>
+    </item>
+
+    <!-- Default state when the switch is unchecked (false) -->
+    <item android:state_checked="false">
+        <shape android:shape="rectangle">
+            <!-- Set the color for the unchecked state -->
+            <solid android:color="@color/track_off"/>
+            <size android:height="22dp" android:width="40dp" />
+            <corners android:radius="100dp" />
+        </shape>
+    </item>
+</selector>
