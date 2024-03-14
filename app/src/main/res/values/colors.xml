@@ -5,4 +5,5 @@
     <color name="track_on">#ff9999</color>
     <color name="track_off">#9a999e</color>
     <color name="thumb_color">#fdfdfd</color>
+    <color name="setting_title">#a7889a</color>
 </resources>

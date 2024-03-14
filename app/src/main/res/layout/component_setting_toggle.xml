@@ -3,8 +3,10 @@
     android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="center"
+    android:background="@drawable/component_corner_radius"
+    android:paddingBottom="7dp"
+    android:paddingTop="5dp"
     android:orientation="horizontal"
-    android:layout_margin="20dp"
     android:layout_height="wrap_content">
 
     <LinearLayout
@@ -17,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/sync_title"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textStyle="bold"
             />
 
@@ -25,24 +27,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/sync_description"
-            android:textSize="16sp"
             />
 
         <TextView
             android:id="@+id/sync_status"
+            android:textSize="14sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/sync_switch_status_off"/>
 
 
+
     </LinearLayout>
 
     <com.google.android.material.materialswitch.MaterialSwitch
-        android:layout_weight="0.1"
         android:id="@+id/switch_main"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        />
+        android:layout_weight="0.1" />
 
 
 </LinearLayout>
