@@ -1,23 +1,42 @@
-package com.example.semsemgallery;
+package com.example.semsemgallery.activities;
 
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.example.semsemgallery.R;
 import com.example.semsemgallery.adapters.ViewPagerAdapter;
 import com.example.semsemgallery.fragments.MoreOptionsBottomSheet;
+import com.example.semsemgallery.utils.PermissionHandler;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 public class MainActivity extends AppCompatActivity {
+    private  final ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permission-> {
+        boolean allGranted = true;
+        for(Boolean isGranted : permission.values()) {
+            if(!isGranted){
+                allGranted = false;
+                break;
+            }
+        }
 
+        if(allGranted) {
+            Toast.makeText(this, "All granted", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            Toast.makeText(this, "Is not granted", Toast.LENGTH_SHORT).show();
+        }
+    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +48,13 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        PermissionHandler permissionHandler = new PermissionHandler(this, requestPermissionLauncher);
+        permissionHandler.checkAndRequestPermissions();
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         ViewPager2 viewPager = findViewById(R.id.view_pager);
 
@@ -51,12 +76,9 @@ public class MainActivity extends AppCompatActivity {
         }).attach();
 
         Button btnMoreOpts = findViewById(R.id.more_option);
-        btnMoreOpts.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                MoreOptionsBottomSheet botSheetFrag = new MoreOptionsBottomSheet();
-                botSheetFrag.show(getSupportFragmentManager(), botSheetFrag.getTag());
-            }
+        btnMoreOpts.setOnClickListener(view -> {
+            MoreOptionsBottomSheet botSheetFrag = new MoreOptionsBottomSheet();
+            botSheetFrag.show(getSupportFragmentManager(), botSheetFrag.getTag());
         });
     }
 }
