@@ -1,22 +1,24 @@
 package com.example.semsemgallery;
 
 import android.os.Bundle;
-import android.widget.CompoundButton;
-import android.widget.TextView;
+import android.view.View;
+import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.viewpager2.widget.ViewPager2;
 
-import com.google.android.material.materialswitch.MaterialSwitch;
-import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.example.semsemgallery.adapters.ViewPagerAdapter;
+import com.example.semsemgallery.fragments.MoreOptionsBottomSheet;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 public class MainActivity extends AppCompatActivity {
 
-    private MaterialSwitch materialSwitch;
-    private TextView syncStatus;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,20 +29,35 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        materialSwitch = findViewById(R.id.switch_main);
-        syncStatus = (TextView) findViewById(R.id.sync_status);
-        materialSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if(isChecked)
-                {
-                    syncStatus.setText("fanhi11211@gmail.com");
 
-                }
-                else {
-                    syncStatus.setText(getString(R.string.sync_switch_status_off));
-                }
+        TabLayout tabLayout = findViewById(R.id.tab_layout);
+        ViewPager2 viewPager = findViewById(R.id.view_pager);
+
+        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(this);
+        viewPager.setAdapter(viewPagerAdapter);
+
+        new TabLayoutMediator(tabLayout, viewPager, (tab, i) -> {
+            switch(i){
+                case 0:
+                    tab.setText("Pictures");
+                    break;
+                case 1:
+                    tab.setText("Albums");
+                    break;
+                case 2:
+                    tab.setText("Favorites");
+                    break;
+            }
+        }).attach();
+
+        Button btnMoreOpts = findViewById(R.id.more_option);
+        btnMoreOpts.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MoreOptionsBottomSheet botSheetFrag = new MoreOptionsBottomSheet();
+                botSheetFrag.show(getSupportFragmentManager(), botSheetFrag.getTag());
             }
         });
     }
 }
+

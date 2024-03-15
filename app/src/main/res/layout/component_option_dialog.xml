@@ -27,6 +27,8 @@
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
+                android:clickable="true"
+                android:focusable="true"
                 android:layout_height="wrap_content">
 
                 <ImageView
@@ -58,6 +60,8 @@
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
+                android:clickable="true"
+                android:focusable="true"
                 android:layout_height="wrap_content">
 
                 <ImageView

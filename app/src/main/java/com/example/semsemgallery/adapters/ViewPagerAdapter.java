@@ -25,13 +25,13 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
             case 2:
                 return new FavoritesFragment();
             default:
-                return new PicturesFragment();
+                return null;
         }
     }
 
     @Override
     public int getItemCount() {
-        return 4;
+        return 3;
     }
 }
 

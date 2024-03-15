@@ -13,7 +13,7 @@
         android:theme="@style/Theme.SemSemGallery"
         tools:targetApi="31">
         <activity
-            android:name=".models.ControllerSettings"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
