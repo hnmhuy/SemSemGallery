@@ -1,7 +1,6 @@
 package com.example.semsemgallery.adapters;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,13 +8,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.models.Album;
-import com.example.semsemgallery.utils.MediaRetriever;
 
 import java.util.List;
 
@@ -42,12 +39,8 @@ public class AlbumRecyclerAdapter extends RecyclerView.Adapter<AlbumRecyclerAdap
                 .load(album.getImgWall())
                 .fitCenter()
                 .into(holder.imageView);
-
         holder.albumName.setText(album.getName());
-        AppCompatActivity appCompatActivity = (AppCompatActivity) context;
-        MediaRetriever mediaRetriever = new MediaRetriever(appCompatActivity);
-
-        holder.albumQuantity.setText(String.valueOf(mediaRetriever.getAlbumSize(album.getAlbumId())));
+        holder.albumQuantity.setText(String.valueOf(album.getSize()));
     }
 
     @Override

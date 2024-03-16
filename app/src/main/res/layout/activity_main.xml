@@ -11,16 +11,17 @@
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/view_pager"
+        android:isScrollContainer="true"
         android:layout_gravity="bottom"
+        android:layout_above="@+id/nav_botton"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
     <LinearLayout
+        android:id="@+id/nav_botton"
         android:layout_width="match_parent"
         android:orientation="horizontal"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
         android:layout_height="wrap_content">
 
         <com.google.android.material.tabs.TabLayout

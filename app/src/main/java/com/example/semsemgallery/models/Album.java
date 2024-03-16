@@ -7,15 +7,16 @@ public class Album {
 
     private String albumId;
     private String imgWall;
-
-
-
     private String name;
+    private int size;
+
+
 
     public Album(String albumId, String imgWall, String name) {
         this.albumId = albumId;
         this.imgWall = imgWall;
         this.name = name;
+        this.size = 0;
     }
 
     public String getName() {
@@ -39,6 +40,14 @@ public class Album {
 
     public void setImgWall(String imgWall) {
         this.imgWall = imgWall;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
     }
 
 }

@@ -75,6 +75,7 @@ public class MediaRetriever {
         return pictureList;
     }
 
+
     public void setPictureList(List<Picture> pictureList) {
         this.pictureList = pictureList;
     }
@@ -102,6 +103,7 @@ public class MediaRetriever {
                         for(int i = 0; i< albumListTmp.size(); i++){
                             if(Objects.equals(albumListTmp.get(i).getAlbumId(), albumId)) {
                                 checkPresent = true;
+                                albumListTmp.get(i).setSize(albumListTmp.get(i).getSize() + 1);
                                 break;
                             }
                         }
@@ -155,10 +157,6 @@ public class MediaRetriever {
         return pictureList;
     }
 
-    public int getAlbumSize(String albumID) {
-        List<Picture> pictures = getPicturesByAlbumId(albumID);
-        return pictures.size();
-    }
     public void setAlbumList(List<Album> albumList) {
         this.albumList = albumList;
     }
