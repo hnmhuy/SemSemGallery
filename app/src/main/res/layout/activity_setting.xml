@@ -7,7 +7,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/topAppBar"
+        android:id="@+id/setting_topAppBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:menu="@menu/top_bar_pictures"
