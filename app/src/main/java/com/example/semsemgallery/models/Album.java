@@ -4,31 +4,13 @@ package com.example.semsemgallery.models;
 import java.util.List;
 
 public class Album {
-    private String pathFolder;
-    private Picture img;
+
+    private String albumId;
     private String name;
-    private List<Picture> listName;
 
-    public Album(Picture img, String name, List<Picture> listName) {
-        this.img = img;
+    public Album(String albumId, String name) {
+        this.albumId = albumId;
         this.name = name;
-        this.listName = listName;
-    }
-
-    public String getPathFolder() {
-        return pathFolder;
-    }
-
-    public void setPathFolder(String pathHolder) {
-        this.pathFolder = pathHolder;
-    }
-
-    public Picture getImg() {
-        return img;
-    }
-
-    public void setImg(Picture img) {
-        this.img = img;
     }
 
     public String getName() {
@@ -39,11 +21,12 @@ public class Album {
         this.name = name;
     }
 
-    public List<Picture> getListName() {
-        return listName;
+    public String getAlbumId() {
+        return albumId;
     }
 
-    public void setListName(List<Picture> listName) {
-        this.listName = listName;
+    public void setAlbumId(String albumId) {
+        this.albumId = albumId;
     }
+
 }

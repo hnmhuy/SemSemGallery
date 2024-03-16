@@ -42,9 +42,7 @@ public class PermissionHandler {
                 }
             }
 
-            if (permissionsToRequest.isEmpty()) {
-                retrieveImagePaths();
-            } else {
+            if (!permissionsToRequest.isEmpty()) {
                 String[] permissionsArray = permissionsToRequest.toArray(new String[0]);
                 boolean shouldShowRationale = false;
 
@@ -68,47 +66,8 @@ public class PermissionHandler {
         new AlertDialog.Builder(activity)
                 .setMessage("Please allow all permissions")
                 .setCancelable(false)
-                .setPositiveButton("YES", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        requestPermissionLauncher.launch(permissions);
-                    }
-                })
-                .setNegativeButton("NO", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                })
+                .setPositiveButton("YES", (dialogInterface, i) -> requestPermissionLauncher.launch(permissions))
+                .setNegativeButton("NO", (dialogInterface, i) -> dialogInterface.dismiss())
                 .show();
-    }
-
-    public void retrieveImagePaths() {
-        List<String> imagePathList = new ArrayList<>();
-        // Query images using MediaStore
-        Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        String[] projection = {MediaStore.Images.Media.DATA, MediaStore.Images.Media.DATE_ADDED};
-        Cursor cursor = activity.getContentResolver().query(uri, projection, null, null, null);
-
-        if (cursor != null) {
-            while (cursor.moveToNext()) {
-                String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
-
-                long timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
-
-                Date date = new Date(timestamp * 1000L);
-
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-                String dateString = dateFormat.format(date);
-
-                String fullPath = path + " " + dateString;
-                imagePathList.add(fullPath);
-            }
-            cursor.close();
-        }
-
-        for (String path : imagePathList) {
-            Log.d("Image Path: ", path);
-        }
     }
 }
