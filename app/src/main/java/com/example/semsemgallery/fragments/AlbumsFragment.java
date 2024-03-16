@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,7 +22,7 @@ import com.example.semsemgallery.utils.MediaRetriever;
 
 import java.util.List;
 
-public class AlbumsFragment extends Fragment {
+public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnAlbumItemClickListener {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -31,10 +32,18 @@ public class AlbumsFragment extends Fragment {
 
         RecyclerView recyclerView = view.findViewById(R.id.album_recycler);
         AlbumRecyclerAdapter adapter = new AlbumRecyclerAdapter(albumsRetriever, appCompatActivity);
+
+        adapter.setOnAlbumItemClickListener(this);
+
         GridLayoutManager manager = new GridLayoutManager(getActivity(), 3);
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
 
         return view;
+    }
+
+    @Override
+    public void onAlbumItemClick(String albumName) {
+        Toast.makeText(requireActivity(), "Album: " + albumName, Toast.LENGTH_SHORT).show();
     }
 }
