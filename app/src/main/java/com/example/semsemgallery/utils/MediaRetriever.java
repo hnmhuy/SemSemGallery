@@ -3,6 +3,7 @@ package com.example.semsemgallery.utils;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -82,6 +83,7 @@ public class MediaRetriever {
         List<Album> albumListTmp = new ArrayList<>();
         Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         String[] projection = {
+                MediaStore.Images.Media.DATA,
                 MediaStore.Images.Media.BUCKET_ID, // id album chứa
                 MediaStore.Images.Media.BUCKET_DISPLAY_NAME // tên album
         };
@@ -92,6 +94,7 @@ public class MediaRetriever {
 
                 while (cursor.moveToNext()) {
                     boolean checkPresent = false;
+                    String imgWall = cursor.getString((cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)));
                     String albumId = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_ID));
                     String albumName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME));
                     // Create an Album object and add it to the list if it's not already present
@@ -105,7 +108,8 @@ public class MediaRetriever {
                     }
 
                     if(!checkPresent) {
-                        albumListTmp.add(new Album(albumId, albumName));
+                        Log.d("Huhu", imgWall);
+                        albumListTmp.add(new Album(albumId, imgWall, albumName));
                     }
                 }
             } finally {
@@ -151,6 +155,10 @@ public class MediaRetriever {
         return pictureList;
     }
 
+    public int getAlbumSize(String albumID) {
+        List<Picture> pictures = getPicturesByAlbumId(albumID);
+        return pictures.size();
+    }
     public void setAlbumList(List<Album> albumList) {
         this.albumList = albumList;
     }
