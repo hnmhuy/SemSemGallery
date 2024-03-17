@@ -14,11 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SemSemGallery"
         tools:targetApi="31">
+
         <activity
-            android:name=".activities.AlbumViewActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.MainActivity"
+            android:name=".models.EditMetaData"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

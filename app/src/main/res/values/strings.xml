@@ -78,15 +78,22 @@
 
 
     <!--  Edit Meta Data screen  -->
-    <string name="datetime_default"><u>Default</u></string>
-    <string name="image_name_default">No name</string>
+    <string name="datetime_default">Default</string>
+    <string name="image_name_default">This is name</string>
     <string name="location_default">No location information</string>
-    <string name="picture_format_default">.jpg</string>
+    <string name="picture_format_default">jpg</string>
 
 
 
     <!--    Recently deleted screen-->
     <string name="trash_description">Pictures deleted from Gallery, My Files, and some third party apps stay in the Trash for 30 days before being permanently deleted.</string>
     <string name="empty">Empty</string>
+
+
+    <!--    DateTimePicker -->
+    <string name="switch_datetime_picker_name">Switch DateTime Picker</string>
+    <string name="open_datetime_dialog">Open DateTime Dialog</string>
+    <string name="open_datetime_dialog_with_neutral_button">Open DateTime Dialog with Neutral Button</string>
+    <string name="clean">Clean</string>
 
 </resources>

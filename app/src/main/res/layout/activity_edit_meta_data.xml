@@ -6,38 +6,86 @@
     android:layout_margin="20dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/edit_data_topAppBar"
+    <LinearLayout
+        android:layout_marginBottom="30dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:menu="@menu/top_bar_pictures"
-        android:minHeight="?attr/actionBarSize" />
+        android:orientation="horizontal">
+        <ImageButton
+            android:id="@+id/details_back_button"
+            android:background="@android:color/transparent"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_backward"
+            android:scaleY="2"
+            android:scaleX="2"/>
+        <TextView
+            android:textStyle="bold"
+            android:textSize="23sp"
+            android:textColor="@color/black"
+            android:layout_marginStart="15sp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/details"/>
+    </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/datetime_container"
-        android:layout_width="match_parent"
+        android:id="@+id/datetime_action_container"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:clickable="true"
         android:layout_gravity="center_vertical"
         android:layout_marginTop="10dp"
         android:orientation="horizontal">
 
         <ImageView
+            android:layout_marginEnd="15dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_calendar"/>
 
-
-        <TextView
-            android:textColor="@color/black"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:id="@+id/datetime_TextView"
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:id="@+id/datetimecontainer"
+            android:background="@drawable/component_border_bottom"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_marginStart="15dp"
-            android:gravity="center_vertical"
-            android:text="@string/datetime_default"
-            android:clickable="true"/>
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/date_TextView"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:text="@string/datetime_default"
+                android:textColor="@color/black"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:scaleX="0.5"
+                android:scaleY="0.5"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_dot"/>
+
+            <TextView
+                android:id="@+id/time_TextView"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:gravity="center_vertical"
+                android:text="@string/datetime_default"
+                android:textColor="@color/black"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+
+
+        </LinearLayout>
+
+
+
     </LinearLayout>
 
     <LinearLayout
@@ -56,17 +104,25 @@
 
 
         <EditText
-            android:maxWidth="300dp"
+            android:maxWidth="250dp"
             android:textSize="15sp"
             android:textStyle="bold"
-            android:id="@+id/image_name_TextView"
+            android:id="@+id/image_name_EditText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="15dp"
             android:gravity="center_vertical"
-            android:hint="@string/image_name_default"
-            android:textColorHint="@color/black"
             android:clickable="true"/>
+
+        <TextView
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:id="@+id/dot"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:text="." />
 
         <TextView
             android:textSize="15sp"
@@ -128,6 +184,7 @@
             android:visibility="gone"/>
     </LinearLayout>
 
+
     <LinearLayout
         android:gravity="center_horizontal"
         android:id="@+id/save_cancel_button_container"
@@ -148,7 +205,7 @@
             android:textColor="@android:color/black"/>
 
         <Button
-            android:id="@+id/edit_test_button"
+            android:id="@+id/edit_save_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
