@@ -52,6 +52,7 @@ public class AlbumRecyclerAdapter extends RecyclerView.Adapter<AlbumRecyclerAdap
                 .into(holder.imageView);
         holder.albumName.setText(album.getName());
         holder.albumQuantity.setText(String.valueOf(album.getSize()));
+        holder.setAlbumId(album.getAlbumId());
     }
 
     @Override
@@ -64,6 +65,12 @@ public class AlbumRecyclerAdapter extends RecyclerView.Adapter<AlbumRecyclerAdap
         TextView albumName;
         TextView albumQuantity;
         OnAlbumItemClickListener listener;
+
+        String albumId;
+
+        public void setAlbumId(String id) {
+            albumId = id;
+        }
 
         public ViewHolder(@NonNull View itemView, OnAlbumItemClickListener listener) {
             super(itemView);
@@ -79,13 +86,13 @@ public class AlbumRecyclerAdapter extends RecyclerView.Adapter<AlbumRecyclerAdap
             if (listener != null) {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
-                    listener.onAlbumItemClick(albumName.getText().toString());
+                    listener.onAlbumItemClick(albumId);
                 }
             }
         }
     }
 
     public interface OnAlbumItemClickListener {
-        void onAlbumItemClick(String albumName);
+        void onAlbumItemClick(String albumId);
     }
 }

@@ -14,6 +14,8 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.semsemgallery.activities.MainActivity;
+
 import java.util.ArrayList;
 
 public class ChoosePeopleFragment extends Fragment implements FragmentCallbacks {
