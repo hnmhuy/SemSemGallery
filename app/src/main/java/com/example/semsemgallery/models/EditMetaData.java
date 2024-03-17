@@ -24,6 +24,7 @@ public class EditMetaData extends AppCompatActivity {
     public TextView imageFormat;
     public TextView location;
     public ImageButton addLocationBtn;
+    public ImageButton removeLocationBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

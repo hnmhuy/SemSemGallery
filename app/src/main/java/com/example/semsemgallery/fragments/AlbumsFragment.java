@@ -5,6 +5,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,6 +16,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.semsemgallery.R;
+import com.example.semsemgallery.activities.AlbumViewActivity;
 import com.example.semsemgallery.adapters.AlbumRecyclerAdapter;
 import com.example.semsemgallery.adapters.PictureRecyclerAdapter;
 import com.example.semsemgallery.models.Album;
@@ -21,7 +24,7 @@ import com.example.semsemgallery.utils.MediaRetriever;
 
 import java.util.List;
 
-public class AlbumsFragment extends Fragment {
+public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnAlbumItemClickListener {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -31,10 +34,27 @@ public class AlbumsFragment extends Fragment {
 
         RecyclerView recyclerView = view.findViewById(R.id.album_recycler);
         AlbumRecyclerAdapter adapter = new AlbumRecyclerAdapter(albumsRetriever, appCompatActivity);
+
+        adapter.setOnAlbumItemClickListener(this); // Event Click
+
         GridLayoutManager manager = new GridLayoutManager(getActivity(), 3);
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
 
         return view;
+    }
+
+//    @Override
+//    public void onAlbumItemClick(String albumName) {
+//        Toast.makeText(requireActivity(), "Album: " + albumName, Toast.LENGTH_SHORT).show();
+//    }
+    @Override
+    public void onAlbumItemClick(String albumId) {
+        Toast.makeText(requireActivity(), "Album ID: " + albumId, Toast.LENGTH_SHORT).show();
+
+        // Move to AlbumViewActivity & provide albumId
+        Intent intent = new Intent(requireContext(), AlbumViewActivity.class);
+        intent.putExtra("albumId", albumId);
+        startActivity(intent);
     }
 }

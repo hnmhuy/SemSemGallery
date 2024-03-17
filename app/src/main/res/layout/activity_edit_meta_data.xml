@@ -107,6 +107,7 @@
             android:text="@string/location_default"
             android:clickable="true"/>
 
+
         <ImageButton
             android:id="@+id/add_location_button"
             android:layout_width="wrap_content"
@@ -115,6 +116,16 @@
             android:layout_marginStart="6dp"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_add_circle" />
+
+        <ImageButton
+            android:id="@+id/remove_location_button"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="6dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_remove_circle"
+            android:visibility="gone"/>
     </LinearLayout>
 
     <LinearLayout

@@ -20,16 +20,27 @@ public class AlbumRecyclerAdapter extends RecyclerView.Adapter<AlbumRecyclerAdap
     private final List<Album> albumList;
     private final Context context;
 
+    // Handler for item clicks
+    private OnAlbumItemClickListener listener;
+
+
     public AlbumRecyclerAdapter(List<Album> albumList, Context context) {
         this.albumList = albumList;
         this.context = context;
     }
 
+
+    public void setOnAlbumItemClickListener(OnAlbumItemClickListener listener) {
+        this.listener = listener;
+    }
+
+
+
     @NonNull
     @Override
     public AlbumRecyclerAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.component_album_item, parent, false);
-        return new AlbumRecyclerAdapter.ViewHolder(view);
+        return new AlbumRecyclerAdapter.ViewHolder(view, listener);
     }
 
     @Override
@@ -48,15 +59,33 @@ public class AlbumRecyclerAdapter extends RecyclerView.Adapter<AlbumRecyclerAdap
         return albumList.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         ImageView imageView;
         TextView albumName;
         TextView albumQuantity;
-        public ViewHolder(@NonNull View itemView) {
+        OnAlbumItemClickListener listener;
+
+        public ViewHolder(@NonNull View itemView, OnAlbumItemClickListener listener) {
             super(itemView);
             imageView = itemView.findViewById(R.id.component_album_item_image);
             albumName = itemView.findViewById(R.id.component_album_item_name);
             albumQuantity = itemView.findViewById(R.id.component_album_item_quantity);
+            this.listener = listener;
+            itemView.setOnClickListener(this);
         }
+
+        @Override
+        public void onClick(View v) {
+            if (listener != null) {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    listener.onAlbumItemClick(albumName.getText().toString());
+                }
+            }
+        }
+    }
+
+    public interface OnAlbumItemClickListener {
+        void onAlbumItemClick(String albumName);
     }
 }
