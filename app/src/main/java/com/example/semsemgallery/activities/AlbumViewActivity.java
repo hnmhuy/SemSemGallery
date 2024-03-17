@@ -22,6 +22,9 @@ import java.util.List;
 public class AlbumViewActivity extends AppCompatActivity {
 
     private String albumId;
+    private String albumName;
+    private com.google.android.material.appbar.MaterialToolbar topBar;
+    private List<Picture> pictureList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,22 +37,27 @@ public class AlbumViewActivity extends AppCompatActivity {
             return insets;
         });
 
-        // Get albumId from Intent
+        // Get albumId & albumName from Intent
         albumId = getIntent().getStringExtra("albumId");
-
-        TextView albumTitle = (TextView) findViewById(R.id.activity_album_view_album_name);
-        albumTitle.setText(albumId);
+        albumName = getIntent().getStringExtra("albumName");
 
         // Check and Render picture from album
         if (albumId != null) {
             // Render data to gallery_recycler
-            List<Picture> pictureList = new MediaRetriever(this).getPicturesByAlbumId(albumId);
-
+            pictureList = new MediaRetriever(this).getPicturesByAlbumId(albumId);
             RecyclerView recyclerView = findViewById(R.id.activity_album_view_recycler);
             PictureRecyclerAdapter adapter = new PictureRecyclerAdapter(pictureList, this);
             GridLayoutManager manager = new GridLayoutManager(this, 4);
             recyclerView.setLayoutManager(manager);
             recyclerView.setAdapter(adapter);
+        }
+
+        topBar = (com.google.android.material.appbar.MaterialToolbar) findViewById(R.id.activity_album_view_topAppBar);
+        topBar.setTitle(albumName);
+        if (!pictureList.isEmpty()) {
+            topBar.setSubtitle(pictureList.size() + " images");
+        } else {
+            topBar.setSubtitle("0 image");
         }
     }
 }

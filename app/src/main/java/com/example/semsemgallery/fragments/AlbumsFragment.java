@@ -44,17 +44,14 @@ public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnA
         return view;
     }
 
-//    @Override
-//    public void onAlbumItemClick(String albumName) {
-//        Toast.makeText(requireActivity(), "Album: " + albumName, Toast.LENGTH_SHORT).show();
-//    }
     @Override
-    public void onAlbumItemClick(String albumId) {
-        Toast.makeText(requireActivity(), "Album ID: " + albumId, Toast.LENGTH_SHORT).show();
+    public void onAlbumItemClick(String albumId, String albumName) {
+        Toast.makeText(requireActivity(), "Album : " + albumName, Toast.LENGTH_SHORT).show();
 
         // Move to AlbumViewActivity & provide albumId
         Intent intent = new Intent(requireContext(), AlbumViewActivity.class);
         intent.putExtra("albumId", albumId);
+        intent.putExtra("albumName", albumName);
         startActivity(intent);
     }
 }

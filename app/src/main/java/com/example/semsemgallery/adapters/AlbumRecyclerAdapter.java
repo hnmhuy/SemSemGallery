@@ -86,13 +86,13 @@ public class AlbumRecyclerAdapter extends RecyclerView.Adapter<AlbumRecyclerAdap
             if (listener != null) {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
-                    listener.onAlbumItemClick(albumId);
+                    listener.onAlbumItemClick(albumId , albumName.getText().toString());
                 }
             }
         }
     }
 
     public interface OnAlbumItemClickListener {
-        void onAlbumItemClick(String albumId);
+        void onAlbumItemClick(String albumId, String albumName);
     }
 }
