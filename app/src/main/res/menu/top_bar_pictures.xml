@@ -14,7 +14,7 @@
         android:icon="@drawable/ic_search" />
 
     <item
-        android:id="@+id/more"
+        android:id="@+id/edit"
         android:title="@string/edit"
         app:showAsAction="never"></item>
 

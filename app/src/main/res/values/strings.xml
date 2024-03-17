@@ -85,5 +85,8 @@
 
 
 
+    <!--    Recently deleted screen-->
+    <string name="trash_description">Pictures deleted from Gallery, My Files, and some third party apps stay in the Trash for 30 days before being permanently deleted.</string>
+    <string name="empty">Empty</string>
 
 </resources>

@@ -29,7 +29,9 @@ android {
 }
 
 dependencies {
-
+    implementation("com.squareup.picasso:picasso:2.5.2")
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation("de.hdodenhof:circleimageview:3.1.0")
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
