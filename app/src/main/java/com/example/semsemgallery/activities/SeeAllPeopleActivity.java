@@ -1,7 +1,6 @@
-package com.example.semsemgallery.activities;
+package com.example.semsemgallery;
 
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -53,12 +52,6 @@ public class SeeAllPeopleActivity extends AppCompatActivity {
         listitem.add(new People(R.drawable.icon_people));
         listitem.add(new People(R.drawable.react));
         listitem.add(new People(R.drawable.icon_people));
-        listitem.add(new People(R.drawable.react));
-        listitem.add(new People(R.drawable.icon_people));
-        listitem.add(new People(R.drawable.react));
-        listitem.add(new People(R.drawable.icon_people));
-        listitem.add(new People(R.drawable.react));
-        listitem.add(new People(R.drawable.icon_people));
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,9 +60,7 @@ public class SeeAllPeopleActivity extends AppCompatActivity {
         setContentView(R.layout.component_people);
         recyclerView =(RecyclerView) findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 3);
-        int spacingInPixels = getResources().getDimensionPixelSize(R.dimen.item_spacing);
-        recyclerView.addItemDecoration(new CenterSpacingItemDecoration(spacingInPixels));
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 4);
         recyclerView.setLayoutManager(gridLayoutManager);
         listitem = new ArrayList<>();
         data();

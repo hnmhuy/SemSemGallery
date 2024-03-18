@@ -6,4 +6,5 @@
         <item name="switchPadding">50dp</item>
         <item name="android:textAppearance">?attr/textAppearanceBodyMedium</item>
     </style>
+
 </resources>

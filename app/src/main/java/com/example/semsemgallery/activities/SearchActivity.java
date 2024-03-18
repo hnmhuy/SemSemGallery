@@ -1,4 +1,4 @@
-package com.example.semsemgallery.activities;
+package com.example.semsemgallery;
 
 import android.os.Bundle;
 
@@ -18,7 +18,7 @@ public class SearchActivity extends AppCompatActivity implements MainCallbacks {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_search);
+        setContentView(R.layout.layout_search);
         ft = getSupportFragmentManager().beginTransaction();
         choosePeopleFragment =ChoosePeopleFragment.newInstance("ChoosePeople");
         ft.replace(R.id.listPeople, choosePeopleFragment);
