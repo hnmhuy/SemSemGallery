@@ -1,4 +1,4 @@
-package com.example.semsemgallery;
+package com.example.semsemgallery.activities;
 
 import android.os.Bundle;
 
