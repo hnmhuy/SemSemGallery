@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_album_view_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".activities.AlbumViewActivity">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/activity_album_view_topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
+        app:menu="@menu/top_bar_album_view"
+        app:navigationIcon="@drawable/ic_backward"
+        app:title="Name"
+        app:subtitle="0 image"
+        app:subtitleTextColor="@color/material_dynamic_neutral50"
+        />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/activity_album_view_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp" />
+
+</LinearLayout>
