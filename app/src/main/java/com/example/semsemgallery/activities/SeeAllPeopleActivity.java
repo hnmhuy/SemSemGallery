@@ -1,20 +1,32 @@
-package com.example.semsemgallery;
+package com.example.semsemgallery.activities;
 
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.semsemgallery.models.CenterSpacingItemDecoration;
+import com.example.semsemgallery.models.People;
+import com.example.semsemgallery.adapters.PeopleAdapter;
+import com.example.semsemgallery.R;
+
 import java.util.ArrayList;
 
-public class SeeAllPeople extends AppCompatActivity {
+public class SeeAllPeopleActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private People mitem;
     private ArrayList<People> listitem;
     private PeopleAdapter mitemAdapter;
     private void data(){
+        listitem.add(new People(R.drawable.react));
+        listitem.add(new People(R.drawable.icon_people));
+        listitem.add(new People(R.drawable.react));
+        listitem.add(new People(R.drawable.icon_people));
+        listitem.add(new People(R.drawable.react));
+        listitem.add(new People(R.drawable.icon_people));
         listitem.add(new People(R.drawable.react));
         listitem.add(new People(R.drawable.icon_people));
         listitem.add(new People(R.drawable.react));
@@ -55,7 +67,9 @@ public class SeeAllPeople extends AppCompatActivity {
         setContentView(R.layout.component_people);
         recyclerView =(RecyclerView) findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 4);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 3);
+        int spacingInPixels = getResources().getDimensionPixelSize(R.dimen.item_spacing);
+        recyclerView.addItemDecoration(new CenterSpacingItemDecoration(spacingInPixels));
         recyclerView.setLayoutManager(gridLayoutManager);
         listitem = new ArrayList<>();
         data();

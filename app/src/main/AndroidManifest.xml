@@ -14,9 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SemSemGallery"
         tools:targetApi="31">
-
+        <activity android:name=".activities.SeeAllPeopleActivity" />
         <activity
-            android:name=".models.EditMetaData"
+            android:name=".activities.SearchActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

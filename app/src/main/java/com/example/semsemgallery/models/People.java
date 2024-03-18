@@ -1,4 +1,4 @@
-package com.example.semsemgallery;
+package com.example.semsemgallery.models;
 
 public class People {
     private int mImage;

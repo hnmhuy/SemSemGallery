@@ -1,4 +1,4 @@
-package com.example.semsemgallery;
+package com.example.semsemgallery.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,12 +8,16 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.semsemgallery.interfaces.FragmentCallbacks;
+import com.example.semsemgallery.models.CenterSpacingItemDecoration;
+import com.example.semsemgallery.models.People;
+import com.example.semsemgallery.adapters.PeopleAdapter;
+import com.example.semsemgallery.R;
+import com.example.semsemgallery.activities.SeeAllPeopleActivity;
 import com.example.semsemgallery.activities.MainActivity;
 
 import java.util.ArrayList;
@@ -52,7 +56,7 @@ public class ChoosePeopleFragment extends Fragment implements FragmentCallbacks 
         linearLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getContext(), SeeAllPeople.class);
+                Intent intent = new Intent(getContext(), SeeAllPeopleActivity.class);
                 startActivity(intent);
             }
         });

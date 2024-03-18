@@ -1,14 +1,16 @@
-package com.example.semsemgallery;
+package com.example.semsemgallery.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.semsemgallery.R;
+import com.example.semsemgallery.models.People;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;

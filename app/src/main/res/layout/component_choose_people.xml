@@ -5,7 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="10dp">
+    android:padding="10dp"
+    android:layout_gravity="center">
     <LinearLayout
         android:padding="5dp"
         android:id="@+id/linearChoosePeople"
@@ -31,8 +32,6 @@
             android:text="17"
             android:gravity="center_vertical"/>
         <TextView
-            android:layout_marginEnd="18dp"
-            android:layout_marginLeft="10dp"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
@@ -42,7 +41,6 @@
 
     </LinearLayout>
     <androidx.recyclerview.widget.RecyclerView
-        android:layout_marginTop="10dp"
         android:id="@+id/shortListPeople"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
