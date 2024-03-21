@@ -87,12 +87,13 @@ public class SelectableImageControl implements ChangeViewModeListener {
 
     public void selectItem(boolean isSelected) {
         int temp = observableObject.getSelectedPositions().indexOf(currPosition);
-        if (isSelected && temp == -1) {
-            observableObject.getSelectedPositions().add(currPosition);
+        if (isSelected) {
+            if (temp == -1) observableObject.getSelectedPositions().add(currPosition);
         } else {
             Log.d("selected", "Deleting " + currPosition);
             if (temp != -1) observableObject.getSelectedPositions().remove(temp);
         }
+        Log.d("selected", currPosition + " - " + isFireEvent);
         if (isFireEvent) observableObject.fireSelectionChangeEvent(false);
     }
 
@@ -120,9 +121,8 @@ public class SelectableImageControl implements ChangeViewModeListener {
     public void onSelectionChange(ViewModeEvent event) {
         if (event.getIsSelectAll()) {
             isFireEvent = false;
-            if (event.getSelectedPositions().isEmpty()) this.selector.setChecked(false);
-            else selector.setChecked(true);
-            isFireEvent = true;
+            this.selector.setChecked(!event.getSelectedPositions().isEmpty());
         }
+        isFireEvent = true;
     }
 }
