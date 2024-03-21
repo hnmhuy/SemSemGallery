@@ -92,7 +92,6 @@ public class MediaRetriever {
 
         if(cursor != null) {
             try {
-
                 while (cursor.moveToNext()) {
                     boolean checkPresent = false;
                     String imgWall = cursor.getString((cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)));
@@ -100,8 +99,8 @@ public class MediaRetriever {
                     String albumName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME));
                     // Create an Album object and add it to the list if it's not already present
                     if(!albumListTmp.isEmpty()) {
-                        for(int i = 0; i< albumListTmp.size(); i++){
-                            if(Objects.equals(albumListTmp.get(i).getAlbumId(), albumId)) {
+                        for (int i = 0; i < albumListTmp.size(); i++) {
+                            if (Objects.equals(albumListTmp.get(i).getAlbumId(), albumId)) {
                                 checkPresent = true;
                                 albumListTmp.get(i).setSize(albumListTmp.get(i).getSize() + 1);
                                 break;

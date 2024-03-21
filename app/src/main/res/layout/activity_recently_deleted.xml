@@ -8,15 +8,58 @@
     android:layout_height="match_parent"
     tools:context=".activities.RecentlyDeletedActivity">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/topAppBar"
+    <RelativeLayout
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:menu="@menu/trash"
-        android:minHeight="?attr/actionBarSize"
-        app:navigationIcon="@drawable/ic_backward"
-        app:title="@string/trash"
-        app:subtitle="@string/trash" />
+        android:minHeight="?attr/actionBarSize">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBarNormal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:menu="@menu/trash"
+            android:visibility="visible"
+            android:minHeight="?attr/actionBarSize"
+            app:navigationIcon="@drawable/ic_backward"
+            app:title="@string/trash"
+            app:subtitle="@string/trash" />
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar_SelectingMode"
+            android:visibility="invisible"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center_horizontal"
+                    android:id="@+id/select_all" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/all" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/select_items"
+                android:paddingStart="12dp"
+                style="@style/TextAppearance.Material3.TitleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/select_items" />
+        </com.google.android.material.appbar.MaterialToolbar>
+    </RelativeLayout>
 
     <TextView
         android:layout_width="match_parent"

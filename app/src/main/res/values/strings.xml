@@ -88,6 +88,9 @@
     <!--    Recently deleted screen-->
     <string name="trash_description">Pictures deleted from Gallery, My Files, and some third party apps stay in the Trash for 30 days before being permanently deleted.</string>
     <string name="empty">Empty</string>
+    <string name="select_items">Select items</string>
+    <string name="all">All</string>
+    <string name="selected">selected</string>
 
 
     <!--    DateTimePicker -->
@@ -95,5 +98,6 @@
     <string name="open_datetime_dialog">Open DateTime Dialog</string>
     <string name="open_datetime_dialog_with_neutral_button">Open DateTime Dialog with Neutral Button</string>
     <string name="clean">Clean</string>
+
 
 </resources>
