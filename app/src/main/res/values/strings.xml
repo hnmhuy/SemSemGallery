@@ -14,6 +14,7 @@
     <string name="pictures">Pictures</string>
     <string name="albums">Albums</string>
     <string name="favorites">Favorites</string>
+    <string name="album">Album</string>
 
     <!-- Common texts (Alphabet Sort) -->
     <string name="cancel">Cancel</string>

@@ -46,7 +46,7 @@ public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnA
 
     @Override
     public void onAlbumItemClick(String albumId, String albumName) {
-        Toast.makeText(requireActivity(), "Album : " + albumName, Toast.LENGTH_SHORT).show();
+        // Toast.makeText(requireActivity(), "Album : " + albumName, Toast.LENGTH_SHORT).show();
 
         // Move to AlbumViewActivity & provide albumId
         Intent intent = new Intent(requireContext(), AlbumViewActivity.class);

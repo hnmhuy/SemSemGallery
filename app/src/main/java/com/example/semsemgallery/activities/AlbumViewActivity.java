@@ -2,6 +2,7 @@ package com.example.semsemgallery.activities;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -75,8 +76,7 @@ public class AlbumViewActivity extends AppCompatActivity {
         // ====== Listener for AddIcon in TopBar clicked
         topBar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.add) {
-                Toast.makeText(AlbumViewActivity.this, "Create Album", Toast.LENGTH_SHORT).show();
-                showCustomDialog();
+                showOptionDialog();
                 return true;
             }
             return false;
@@ -84,7 +84,8 @@ public class AlbumViewActivity extends AppCompatActivity {
     }
 
 
-    private void showCustomDialog() {
+    // ====== Show Option Dialog
+    private void showOptionDialog() {
         // Inflate the custom dialog layout
         View dialogView = getLayoutInflater().inflate(R.layout.component_option_dialog, null);
 
@@ -95,5 +96,48 @@ public class AlbumViewActivity extends AppCompatActivity {
         // Show the dialog
         AlertDialog dialog = dialogBuilder.create();
         dialog.show();
+
+        // ====== Listener for AlbumOption in OptionDialog clicked
+        LinearLayout albumOption = dialogView.findViewById(R.id.component_option_dialog_album);
+        albumOption.setOnClickListener(v -> {
+            dialog.dismiss();
+            showInputDialog();
+        });
+
+        // ====== Listener for AutoUpdatingOption in OptionDialog clicked
+        LinearLayout autoUpdatingOption = dialogView.findViewById(R.id.component_option_dialog_auto_updating);
+        autoUpdatingOption.setOnClickListener(v -> {
+            Toast.makeText(AlbumViewActivity.this, "Auto-Updating Album", Toast.LENGTH_SHORT).show();
+        });
     }
+
+
+    // ====== Show Input Dialog
+    private void showInputDialog() {
+        // Inflate the custom input dialog layout
+        View dialogView = getLayoutInflater().inflate(R.layout.component_input_dialog, null);
+
+        // Create a MaterialAlertDialogBuilder with the dialog view
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(this)
+                .setView(dialogView);
+
+        // Show the dialog
+        AlertDialog dialog = dialogBuilder.create();
+        dialog.show();
+
+        TextView cancelBtn = dialogView.findViewById(R.id.component_input_dialog_cancel);
+        TextView createBtn = dialogView.findViewById(R.id.component_input_dialog_create);
+
+        // ====== Listener for CancelButton in InputDialog clicked
+        cancelBtn.setOnClickListener(v -> {
+            dialog.dismiss();
+        });
+
+        // ====== Listener for CreateButton in InputDialog clicked
+        createBtn.setOnClickListener(v -> {
+            Toast.makeText(AlbumViewActivity.this, "Create", Toast.LENGTH_SHORT).show();
+        });
+    }
+
+
 }
