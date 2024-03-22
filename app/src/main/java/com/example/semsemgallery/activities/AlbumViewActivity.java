@@ -2,6 +2,7 @@ package com.example.semsemgallery.activities;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -127,6 +128,7 @@ public class AlbumViewActivity extends AppCompatActivity {
 
         TextView cancelBtn = dialogView.findViewById(R.id.component_input_dialog_cancel);
         TextView createBtn = dialogView.findViewById(R.id.component_input_dialog_create);
+        EditText inputName = dialogView.findViewById(R.id.component_input_dialog_name);
 
         // ====== Listener for CancelButton in InputDialog clicked
         cancelBtn.setOnClickListener(v -> {
@@ -135,7 +137,11 @@ public class AlbumViewActivity extends AppCompatActivity {
 
         // ====== Listener for CreateButton in InputDialog clicked
         createBtn.setOnClickListener(v -> {
-            Toast.makeText(AlbumViewActivity.this, "Create", Toast.LENGTH_SHORT).show();
+            String albumName = inputName.getText().toString();
+
+            Toast.makeText(AlbumViewActivity.this, albumName, Toast.LENGTH_SHORT).show();
+            MediaRetriever.createAlbum(AlbumViewActivity.this, albumName);
+
         });
     }
 

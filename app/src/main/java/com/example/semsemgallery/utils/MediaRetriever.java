@@ -1,15 +1,22 @@
 package com.example.semsemgallery.utils;
 
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.semsemgallery.models.Album;
 import com.example.semsemgallery.models.Picture;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -58,7 +65,6 @@ public class MediaRetriever {
         return pictureList;
     }
 
-
     public List<Picture> getPicturesByAlbumId(String albumID) {
         List<Picture> picturesByAlbum = new ArrayList<>();
 
@@ -74,7 +80,6 @@ public class MediaRetriever {
         this.pictureList = picturesByAlbum;
         return pictureList;
     }
-
 
     public void setPictureList(List<Picture> pictureList) {
         this.pictureList = pictureList;
@@ -158,5 +163,35 @@ public class MediaRetriever {
 
     public void setAlbumList(List<Album> albumList) {
         this.albumList = albumList;
+    }
+
+    public static void createAlbum(Context context, String albumName) {
+        // Get DCIM Folder in device
+        File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+        // Create Album
+        File newAlbumDirectory = new File(dcimDirectory, albumName);
+
+        // Check exists
+        if (!newAlbumDirectory.exists()) {
+            // If it doesnt exists, create new
+            if (newAlbumDirectory.mkdirs()) {
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.BUCKET_DISPLAY_NAME, albumName);
+                values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
+
+                ContentResolver resolver = context.getContentResolver();
+                Uri uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+                if (uri != null) {
+                    Toast.makeText(context, "Album created successfully", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(context, "Failed to create album", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(context, "Failed to create album directory", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(context, "Album already exists", Toast.LENGTH_SHORT).show();
+        }
     }
 }
