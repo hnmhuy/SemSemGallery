@@ -1,14 +1,8 @@
 package com.example.semsemgallery.activities;
 
 import android.os.Bundle;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -20,7 +14,6 @@ import com.example.semsemgallery.R;
 import com.example.semsemgallery.adapters.PictureRecyclerAdapter;
 import com.example.semsemgallery.models.Picture;
 import com.example.semsemgallery.utils.MediaRetriever;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
 
@@ -73,76 +66,6 @@ public class AlbumViewActivity extends AppCompatActivity {
 
         // ====== Listener for the BackButton in the TopBar
         topBar.setNavigationOnClickListener(v -> finish());
-
-        // ====== Listener for AddIcon in TopBar clicked
-        topBar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.add) {
-                showOptionDialog();
-                return true;
-            }
-            return false;
-        });
-    }
-
-
-    // ====== Show Option Dialog
-    private void showOptionDialog() {
-        // Inflate the custom dialog layout
-        View dialogView = getLayoutInflater().inflate(R.layout.component_option_dialog, null);
-
-        // Create a MaterialAlertDialogBuilder with the dialog view
-        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(this)
-                .setView(dialogView);
-
-        // Show the dialog
-        AlertDialog dialog = dialogBuilder.create();
-        dialog.show();
-
-        // ====== Listener for AlbumOption in OptionDialog clicked
-        LinearLayout albumOption = dialogView.findViewById(R.id.component_option_dialog_album);
-        albumOption.setOnClickListener(v -> {
-            dialog.dismiss();
-            showInputDialog();
-        });
-
-        // ====== Listener for AutoUpdatingOption in OptionDialog clicked
-        LinearLayout autoUpdatingOption = dialogView.findViewById(R.id.component_option_dialog_auto_updating);
-        autoUpdatingOption.setOnClickListener(v -> {
-            Toast.makeText(AlbumViewActivity.this, "Auto-Updating Album", Toast.LENGTH_SHORT).show();
-        });
-    }
-
-
-    // ====== Show Input Dialog
-    private void showInputDialog() {
-        // Inflate the custom input dialog layout
-        View dialogView = getLayoutInflater().inflate(R.layout.component_input_dialog, null);
-
-        // Create a MaterialAlertDialogBuilder with the dialog view
-        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(this)
-                .setView(dialogView);
-
-        // Show the dialog
-        AlertDialog dialog = dialogBuilder.create();
-        dialog.show();
-
-        TextView cancelBtn = dialogView.findViewById(R.id.component_input_dialog_cancel);
-        TextView createBtn = dialogView.findViewById(R.id.component_input_dialog_create);
-        EditText inputName = dialogView.findViewById(R.id.component_input_dialog_name);
-
-        // ====== Listener for CancelButton in InputDialog clicked
-        cancelBtn.setOnClickListener(v -> {
-            dialog.dismiss();
-        });
-
-        // ====== Listener for CreateButton in InputDialog clicked
-        createBtn.setOnClickListener(v -> {
-            String albumName = inputName.getText().toString();
-
-            Toast.makeText(AlbumViewActivity.this, albumName, Toast.LENGTH_SHORT).show();
-            MediaRetriever.createAlbum(AlbumViewActivity.this, albumName);
-
-        });
     }
 
 
