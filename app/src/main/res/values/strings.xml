@@ -98,6 +98,7 @@
     <string name="open_datetime_dialog">Open DateTime Dialog</string>
     <string name="open_datetime_dialog_with_neutral_button">Open DateTime Dialog with Neutral Button</string>
     <string name="clean">Clean</string>
+    <string name="back">Back</string>
 
 
 </resources>
