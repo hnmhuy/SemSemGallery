@@ -6,13 +6,27 @@
     android:layout_height="90dp"
     android:background="@color/material_dynamic_neutral95">
 
-    <ImageView
-        android:id="@+id/gallery_item"
-        android:layout_margin="1dp"
-        android:adjustViewBounds="true"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerInParent="true"
-        android:scaleType="centerCrop" />
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/gallery_item"
+            android:layout_margin="1dp"
+            android:adjustViewBounds="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:scaleType="centerCrop" />
+
+        <ImageView
+            android:id="@+id/isFav"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_margin="4dp"
+            android:layout_marginStart="4dp"
+            android:adjustViewBounds="true" />
+    </RelativeLayout>
+
 
 </androidx.cardview.widget.CardView>

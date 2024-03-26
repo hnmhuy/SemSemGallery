@@ -8,4 +8,5 @@
     <color name="setting_title">#a7889a</color>
     <color name="pressed_color">#11000000</color>
     <color name="normal_color">#43ff6400</color>
+    <color name="is_favorite">#E72929</color>
 </resources>

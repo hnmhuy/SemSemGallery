@@ -7,6 +7,7 @@ public class Picture {
     private String fileName;
     private Date dateAdded;
     private String albumID;
+    private boolean isFav;
 
     public String getAlbumID() {
         return albumID;
@@ -16,11 +17,12 @@ public class Picture {
         this.albumID = albumID;
     }
 
-    public Picture(String path, String fileName, Date dateAdded, String albumID) {
+    public Picture(String path, String fileName, Date dateAdded, String albumID, boolean isFav) {
         this.path = path;
         this.fileName = fileName;
         this.dateAdded = dateAdded;
         this.albumID = albumID;
+        this.isFav = isFav;
     }
     public String getPath() {
         return path;
@@ -44,5 +46,13 @@ public class Picture {
 
     public void setDateAdded(Date dateAdded) {
         this.dateAdded = dateAdded;
+    }
+
+    public boolean isFav() {
+        return isFav;
+    }
+
+    public void setFav(boolean fav) {
+        isFav = fav;
     }
 }

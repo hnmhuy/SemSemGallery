@@ -1,6 +1,5 @@
 package com.example.semsemgallery.utils;
 
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -38,7 +37,8 @@ public class MediaRetriever {
                 MediaStore.Images.Media.DATA, // đường dẫn tới ảnh đó
                 MediaStore.Images.Media.DISPLAY_NAME, // tên file ảnh
                 MediaStore.Images.Media.BUCKET_ID, // id album chứa
-                MediaStore.Images.Media.DATE_ADDED // ngay
+                MediaStore.Images.Media.DATE_ADDED, // ngay
+                MediaStore.Images.Media.IS_FAVORITE
         };
         Cursor cursor = activity.getContentResolver().query(uri,
                 projection,
@@ -54,7 +54,9 @@ public class MediaRetriever {
                     String albumID = cursor.getString((cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_ID)));
                     long timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
                     Date dateAdded = new Date(timestamp * 1000L);
-                    picturesList.add(new Picture(path, name, dateAdded, albumID));
+                    String isFavStr = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.IS_FAVORITE));
+                    boolean isFav = Objects.equals(isFavStr, "1");
+                    picturesList.add(new Picture(path, name, dateAdded, albumID, isFav));
                 }
             } finally {
                 cursor.close();
@@ -151,7 +153,7 @@ public class MediaRetriever {
                     String albumID = cursor.getString((cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_ID)));
                     long timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
                     Date dateAdded = new Date(timestamp * 1000L);
-                    picturesList.add(new Picture(path, name, dateAdded, albumID));
+                    picturesList.add(new Picture(path, name, dateAdded, albumID, true));
                 }
             } finally {
                 cursor.close();

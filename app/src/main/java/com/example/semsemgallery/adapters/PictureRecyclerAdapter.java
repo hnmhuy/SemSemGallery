@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -34,6 +35,11 @@ public class PictureRecyclerAdapter extends RecyclerView.Adapter<PictureRecycler
     @Override
     public void onBindViewHolder(@NonNull PictureRecyclerAdapter.ViewHolder holder, int position) {
         Picture picture = pictureList.get(position);
+        if(picture.isFav()) {
+            holder.isFav.setImageResource(R.drawable.ic_heart_fill);
+            int color = ContextCompat.getColor(context, R.color.is_favorite);
+            holder.isFav.setColorFilter(color);
+        }
         Glide.with(context)
                 .load(picture.getPath())
                 .fitCenter()
@@ -46,10 +52,12 @@ public class PictureRecyclerAdapter extends RecyclerView.Adapter<PictureRecycler
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView isFav;
         ImageView imageView;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.gallery_item);
+            isFav = itemView.findViewById(R.id.isFav);
         }
     }
 }
