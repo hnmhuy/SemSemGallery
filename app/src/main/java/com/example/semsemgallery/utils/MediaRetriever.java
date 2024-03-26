@@ -77,8 +77,7 @@ public class MediaRetriever {
                 picturesByAlbum.add(picture);
             }
         }
-        this.pictureList = picturesByAlbum;
-        return pictureList;
+        return picturesByAlbum;
     }
 
     public void setPictureList(List<Picture> pictureList) {
@@ -114,8 +113,10 @@ public class MediaRetriever {
                     }
 
                     if(!checkPresent) {
-                        Log.d("Huhu", imgWall);
-                        albumListTmp.add(new Album(albumId, imgWall, albumName));
+                        Log.d("Image path", imgWall);
+                        Album album = new Album(albumId, imgWall, albumName);
+                        album.setSize(1);
+                        albumListTmp.add(album);
                     }
                 }
             } finally {
