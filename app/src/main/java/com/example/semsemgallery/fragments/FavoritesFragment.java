@@ -43,7 +43,6 @@ public class FavoritesFragment extends Fragment implements PictureRecyclerAdapte
 
     @Override
     public void onPictureItemClickListener(List<Picture> pictureList, int position) {
-        Toast.makeText(getActivity(), "Image click: " + position, Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(getActivity(), PictureViewActivity.class);
         intent.putParcelableArrayListExtra("pictureList", new ArrayList<>(pictureList));
         intent.putExtra("position", position);

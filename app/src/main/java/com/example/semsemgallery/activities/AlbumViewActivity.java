@@ -1,6 +1,8 @@
 package com.example.semsemgallery.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,9 +17,10 @@ import com.example.semsemgallery.adapters.PictureRecyclerAdapter;
 import com.example.semsemgallery.models.Picture;
 import com.example.semsemgallery.utils.MediaRetriever;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class AlbumViewActivity extends AppCompatActivity {
+public class AlbumViewActivity extends AppCompatActivity implements PictureRecyclerAdapter.OnPictureItemClickListener{
 
     private String albumId;
     private String albumName;
@@ -45,6 +48,7 @@ public class AlbumViewActivity extends AppCompatActivity {
             pictureList = new MediaRetriever(this).getPicturesByAlbumId(albumId);
             RecyclerView recyclerView = findViewById(R.id.activity_album_view_recycler);
             PictureRecyclerAdapter adapter = new PictureRecyclerAdapter(pictureList, this);
+            adapter.setOnPictureItemClickListener(this);
             GridLayoutManager manager = new GridLayoutManager(this, 4);
             recyclerView.setLayoutManager(manager);
             recyclerView.setAdapter(adapter);
@@ -67,6 +71,14 @@ public class AlbumViewActivity extends AppCompatActivity {
         // ====== Listener for the BackButton in the TopBar
         topBar.setNavigationOnClickListener(v -> finish());
     }
+    @Override
+    public void onPictureItemClickListener(List<Picture> pictureList, int position) {
+        Intent intent = new Intent(this, PictureViewActivity.class);
+        intent.putParcelableArrayListExtra("pictureList", new ArrayList<>(pictureList));
+        intent.putExtra("position", position);
 
+        // Start the activity
+        startActivity(intent);
+    }
 
 }

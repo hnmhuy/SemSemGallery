@@ -63,7 +63,6 @@ public class PicturesByDateRecyclerAdapter extends RecyclerView.Adapter<Pictures
 
     @Override
     public void onPictureItemClickListener(List<Picture> pictureList, int position) {
-        Toast.makeText(context, "Image click: " + position, Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(context, PictureViewActivity.class);
         intent.putParcelableArrayListExtra("pictureList", new ArrayList<>(pictureList));
         intent.putExtra("position", position);
