@@ -5,7 +5,6 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
-import android.widget.Toolbar;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
@@ -17,7 +16,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.semsemgallery.R;
-import com.example.semsemgallery.adapters.ChangeViewModeListener;
+import com.example.semsemgallery.interfaces.ChangeViewModeListener;
 import com.example.semsemgallery.adapters.DeletedItemAdapter;
 import com.example.semsemgallery.adapters.ObservableViewModeEvent;
 import com.example.semsemgallery.adapters.ViewMode;

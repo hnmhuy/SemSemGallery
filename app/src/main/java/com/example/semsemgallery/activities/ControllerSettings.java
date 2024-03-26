@@ -1,4 +1,4 @@
-package com.example.semsemgallery.models;
+package com.example.semsemgallery.activities;
 
 import android.os.Bundle;
 import android.view.View;

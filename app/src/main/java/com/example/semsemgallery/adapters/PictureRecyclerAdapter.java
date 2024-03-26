@@ -20,16 +20,20 @@ public class PictureRecyclerAdapter extends RecyclerView.Adapter<PictureRecycler
     private final List<Picture> pictureList;
     private final Context context;
 
+    private OnPictureItemClickListener listener;
     public PictureRecyclerAdapter(List<Picture> pictureList, Context context) {
         this.pictureList = pictureList;
         this.context = context;
     }
 
+    public void setOnPictureItemClickListener(OnPictureItemClickListener listener) {
+        this.listener = listener;
+    }
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int position) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.component_picture_item, parent, false);
-        return new ViewHolder(view);
+        return new ViewHolder(view, listener,pictureList);
     }
 
     @Override
@@ -51,13 +55,33 @@ public class PictureRecyclerAdapter extends RecyclerView.Adapter<PictureRecycler
         return pictureList.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         ImageView isFav;
         ImageView imageView;
-        public ViewHolder(@NonNull View itemView) {
+        OnPictureItemClickListener listener;
+        List<Picture> pictureList;
+
+        public ViewHolder(@NonNull View itemView, OnPictureItemClickListener listener,  List<Picture> pictureList) {
             super(itemView);
             imageView = itemView.findViewById(R.id.gallery_item);
             isFav = itemView.findViewById(R.id.isFav);
+            this.listener = listener;
+            this.pictureList = pictureList;
+            itemView.setOnClickListener(this);
         }
+
+        @Override
+        public void onClick(View v) {
+            if (listener != null) {
+                int position = getAbsoluteAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    listener.onPictureItemClickListener(this.pictureList, position);
+                }
+            }
+        }
+    }
+
+    public interface OnPictureItemClickListener {
+        void onPictureItemClickListener(List<Picture> pictureList, int position);
     }
 }

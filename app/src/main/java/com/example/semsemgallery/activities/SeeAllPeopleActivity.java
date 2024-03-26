@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.semsemgallery.models.CenterSpacingItemDecoration;
 import com.example.semsemgallery.models.People;
 import com.example.semsemgallery.adapters.PeopleAdapter;
 import com.example.semsemgallery.R;

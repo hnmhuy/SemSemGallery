@@ -2,6 +2,8 @@ package com.example.semsemgallery.adapters;
 
 import android.util.Log;
 
+import com.example.semsemgallery.interfaces.ChangeViewModeListener;
+
 import java.util.ArrayList;
 import java.util.List;
 

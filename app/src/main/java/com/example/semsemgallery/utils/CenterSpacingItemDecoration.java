@@ -1,4 +1,4 @@
-package com.example.semsemgallery.models;
+package com.example.semsemgallery.utils;
 
 import android.graphics.Rect;
 import android.view.View;

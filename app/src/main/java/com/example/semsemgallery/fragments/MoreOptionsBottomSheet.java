@@ -1,22 +1,15 @@
 package com.example.semsemgallery.fragments;
 
-import android.app.Dialog;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.RecentlyDeletedActivity;
-import com.example.semsemgallery.models.ControllerSettings;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.example.semsemgallery.activities.ControllerSettings;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 public class MoreOptionsBottomSheet extends BottomSheetDialogFragment {

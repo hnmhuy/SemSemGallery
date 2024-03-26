@@ -3,13 +3,11 @@ package com.example.semsemgallery.adapters;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.example.semsemgallery.R;
-
-import java.util.List;
+import com.example.semsemgallery.interfaces.ChangeViewModeListener;
 
 public class SelectableImageControl implements ChangeViewModeListener {
     private ImageView thumbnail;

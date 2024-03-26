@@ -1,4 +1,6 @@
-package com.example.semsemgallery.adapters;
+package com.example.semsemgallery.interfaces;
+
+import com.example.semsemgallery.adapters.ViewModeEvent;
 
 import java.util.EventListener;
 

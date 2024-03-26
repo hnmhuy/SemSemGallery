@@ -12,14 +12,11 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.semsemgallery.interfaces.FragmentCallbacks;
-import com.example.semsemgallery.models.CenterSpacingItemDecoration;
 import com.example.semsemgallery.models.People;
 import com.example.semsemgallery.adapters.PeopleAdapter;
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.SeeAllPeopleActivity;
 import com.example.semsemgallery.activities.MainActivity;
-import com.example.semsemgallery.adapters.PeopleAdapter;
-import com.example.semsemgallery.models.People;
 
 import java.util.ArrayList;
 

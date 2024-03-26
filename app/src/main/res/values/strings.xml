@@ -58,7 +58,7 @@
 
     <string name="video">Video</string>
     <string name="videos">Videos</string>
-    
+
     <string name="yes">Yes</string>
 
     <!-- Top app bar -->
@@ -83,7 +83,6 @@
     <string name="image_name_default">This is name</string>
     <string name="location_default">No location information</string>
     <string name="picture_format_default">jpg</string>
-
 
 
     <!--    Recently deleted screen-->
