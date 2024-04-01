@@ -81,7 +81,7 @@ public class PictureRecyclerAdapter extends RecyclerView.Adapter<PictureRecycler
         }
     }
 
-    public interface OnPictureItemClickListener {
+        public interface OnPictureItemClickListener {
         void onPictureItemClickListener(List<Picture> pictureList, int position);
     }
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -8,25 +8,95 @@
     android:layout_height="match_parent"
     tools:context=".activities.PictureViewActivity">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/activity_picture_view_topAppBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="?attr/actionBarSize"
-        app:navigationIcon="@drawable/ic_backward" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/vp_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_thumbnail"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        tools:listitem="@layout/component_thumbnail_item"/>
-</LinearLayout>
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/activity_picture_view_topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:minHeight="?attr/actionBarSize"
+        app:navigationIcon="@drawable/ic_backward" />
+
+
+
+    <LinearLayout
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_thumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:listitem="@layout/component_thumbnail_item"/>
+
+
+        <LinearLayout
+            android:weightSum="5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:contentDescription="@string/favorite"
+                android:src="@drawable/ic_heart"
+                android:layout_weight="1"
+                android:id="@+id/favorite_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                style="?attr/materialIconButtonStyle"
+                />
+
+            <ImageButton
+                android:contentDescription="@string/edit"
+                android:id="@+id/edit_picture_button"
+                style="?attr/materialIconButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/ic_edit" />
+
+            <ImageButton
+                android:contentDescription="@string/information"
+                android:layout_weight="1"
+                android:id="@+id/info_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                style="?attr/materialIconButtonStyle"
+                android:src="@drawable/ic_info"/>
+
+            <ImageButton
+                android:contentDescription="@string/share"
+                android:layout_weight="1"
+                android:id="@+id/share_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                style="?attr/materialIconButtonStyle"
+                android:src="@drawable/ic_share"/>
+
+            <ImageButton
+                android:contentDescription="@string/trash"
+                android:layout_weight="1"
+                android:id="@+id/delete_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                style="?attr/materialIconButtonStyle"
+                android:src="@drawable/ic_delete"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+
+
+</RelativeLayout>

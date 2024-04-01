@@ -22,7 +22,7 @@
         <TextView
             android:textStyle="bold"
             android:textSize="23sp"
-            android:textColor="@color/black"
+            android:textColor="@color/text_color_black"
             android:layout_marginStart="15sp"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -58,8 +58,8 @@
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
                 android:text="@string/datetime_default"
-                android:textColor="@color/black"
-                android:textSize="15sp"
+                android:textColor="@color/text_color_black"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
             <ImageView
@@ -76,8 +76,8 @@
                 android:clickable="true"
                 android:gravity="center_vertical"
                 android:text="@string/datetime_default"
-                android:textColor="@color/black"
-                android:textSize="15sp"
+                android:textColor="@color/text_color_black"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
 
@@ -105,19 +105,19 @@
 
         <EditText
             android:maxWidth="250dp"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:textStyle="bold"
             android:id="@+id/image_name_EditText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
+            android:layout_marginStart="11dp"
             android:gravity="center_vertical"
             android:clickable="true"/>
 
         <TextView
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="@color/black"
+            android:textColor="@color/text_color_black"
             android:id="@+id/dot"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -125,9 +125,9 @@
             android:text="." />
 
         <TextView
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="@color/black"
+            android:textColor="@color/text_color_black"
             android:id="@+id/image_format"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -151,9 +151,9 @@
 
 
         <TextView
-            android:textColor="@color/black"
+            android:textColor="@color/text_color_black"
             android:maxWidth="300dp"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:textStyle="bold"
             android:id="@+id/location_TextView"
             android:layout_width="wrap_content"
@@ -202,7 +202,7 @@
             android:text="@string/cancel"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="@android:color/black"/>
+            android:textColor="@color/text_color_black"/>
 
         <Button
             android:id="@+id/edit_save_button"
@@ -214,7 +214,7 @@
             android:textSize="16sp"
             android:textStyle="bold"
             android:layout_marginStart="110dp"
-            android:textColor="@android:color/black"/>
+            android:textColor="@color/text_color_black"/>
 
     </LinearLayout>
 

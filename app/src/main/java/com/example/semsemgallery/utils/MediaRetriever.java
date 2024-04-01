@@ -33,6 +33,7 @@ public class MediaRetriever {
     public List<Picture> getAllPictureList() {
         List<Picture> picturesList = new ArrayList<>();
         Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+
         String[] projection = {
                 MediaStore.Images.Media.DATA, // đường dẫn tới ảnh đó
                 MediaStore.Images.Media.DISPLAY_NAME, // tên file ảnh

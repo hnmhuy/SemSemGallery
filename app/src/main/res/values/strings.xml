@@ -15,6 +15,8 @@
     <string name="albums">Albums</string>
     <string name="favorites">Favorites</string>
     <string name="album">Album</string>
+    <string name="favorite">Favorite</string>
+    <string name="information">Information</string>
 
     <!-- Common texts (Alphabet Sort) -->
     <string name="cancel">Cancel</string>
@@ -84,6 +86,10 @@
     <string name="location_default">No location information</string>
     <string name="picture_format_default">jpg</string>
 
+
+    <!--  View Meta Data fragment  -->
+    <string name="x">x</string>
+    <string name="add_tag"># Add tag</string>
 
     <!--    Recently deleted screen-->
     <string name="trash_description">Pictures deleted from Gallery, My Files, and some third party apps stay in the Trash for 30 days before being permanently deleted.</string>
