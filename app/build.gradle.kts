@@ -38,6 +38,8 @@
         implementation(libs.activity)
         implementation("com.github.chrisbanes:PhotoView:2.0.0")
         implementation(libs.constraintlayout)
+        implementation(libs.firebase.firestore)
+        implementation(libs.firebase.storage)
         testImplementation(libs.junit)
         androidTestImplementation(libs.ext.junit)
         androidTestImplementation(libs.espresso.core)
