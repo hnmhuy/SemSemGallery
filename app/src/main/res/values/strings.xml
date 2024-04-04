@@ -14,6 +14,9 @@
     <string name="pictures">Pictures</string>
     <string name="albums">Albums</string>
     <string name="favorites">Favorites</string>
+    <string name="album">Album</string>
+    <string name="favorite">Favorite</string>
+    <string name="information">Information</string>
 
     <!-- Common texts (Alphabet Sort) -->
     <string name="cancel">Cancel</string>
@@ -57,7 +60,7 @@
 
     <string name="video">Video</string>
     <string name="videos">Videos</string>
-    
+
     <string name="yes">Yes</string>
 
     <!-- Top app bar -->
@@ -84,10 +87,16 @@
     <string name="picture_format_default">jpg</string>
 
 
+    <!--  View Meta Data fragment  -->
+    <string name="x">x</string>
+    <string name="add_tag"># Add tag</string>
 
     <!--    Recently deleted screen-->
     <string name="trash_description">Pictures deleted from Gallery, My Files, and some third party apps stay in the Trash for 30 days before being permanently deleted.</string>
     <string name="empty">Empty</string>
+    <string name="select_items">Select items</string>
+    <string name="all">All</string>
+    <string name="selected">selected</string>
 
 
     <!--    DateTimePicker -->
@@ -95,5 +104,7 @@
     <string name="open_datetime_dialog">Open DateTime Dialog</string>
     <string name="open_datetime_dialog_with_neutral_button">Open DateTime Dialog with Neutral Button</string>
     <string name="clean">Clean</string>
+    <string name="back">Back</string>
+
 
 </resources>
