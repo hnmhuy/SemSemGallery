@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".activities.AlbumViewActivity">
+    tools:context=".activities.album.AlbumViewActivity">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/activity_album_view_topAppBar"

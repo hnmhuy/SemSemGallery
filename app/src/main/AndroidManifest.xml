@@ -19,22 +19,22 @@
         android:theme="@style/Theme.SemSemGallery"
         tools:targetApi="31">
         <activity
-            android:name=".activities.PictureViewActivity"
+            android:name=".activities.pictureview.PictureViewActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.AlbumViewActivity"
+            android:name=".activities.album.AlbumViewActivity"
             android:exported="true" />
         <activity
-            android:name=".activities.RecentlyDeletedActivity"
+            android:name=".activities.deleted.RecentlyDeletedActivity"
             android:exported="true" />
         <activity
-            android:name=".activities.ControllerSettings"
+            android:name=".activities.SettingActivity"
             android:exported="true" />
         <activity
-            android:name=".activities.EditMetaData"
+            android:name=".activities.EditMetadataActivity"
             android:exported="true" />
         <activity
-            android:name=".activities.MainActivity"
+            android:name=".activities.main.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

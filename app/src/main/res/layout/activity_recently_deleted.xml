@@ -6,7 +6,7 @@
     android:id="@+id/recently_delete_activity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.RecentlyDeletedActivity">
+    tools:context=".activities.deleted.RecentlyDeletedActivity">
 
     <RelativeLayout
         android:paddingTop="12dp"
