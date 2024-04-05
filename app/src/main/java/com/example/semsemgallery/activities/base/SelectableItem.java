@@ -4,7 +4,6 @@ import static com.example.semsemgallery.activities.base.GridMode.NORMAL;
 import static com.example.semsemgallery.activities.base.GridMode.SELECTING;
 
 import android.view.View;
-import android.widget.CheckBox;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,8 +15,6 @@ public abstract class SelectableItem<DataType> extends RecyclerView.ViewHolder i
 
     protected ObservableGridMode<DataType> observedObj;
     public MaterialCheckBox selector;
-    public int position;
-
     public SelectableItem(@NonNull View itemView, ObservableGridMode<DataType> observedObj) {
         super(itemView);
         this.observedObj = observedObj;
@@ -42,11 +39,14 @@ public abstract class SelectableItem<DataType> extends RecyclerView.ViewHolder i
             }
         });
     }
-
     public abstract void clickOnNormalMode(View v);
 
-    public abstract void clickOnSelectingMode(View v);
-
+    public void clickOnSelectingMode(View v) {
+        boolean state = !selector.isChecked();
+        selector.setChecked(state);
+        if (state) observedObj.selectItemAt(getAbsoluteAdapterPosition());
+        else observedObj.unselectItemAt(getAbsoluteAdapterPosition());
+    }
     @Override
     public void onModeChange(GridModeEvent event) {
         if (event.getGridMode() == SELECTING) selector.setVisibility(View.VISIBLE);
@@ -56,7 +56,7 @@ public abstract class SelectableItem<DataType> extends RecyclerView.ViewHolder i
     @Override
     public void onSelectingAll(GridModeEvent event) {
         this.selector.setVisibility(View.VISIBLE);
-        this.selector.setChecked(event.getSelectingAll());
+        this.selector.setChecked(event.getNewSelectionForAll());
 
     }
 }

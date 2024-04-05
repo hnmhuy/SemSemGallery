@@ -1,13 +1,9 @@
 package com.example.semsemgallery.activities.deleted;
 
 import android.content.Context;
-import android.text.Layout;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,13 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.base.ObservableGridMode;
-import com.example.semsemgallery.activities.core.ObservableViewModeEvent;
-import com.example.semsemgallery.activities.core.SelectableImageControl;
 import com.example.semsemgallery.models.Picture;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.zip.Inflater;
 
 public class DeletedItemAdapter extends RecyclerView.Adapter<DeletedViewHolder> {
 
@@ -43,10 +33,10 @@ public class DeletedItemAdapter extends RecyclerView.Adapter<DeletedViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull DeletedViewHolder holder, int position) {
-        Picture pic = observedObj.getDataAt(position);
-        holder.position = holder.getAbsoluteAdapterPosition();
-        Glide.with(context).load(pic.getPath()).centerCrop().into(holder.thumbnail);
-        holder.selector.setChecked(pic.isSelected);
+        ObservableGridMode<Picture>.DataItem data = observedObj.getDataAt(position);
+        holder.selector.setChecked(data.isSelected);
+        //new ThumbnailLoader(holder.thumbnail).execute(data.data.getPath());
+        Glide.with(context).load(data.data.getPath()).centerCrop().into(holder.thumbnail);
     }
 
     @Override

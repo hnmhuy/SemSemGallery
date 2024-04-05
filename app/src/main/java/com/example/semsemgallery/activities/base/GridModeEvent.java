@@ -10,7 +10,7 @@ public class GridModeEvent extends EventObject {
      * @throws IllegalArgumentException if source is null
      */
     private GridMode gridMode;
-    private boolean isSelectingAll;
+    private boolean newSelectionForAll;
 
     public void setGridMode(GridMode newMode) {
         this.gridMode = newMode;
@@ -20,17 +20,17 @@ public class GridModeEvent extends EventObject {
         return this.gridMode;
     }
 
-    public void setSelectingAll(boolean value) {
-        this.isSelectingAll = value;
+    public void setNewSelectionForAll(boolean value) {
+        this.newSelectionForAll = value;
     }
 
-    public boolean getSelectingAll() {
-        return isSelectingAll;
+    public boolean getNewSelectionForAll() {
+        return newSelectionForAll;
     }
 
-    public GridModeEvent(Object source, GridMode newMode, boolean isSelectingAll) {
+    public GridModeEvent(Object source, GridMode newMode, boolean newSelection) {
         super(source);
         this.gridMode = newMode;
-        this.isSelectingAll = isSelectingAll;
+        this.newSelectionForAll = newSelection;
     }
 }

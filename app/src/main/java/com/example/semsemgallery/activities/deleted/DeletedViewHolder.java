@@ -29,11 +29,4 @@ public class DeletedViewHolder extends SelectableItem<Picture> {
     public void clickOnNormalMode(View v) {
         return;
     }
-
-    @Override
-    public void clickOnSelectingMode(View v) {
-        boolean state = !selector.isChecked();
-        selector.setChecked(state);
-        observedObj.getDataAt(position).isSelected = state;
-    }
 }
