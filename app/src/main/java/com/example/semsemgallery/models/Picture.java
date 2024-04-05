@@ -6,12 +6,13 @@ import android.os.Parcelable;
 import java.util.Date;
 
 public class Picture implements Parcelable {
+    private long pictureId;
     private String path;
     private String fileName;
-    private Date dateAdded;
+    private Date dateTaken;
     private String albumID;
     private boolean isFav;
-
+    public boolean isSelected = false;
     public String getAlbumID() {
         return albumID;
     }
@@ -23,7 +24,7 @@ public class Picture implements Parcelable {
     public Picture(String path, String fileName, Date dateAdded, String albumID, boolean isFav) {
         this.path = path;
         this.fileName = fileName;
-        this.dateAdded = dateAdded;
+        this.dateTaken = dateAdded;
         this.albumID = albumID;
         this.isFav = isFav;
     }
@@ -31,7 +32,7 @@ public class Picture implements Parcelable {
         path = in.readString();
         fileName = in.readString();
         long dateLong = in.readLong();
-        dateAdded = new Date(dateLong);
+        dateTaken = new Date(dateLong);
         albumID = in.readString();
         isFav = in.readByte() != 0;
     }
@@ -63,12 +64,12 @@ public class Picture implements Parcelable {
         this.fileName = fileName;
     }
 
-    public Date getDateAdded() {
-        return dateAdded;
+    public Date getDateTaken() {
+        return dateTaken;
     }
 
-    public void setDateAdded(Date dateAdded) {
-        this.dateAdded = dateAdded;
+    public void setDateTaken(Date dateTaken) {
+        this.dateTaken = dateTaken;
     }
 
     public boolean isFav() {
@@ -88,7 +89,7 @@ public class Picture implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(path);
         dest.writeString(fileName);
-        dest.writeLong(dateAdded.getTime());
+        dest.writeLong(dateTaken.getTime());
         dest.writeString(albumID);
         dest.writeByte((byte) (isFav ? 1 : 0));
     }

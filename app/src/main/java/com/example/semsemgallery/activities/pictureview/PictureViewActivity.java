@@ -47,7 +47,7 @@ public class PictureViewActivity extends AppCompatActivity {
 
         String filePath = pictureList.get(position).getPath();
         String fileName = pictureList.get(position).getFileName();
-        Date date = pictureList.get(position).getDateAdded();
+        Date date = pictureList.get(position).getDateTaken();
         Log.e("FILEPATH", filePath);
         Log.e("DATe", date.toString());
 

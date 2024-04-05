@@ -26,7 +26,7 @@
         android:background="#30000000">
 
         <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/image_selector"
+            android:id="@+id/selector"
             android:layout_width="30dp"
             android:layout_height="30dp" />
 

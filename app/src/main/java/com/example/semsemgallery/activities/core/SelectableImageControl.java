@@ -59,7 +59,7 @@ public class SelectableImageControl implements ChangeViewModeListener {
 
     public SelectableImageControl(View layout, ObservableViewModeEvent observableObject) {
         this.thumbnail = layout.findViewById(R.id.thumbnail);
-        this.selector = layout.findViewById(R.id.image_selector);
+        this.selector = layout.findViewById(R.id.selector);
         this.overlay = layout.findViewById(R.id.overlay);
         this.observableObject = observableObject;
         observableObject.addObservers(this);
@@ -76,7 +76,7 @@ public class SelectableImageControl implements ChangeViewModeListener {
         this.overlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CheckBox selector = v.findViewById(R.id.image_selector);
+                CheckBox selector = v.findViewById(R.id.selector);
                 selector.setChecked(!selector.isChecked());
             }
         });

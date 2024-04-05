@@ -40,7 +40,7 @@ public class PicturesFragment extends Fragment {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
         for(Picture picture: picturesRetriever) {
-            LocalDate dateAdded = picture.getDateAdded().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate dateAdded = picture.getDateTaken().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             String dateString = dateAdded.format(formatter);
             LocalDate formattedDate = LocalDate.parse(dateString, formatter);
 
@@ -54,8 +54,8 @@ public class PicturesFragment extends Fragment {
         }
         List<List<Picture>> picturesByDateAdded = new ArrayList<>(partitionedMap.values());
         Collections.sort(picturesByDateAdded, (list1, list2) -> {
-            LocalDate date1 = list1.get(0).getDateAdded().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            LocalDate date2 = list2.get(0).getDateAdded().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate date1 = list1.get(0).getDateTaken().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate date2 = list2.get(0).getDateTaken().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             return date2.compareTo(date1); // descending order
         });
 

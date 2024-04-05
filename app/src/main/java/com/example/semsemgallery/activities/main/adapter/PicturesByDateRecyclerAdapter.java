@@ -43,7 +43,7 @@ public class PicturesByDateRecyclerAdapter extends RecyclerView.Adapter<Pictures
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         List<Picture> p = pictureList.get(position);
-        Date date = p.get(0).getDateAdded();
+        Date date = p.get(0).getDateTaken();
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH);
         String formattedDate = dateFormat.format(date);
         PictureRecyclerAdapter innerAdapter = new PictureRecyclerAdapter(p, context);

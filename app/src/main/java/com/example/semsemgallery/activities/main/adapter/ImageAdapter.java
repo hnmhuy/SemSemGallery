@@ -1,4 +1,4 @@
-package com.example.semsemgallery.adapters;
+package com.example.semsemgallery.activities.main.adapter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

@@ -16,6 +16,9 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.semsemgallery.R;
+import com.example.semsemgallery.activities.base.GridMode;
+import com.example.semsemgallery.activities.base.ObservableGridMode;
+import com.example.semsemgallery.activities.base.RecylerViewItemDecoration;
 import com.example.semsemgallery.activities.core.ChangeViewModeListener;
 import com.example.semsemgallery.activities.core.ObservableViewModeEvent;
 import com.example.semsemgallery.activities.core.ViewMode;
@@ -24,16 +27,14 @@ import com.example.semsemgallery.models.Picture;
 import com.example.semsemgallery.domain.MediaRetriever;
 import com.google.android.material.appbar.MaterialToolbar;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class RecentlyDeletedActivity extends AppCompatActivity implements ChangeViewModeListener {
-    private ObservableViewModeEvent observableViewModeEvent;
-    private List<Picture> pictureList;
-    private MaterialToolbar normalToolBar;
-    private MaterialToolbar selectingToolBar;
-    private TextView selectedItems;
-    private CheckBox selectAllBtn;
-
+public class RecentlyDeletedActivity extends AppCompatActivity {
+    private List<Picture> pictureList = null;
+    private final int spacing = 8;
+    private ObservableGridMode<Picture> observedObj;
+    private MediaRetriever loader;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,63 +45,16 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements Change
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        this.loader = new MediaRetriever(this);
+        pictureList = loader.getAllPictureList();
+        observedObj = new ObservableGridMode<>(pictureList, GridMode.NORMAL);
 
-        observableViewModeEvent = new ObservableViewModeEvent();
-        observableViewModeEvent.addObservers(this);
-        pictureList = new MediaRetriever(this).getAllPictureList();
         RecyclerView recyclerView = findViewById(R.id.deleted_item_recycler_view);
-        DeletedItemAdapter adapter = new DeletedItemAdapter(pictureList, this, observableViewModeEvent);
-
+        DeletedItemAdapter adapter = new DeletedItemAdapter(observedObj, this);
         GridLayoutManager manager = new GridLayoutManager(this, 3);
-        recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
-
-        normalToolBar = findViewById(R.id.topAppBarNormal);
-        selectingToolBar = findViewById(R.id.topAppBar_SelectingMode);
-        selectedItems = findViewById(R.id.select_items);
-        selectAllBtn = findViewById(R.id.select_all);
-
-        selectAllBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    selectAllImages();
-                    observableViewModeEvent.fireSelectionChangeEvent(true);
-                } else {
-                    removeAllSelectedImage();
-                    observableViewModeEvent.fireSelectionChangeEvent(true);
-                }
-            }
-        });
+        recyclerView.setLayoutManager(manager);
+        recyclerView.addItemDecoration(new RecylerViewItemDecoration(spacing));
     }
 
-    private void selectAllImages() {
-        for (int i = 0; i < this.pictureList.size(); i++) {
-            observableViewModeEvent.getSelectedPositions().add(i);
-        }
-    }
-
-    private void removeAllSelectedImage() {
-        observableViewModeEvent.getSelectedPositions().clear();
-    }
-
-
-    @Override
-    public void onChangeMode(ViewModeEvent event) {
-        if (event.getViewMode() == ViewMode.NORMAL_VIEW) {
-            normalToolBar.setVisibility(View.VISIBLE);
-            selectingToolBar.setVisibility(View.INVISIBLE);
-            selectedItems.setText(R.string.select_items);
-        } else if (event.getViewMode() == ViewMode.SELECTING_VIEW) {
-            normalToolBar.setVisibility(View.INVISIBLE);
-            selectingToolBar.setVisibility(View.VISIBLE);
-        }
-    }
-
-    @Override
-    public void onSelectionChange(ViewModeEvent event) {
-        if (!event.getSelectedPositions().isEmpty()) {
-            selectedItems.setText(String.format("%d selected", event.getSelectedPositions().size()));
-        } else selectedItems.setText(R.string.select_items);
-    }
 }
