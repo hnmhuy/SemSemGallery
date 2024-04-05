@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:orientation="vertical"
     android:layout_height="match_parent"
-    tools:context=".activities.pictureview.PictureViewActivity">
+    tools:context=".activities.pictureview.PictureViewActivityInJava">
 
 
     <androidx.viewpager2.widget.ViewPager2

@@ -1,4 +1,3 @@
-import com.android.build.api.dsl.LintOptions
 
 plugins {
         alias(libs.plugins.androidApplication)
@@ -10,6 +9,7 @@ plugins {
     IMGLY.configure() {
         pesdk {
             enabled(true)
+            licensePath(null)
         }
 
         modules {

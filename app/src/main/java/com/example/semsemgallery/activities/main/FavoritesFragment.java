@@ -14,8 +14,8 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.semsemgallery.R;
-import com.example.semsemgallery.activities.pictureview.PictureViewActivity;
 import com.example.semsemgallery.activities.main.adapter.PictureRecyclerAdapter;
+import com.example.semsemgallery.activities.pictureview.PictureViewActivity;
 import com.example.semsemgallery.models.Picture;
 import com.example.semsemgallery.domain.MediaRetriever;
 
