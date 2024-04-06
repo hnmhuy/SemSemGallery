@@ -8,8 +8,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -18,8 +21,10 @@ import androidx.viewpager2.widget.ViewPager2
 import com.example.semsemgallery.R
 import com.example.semsemgallery.activities.main.adapter.PictureAdapter
 import com.example.semsemgallery.activities.pictureview.fragment.MetaDataBottomSheet
+import com.example.semsemgallery.domain.PhotoActionsHandler
 import com.example.semsemgallery.models.Picture
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import ly.img.android.pesdk.PhotoEditorSettingsList
 import ly.img.android.pesdk.assets.filter.basic.FilterPackBasic
 import ly.img.android.pesdk.assets.font.basic.FontPackBasic
@@ -45,6 +50,8 @@ class PictureViewActivity : AppCompatActivity() {
         const val PESDK_RESULT = 1;
     }
     private lateinit var topBar: MaterialToolbar
+    private lateinit var actions: MaterialToolbar
+    private var filePath: String = ""
     private fun createPesdkSettingsList() =
         PhotoEditorSettingsList(false)
             .configure<UiConfigFilter> {
@@ -77,11 +84,16 @@ class PictureViewActivity : AppCompatActivity() {
         val position = intent.getIntExtra("position", 0)
 
         topBar = findViewById(R.id.activity_picture_view_topAppBar)
+        actions = findViewById(R.id.more_photo_action);
+        actions.setOnMenuItemClickListener { menuItem ->
+            onOptionsItemSelected(menuItem)
+        }
+
         val viewPager: ViewPager2 = findViewById(R.id.vp_image)
         val adapter = PictureAdapter(this, pictureList, position)
         viewPager.adapter = adapter
         viewPager.setCurrentItem(position, false)
-        var filePath = pictureList!![position].path
+        filePath = pictureList!![position].path
         var fileName = pictureList[position].fileName
         var date: Date?
         var isFavorite = pictureList[position].isFav;
@@ -215,5 +227,77 @@ class PictureViewActivity : AppCompatActivity() {
 
     private fun showMessage(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu resource
+        menuInflater.inflate(R.menu.top_bar_picture_view_options, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle menu item clicks
+        val handler = PhotoActionsHandler.getInstance(applicationContext)
+        when (item.itemId) {
+            R.id.copy_to_clipboard -> {
+                // Handle copy to clipboard action
+                handler.copyToClipboard();
+                return true
+            }
+            R.id.copy_to_album -> {
+                // Handle copy to album action
+                handler.copyToAlbum()
+
+                return true
+            }
+            R.id.move_to_album -> {
+                // Handle move to album action
+                handler.moveToAlbum()
+
+                return true
+            }
+            R.id.set_as_wallpaper -> {
+                // Handle set as wallpaper action
+                val bottomSheetView = layoutInflater.inflate(R.layout.fragment_picture_options, null);
+                val dialog = BottomSheetDialog(this);
+                dialog.setContentView(bottomSheetView);
+
+                val lockScreenTextView = bottomSheetView.findViewById<TextView>(R.id.lock_screen)
+                val homeScreenTextView = bottomSheetView.findViewById<TextView>(R.id.home_screen)
+                val lockAndHomeScreensTextView = bottomSheetView.findViewById<TextView>(R.id.lock_and_home_screens)
+                lockScreenTextView.setOnClickListener {
+                    // Handle click for lock screen
+                    // For example:
+                    handler.setAsLockScreen(filePath)
+                    showMessage("Successfully")
+                    dialog.dismiss()
+                }
+
+                homeScreenTextView.setOnClickListener {
+                    // Handle click for home screen
+                    // For example:
+                    handler.setAsHomeScreen(filePath)
+                    showMessage("Successfully")
+                    dialog.dismiss()
+                }
+
+                lockAndHomeScreensTextView.setOnClickListener {
+                    // Handle click for lock and home screens
+                    // For example:
+                    handler.setAsHomeScreenAndLockScreen(filePath)
+                    showMessage("Successfully")
+                    dialog.dismiss()
+                }
+
+                dialog.show()
+                return true
+            }
+            R.id.print -> {
+                // Handle print action
+                handler.print()
+                return true
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
     }
 }
