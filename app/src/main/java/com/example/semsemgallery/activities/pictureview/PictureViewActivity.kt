@@ -1,20 +1,23 @@
 package com.example.semsemgallery.activities.pictureview
 
 import android.app.Activity
+import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
+import android.view.View
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.viewpager2.widget.ViewPager2
 import com.example.semsemgallery.R
 import com.example.semsemgallery.activities.main.adapter.PictureAdapter
 import com.example.semsemgallery.activities.pictureview.fragment.MetaDataBottomSheet
-import com.example.semsemgallery.domain.PhotoEditorHelper.Companion.PESDK_RESULT
 import com.example.semsemgallery.models.Picture
 import com.google.android.material.appbar.MaterialToolbar
 import ly.img.android.pesdk.PhotoEditorSettingsList
@@ -25,7 +28,6 @@ import ly.img.android.pesdk.assets.overlay.basic.OverlayPackBasic
 import ly.img.android.pesdk.assets.sticker.emoticons.StickerPackEmoticons
 import ly.img.android.pesdk.assets.sticker.shapes.StickerPackShapes
 import ly.img.android.pesdk.backend.model.EditorSDKResult
-import ly.img.android.pesdk.backend.model.constant.OutputMode
 import ly.img.android.pesdk.backend.model.state.LoadSettings
 import ly.img.android.pesdk.backend.model.state.PhotoEditorSaveSettings
 import ly.img.android.pesdk.ui.activity.PhotoEditorBuilder
@@ -35,9 +37,8 @@ import ly.img.android.pesdk.ui.model.state.UiConfigOverlay
 import ly.img.android.pesdk.ui.model.state.UiConfigSticker
 import ly.img.android.pesdk.ui.model.state.UiConfigText
 import ly.img.android.pesdk.ui.panels.item.PersonalStickerAddItem
-import ly.img.android.serializer._3.IMGLYFileWriter
 import java.io.File
-import java.io.IOException
+import java.util.Date
 
 class PictureViewActivity : AppCompatActivity() {
     companion object {
@@ -76,26 +77,40 @@ class PictureViewActivity : AppCompatActivity() {
         val position = intent.getIntExtra("position", 0)
 
         topBar = findViewById(R.id.activity_picture_view_topAppBar)
-
         val viewPager: ViewPager2 = findViewById(R.id.vp_image)
         val adapter = PictureAdapter(this, pictureList, position)
         viewPager.adapter = adapter
         viewPager.setCurrentItem(position, false)
-
-        val filePath = pictureList!![position].path
-        val fileName = pictureList[position].fileName
-        val date = pictureList[position].dateAdded
-        Log.e("FILEPATH", filePath)
-        Log.e("DATE", date.toString())
-
+        var filePath = pictureList!![position].path
+        var fileName = pictureList[position].fileName
+        var date: Date?
+        var isFavorite = pictureList[position].isFav;
+        val favBtn: ImageButton = findViewById(R.id.favorite_button);
         val infoBtn: ImageButton = findViewById(R.id.info_button)
+        val shareBtn: ImageButton = findViewById(R.id.share_button)
+
+        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+
+                filePath = pictureList[position].path
+                fileName = pictureList[position].fileName
+                date = pictureList[position].dateAdded
+                isFavorite = pictureList[position].isFav;
+                Log.e("FILEPATH", filePath)
+                Log.e("DATE", date.toString())
+
+                toggleFavorite(isFavorite, favBtn);
+            }
+        })
+
+
         infoBtn.setOnClickListener {
             val botSheetFrag = MetaDataBottomSheet(filePath, fileName)
             botSheetFrag.show(supportFragmentManager, botSheetFrag.tag)
         }
 
         // Event share to other apps
-        val shareBtn: ImageButton = findViewById(R.id.share_button)
         shareBtn.setOnClickListener {
             Log.d("Image Path", filePath)
             val imageFile = File(filePath)
@@ -123,7 +138,44 @@ class PictureViewActivity : AppCompatActivity() {
             )
             openEditor(imageUri)
         }
+
+
+        // Favorite Icon
+
+        toggleFavorite(isFavorite, favBtn);
+
+        favBtn.setOnClickListener {
+            showMessage("Click")
+            val contentUri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+            val values = ContentValues().apply {
+                put(MediaStore.Images.Media.IS_FAVORITE, !isFavorite);
+            }
+
+            val contentResolver: ContentResolver = applicationContext.contentResolver;
+            contentResolver.update(contentUri, values, "${MediaStore.Images.Media.DATA}=?", arrayOf(filePath));
+            isFavorite = !isFavorite
+            pictureList[position].isFav = isFavorite
+            toggleFavorite(isFavorite, favBtn);
+        }
     }
+
+    override fun onResume() {
+        super.onResume()
+        topBar.setNavigationOnClickListener { v: View? -> finish() }
+    }
+
+    private fun toggleFavorite(isFavorite: Boolean, favBtn: ImageButton) {
+        if(isFavorite) {
+            favBtn.setImageResource(R.drawable.ic_heart_fill);
+            val color = ContextCompat.getColor(applicationContext, R.color.is_favorite)
+            favBtn.setColorFilter(color)
+        } else {
+            favBtn.setImageResource(R.drawable.ic_heart)
+            val color = ContextCompat.getColor(applicationContext, R.color.black)
+            favBtn.setColorFilter(color)
+        }
+    }
+
     private fun openEditor(imageUri: Uri) {
         // Implement your open editor functionality here
         val settingsList = createPesdkSettingsList()
@@ -153,7 +205,7 @@ class PictureViewActivity : AppCompatActivity() {
                     val resultIntent = Intent()
                     resultIntent.putExtra("editedImageUri", resultUri.toString())
                     setResult(Activity.RESULT_OK, resultIntent)
-                    finish() // Finish PictureViewActivity
+                    finish()
                 }
                 else -> {
                 }
