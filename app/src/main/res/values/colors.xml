@@ -14,4 +14,6 @@
     <color name="metadata_foreground">#a6a6a6</color>
     <color name="add_tag_border">#d6d6d6</color>
     <color name="text_color_black">#FF000000</color>
+    <color name="picture_view_bottom_bar_bg">#E6FFFFFF</color>
+
 </resources>
