@@ -6,5 +6,7 @@
         <item name="switchPadding">50dp</item>
         <item name="android:textAppearance">?attr/textAppearanceBodyMedium</item>
     </style>
-
+    <style name="ShapeAppearanceOverlay.MyApp.FloatingActionButton" parent="">
+        <item name="cornerSize">50%</item> <!-- Make the corners 50% to create a circle -->
+    </style>
 </resources>
