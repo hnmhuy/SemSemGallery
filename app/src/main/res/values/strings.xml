@@ -105,6 +105,14 @@
     <string name="open_datetime_dialog_with_neutral_button">Open DateTime Dialog with Neutral Button</string>
     <string name="clean">Clean</string>
     <string name="back">Back</string>
+    <string name="copy_to_clipboard">Copy to clipboard</string>
+    <string name="copy_to_album">Copy to album</string>
+    <string name="move_to_album">Move to album</string>
+    <string name="set_as_wallpaper">Set as wallpaper</string>
+    <string name="print">Print</string>
+    <string name="lock_and_home_screens">Lock and Home screens</string>
+    <string name="home_screen">Home screen</string>
+    <string name="lock_screen">Lock screen</string>
 
 
 </resources>
