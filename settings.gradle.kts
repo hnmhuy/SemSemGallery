@@ -9,6 +9,8 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+        mavenCentral()
+        maven(url = "https://artifactory.img.ly/artifactory/imgly")
     }
 }
 dependencyResolutionManagement {
@@ -18,6 +20,9 @@ dependencyResolutionManagement {
         mavenCentral()
         maven {
             url = uri("https://www.jitpack.io" )
+            google()
+            mavenCentral()
+            maven(url = "https://artifactory.img.ly/artifactory/imgly")
         }
 
     }

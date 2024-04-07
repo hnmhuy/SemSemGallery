@@ -38,14 +38,14 @@ public class MediaRetriever {
                 MediaStore.Images.Media.DATA, // đường dẫn tới ảnh đó
                 MediaStore.Images.Media.DISPLAY_NAME, // tên file ảnh
                 MediaStore.Images.Media.BUCKET_ID, // id album chứa
-                MediaStore.Images.Media.DATE_TAKEN, // ngay
+                MediaStore.Images.Media.DATE_ADDED, // ngay
                 MediaStore.Images.Media.IS_FAVORITE
         };
         Cursor cursor = activity.getContentResolver().query(uri,
                 projection,
                 null,
                 null,
-                MediaStore.Images.Media.DATE_TAKEN + " DESC");
+                MediaStore.Images.Media.DATE_ADDED + " DESC");
 
         if(cursor != null) {
             try {
@@ -53,8 +53,8 @@ public class MediaRetriever {
                     String path = cursor.getString((cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)));
                     String name = cursor.getString((cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)));
                     String albumID = cursor.getString((cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_ID)));
-                    long timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_TAKEN));
-                    Date dateAdded = new Date(timestamp);
+                    long timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
+                    Date dateAdded = new Date(timestamp * 1000L);
                     String isFavStr = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.IS_FAVORITE));
                     boolean isFav = Objects.equals(isFavStr, "1");
                     picturesList.add(new Picture(path, name, dateAdded, albumID, isFav));

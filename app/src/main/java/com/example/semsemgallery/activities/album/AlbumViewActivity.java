@@ -12,8 +12,8 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.semsemgallery.R;
-import com.example.semsemgallery.activities.pictureview.PictureViewActivity;
 import com.example.semsemgallery.activities.main.adapter.PictureRecyclerAdapter;
+import com.example.semsemgallery.activities.pictureview.PictureViewActivity;
 import com.example.semsemgallery.models.Picture;
 import com.example.semsemgallery.domain.MediaRetriever;
 
@@ -67,8 +67,6 @@ public class AlbumViewActivity extends AppCompatActivity implements PictureRecyc
     @Override
     protected void onResume() {
         super.onResume();
-
-        // ====== Listener for the BackButton in the TopBar
         topBar.setNavigationOnClickListener(v -> finish());
     }
     @Override
@@ -76,8 +74,6 @@ public class AlbumViewActivity extends AppCompatActivity implements PictureRecyc
         Intent intent = new Intent(this, PictureViewActivity.class);
         intent.putParcelableArrayListExtra("pictureList", new ArrayList<>(pictureList));
         intent.putExtra("position", position);
-
-        // Start the activity
         startActivity(intent);
     }
 
