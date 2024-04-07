@@ -25,6 +25,10 @@ import com.example.semsemgallery.domain.PhotoActionsHandler
 import com.example.semsemgallery.models.Picture
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ly.img.android.pesdk.PhotoEditorSettingsList
 import ly.img.android.pesdk.assets.filter.basic.FilterPackBasic
 import ly.img.android.pesdk.assets.font.basic.FontPackBasic
@@ -226,7 +230,7 @@ class PictureViewActivity : AppCompatActivity() {
     }
 
     private fun showMessage(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -241,7 +245,8 @@ class PictureViewActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.copy_to_clipboard -> {
                 // Handle copy to clipboard action
-                handler.copyToClipboard();
+                handler.copyToClipboard(this, filePath);
+                Log.e("Image Path", filePath);
                 return true
             }
             R.id.copy_to_album -> {
@@ -266,27 +271,66 @@ class PictureViewActivity : AppCompatActivity() {
                 val homeScreenTextView = bottomSheetView.findViewById<TextView>(R.id.home_screen)
                 val lockAndHomeScreensTextView = bottomSheetView.findViewById<TextView>(R.id.lock_and_home_screens)
                 lockScreenTextView.setOnClickListener {
-                    // Handle click for lock screen
-                    // For example:
-                    handler.setAsLockScreen(filePath)
-                    showMessage("Successfully")
-                    dialog.dismiss()
+                    GlobalScope.launch {
+                        // Start the background task in a coroutine
+                        val job = launch {
+                            handler.setAsLockScreen(filePath)
+                        }
+
+                        // Display "Processing" message on the main thread
+                        showMessageOnMainThread("Processing...")
+
+                        // Wait for the background task to complete
+                        job.join()
+
+                        // Display "Successfully" message on the main thread
+                        showMessageOnMainThread("Successfully")
+
+                        // Dismiss the dialog
+                        dialog.dismiss()
+                    }
                 }
 
                 homeScreenTextView.setOnClickListener {
-                    // Handle click for home screen
-                    // For example:
-                    handler.setAsHomeScreen(filePath)
-                    showMessage("Successfully")
-                    dialog.dismiss()
+                    GlobalScope.launch {
+                        // Start the background task in a coroutine
+                        val job = launch {
+                            handler.setAsHomeScreen(filePath)
+                        }
+
+                        // Display "Processing" message on the main thread
+                        showMessageOnMainThread("Processing...")
+
+                        // Wait for the background task to complete
+                        job.join()
+
+                        // Display "Successfully" message on the main thread
+                        showMessageOnMainThread("Successfully")
+
+                        // Dismiss the dialog
+                        dialog.dismiss()
+                    }
                 }
 
                 lockAndHomeScreensTextView.setOnClickListener {
-                    // Handle click for lock and home screens
-                    // For example:
-                    handler.setAsHomeScreenAndLockScreen(filePath)
-                    showMessage("Successfully")
-                    dialog.dismiss()
+                    GlobalScope.launch {
+                        // Start the background task in a coroutine
+                        val job = launch {
+                            handler.setAsHomeScreenAndLockScreen(filePath)
+                        }
+
+                        // Display "Processing" message on the main thread
+                        showMessageOnMainThread("Processing...")
+
+                        // Wait for the background task to complete
+                        job.join()
+
+                        // Display "Successfully" message on the main thread
+                        showMessageOnMainThread("Successfully")
+
+                        // Dismiss the dialog
+                        dialog.dismiss()
+                    }
                 }
 
                 dialog.show()
@@ -298,6 +342,13 @@ class PictureViewActivity : AppCompatActivity() {
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
+        }
+    }
+
+    // Function to show a message on the main thread
+    private suspend fun showMessageOnMainThread(message: String) {
+        withContext(Dispatchers.Main) {
+            showMessage(message)
         }
     }
 }

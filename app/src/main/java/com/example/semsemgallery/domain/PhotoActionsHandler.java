@@ -1,11 +1,20 @@
 package com.example.semsemgallery.domain;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+
 import android.app.WallpaperManager;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.util.Log;
 import android.widget.Toast;
 
+import androidx.core.content.FileProvider;
+
+import java.io.File;
 import java.io.IOException;
 
 public class PhotoActionsHandler {
@@ -25,9 +34,8 @@ public class PhotoActionsHandler {
         return instance;
     }
 
-    public void copyToClipboard() {
-        // Implement copy to clipboard functionality here
-        showToast("Text copied to clipboard");
+    public void copyToClipboard(Context context, String imagePath) {
+
     }
 
     public void copyToAlbum() {

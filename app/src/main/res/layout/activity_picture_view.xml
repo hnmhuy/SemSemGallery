@@ -17,7 +17,6 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.appbar.MaterialToolbar
-        android:background="@color/picture_view_bottom_bar_bg"
         android:id="@+id/activity_picture_view_topAppBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
