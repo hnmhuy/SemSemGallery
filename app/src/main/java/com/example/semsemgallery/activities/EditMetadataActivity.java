@@ -1,8 +1,10 @@
     package com.example.semsemgallery.activities;
 
     import android.content.Context;
+    import android.content.Intent;
     import android.os.Bundle;
     import android.os.Environment;
+    import android.provider.Settings;
     import android.util.Log;
     import android.view.View;
     import android.widget.Button;
@@ -20,30 +22,26 @@
 
     import java.io.File;
     import java.io.IOException;
+    import java.nio.file.Files;
+    import java.nio.file.Path;
+    import java.nio.file.Paths;
     import java.text.DateFormat;
     import java.text.SimpleDateFormat;
     import java.util.Calendar;
     import java.util.Date;
     import java.util.GregorianCalendar;
     import java.util.Locale;
+    import java.util.Objects;
     import java.util.TimeZone;
 
 
     public class EditMetadataActivity extends AppCompatActivity {
-        // Variables to store old data
-        private String oldImageName;
-        private String oldDateContent;
-        private String oldTimeContent;
-        private String oldLocation;
-
         // save InstanceState
         private Context context;
 
         // --------- Begin variable of DateTimePicker dialog ---------
         private static final String TAG = "Sample";
         private static final String TAG_DATETIME_FRAGMENT = "TAG_DATETIME_FRAGMENT";
-        private static final String STATE_TEXTVIEW = "STATE_TEXTVIEW";
-        private TextView textView;
         private SwitchDateTimeDialogFragment dateTimeFragment;
 
         // --------- End variable of DateTimePicker dialog ---------
@@ -59,6 +57,7 @@
         public ImageButton backBtn;
         public Button saveBtn;
         public Button cancelBtn;
+
         public String path;
 
         @Override
@@ -72,11 +71,7 @@
             String dateIntent = getIntent().getStringExtra("date");
             String timeIntent = getIntent().getStringExtra("time");
             path = getIntent().getStringExtra("filePath");
-            Log.d("DATE INTENT", dateIntent);
-
-
-
-
+            Log.d("PATH INTENT", path);
 
 
             context = getApplicationContext();
@@ -192,68 +187,90 @@
         private View.OnClickListener onSaveEdit = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-    //            updateStateData();
-                try {
-                    String datetime = dateContent.getText().toString() + " " + timeContent.getText().toString();
-                    String saveDateTime = convertDatetime(datetime);
 
 
-
-
-                    ExifInterface exifInterface = new ExifInterface(path);
-                    exifInterface.setAttribute(ExifInterface.TAG_DATETIME_ORIGINAL, saveDateTime);
-//
-//                    Log.d(TAG, "Updated date metadata: " + exifInterface.getAttribute(ExifInterface.TAG_DATETIME));
-
-
-                    exifInterface.saveAttributes();
-                    Toast.makeText(context, "Date metadata updated", Toast.LENGTH_SHORT).show();
-//                    finish();
-                    exifInterface.saveAttributes();
-
-
-                }  catch (IOException e) {
-                    Log.e("ERROR SAVE", "Error saving date time", e);
-                    Toast.makeText(context, "Failed to save date time: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    e.printStackTrace(); // Print stack trace for detailed error analysis
+                boolean isStorageManager = false;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                    isStorageManager = Environment.isExternalStorageManager();
                 }
+
+                if (isStorageManager) {
+                    // Your app already has storage management permissions
+                    // You can proceed with file operations
+                } else {
+                    // Your app does not have storage management permissions
+                    // Guide the user to the system settings page to grant permission
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+
+                    startActivity(intent);
+                }
+//                UpdateDateByExif(path);
+
+                String newFileName = imageName.getText().toString() + "." + imageFormat.getText().toString();
+                Log.d("NEW FILE NAME", newFileName);
+                renameFile(path, newFileName);
                 Toast.makeText(context, "Data Saved",Toast.LENGTH_SHORT).show();
+
+
             }
         };
 
-        public boolean renameFile(String oldFilePath, String newFileName) {
-            File oldFile = new File(oldFilePath);
+        public void UpdateDateByExif(String imagePath)
+        {
+            ExifInterface exif = null;
+            try {
+                Log.d("RUN", "Run in exiff");
+                exif = new ExifInterface(imagePath);
+                Log.d("EXIF DATA:", exif.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL));
+                exif.setAttribute(ExifInterface.TAG_DATETIME_ORIGINAL, "2024:04:02 14:37:52");
+                Log.d("RUN2", "Run in exiff setAttributr");
 
-            // Ensure the old file exists
-            if (!oldFile.exists()) {
-                return false; // File does not exist
+                exif.saveAttributes();
+                Log.d("RUN3", "Run in exiff save");
+
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+        }
 
-            // Construct the new file path
-            String parentDirectory = oldFile.getParent();
-            String newFilePath = parentDirectory + File.separator + newFileName;
+        public void renameFile(String oldFilePath, String newFileName){
 
-            File newFile = new File(newFilePath);
-
-            // Rename the file
-            if (newFile.exists()) {
-                Log.e("renameFile", "File already exists: " + newFilePath);
-                return false;
+            Path oldFile = Paths.get(oldFilePath);
+            try {
+                Files.move(oldFile, oldFile.resolveSibling(newFileName));
+                Log.d("renameFile", "File renamed successfully");
+            }catch (IOException e)
+            {
+                Log.e("ERROR", e.getMessage());
             }
-
-            // Rename the file
-            if (oldFile.renameTo(newFile)) {
-                // File renamed successfully
-                Log.d("renameFile", "File renamed successfully to: " + newFilePath);
-
-                // If you want to update metadata, do it here
-
-                return true;
-            } else {
-                // Failed to rename file
-                Log.e("renameFile", "Failed to rename file: " + oldFilePath);
-                return false;
-            }
+//            File oldFile = new File(oldFilePath);
+//
+//            // Ensure the old file exists
+//            if (!oldFile.exists()) {
+//                return; // File does not exist
+//            }
+//
+//            // Construct the new file path
+//            String parentDirectory = oldFile.getParent();
+//
+//            String newFilePath = parentDirectory + File.separator + newFileName + "." + imageFormat.getText().toString();
+//            Log.d("NEW FILE PATH", newFilePath);
+//
+//            File newFile = new File(newFilePath);
+//
+//            if (newFile.exists()) {
+//                Log.e("renameFile", "File already exists: " + newFilePath);
+//            } else {
+//                if (oldFile.renameTo(newFile)) {
+//                    // File renamed successfully
+//                    Log.d("renameFile", "File renamed successfully to: " + newFilePath);
+//                    // If you want to update metadata, do it here
+//                } else {
+//                    // Failed to rename file
+//                    Log.e("renameFile", "Failed to rename file: " + oldFilePath);
+//                    Log.e("renameFile", "Failed to rename new file: " + newFilePath);
+//                }
+//            }
         }
 
         private boolean isExternalStorageReadable() {

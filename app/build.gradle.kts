@@ -1,5 +1,40 @@
-    plugins {
+
+plugins {
         alias(libs.plugins.androidApplication)
+        id("ly.img.android.sdk").version("10.9.0")
+        id("org.jetbrains.kotlin.android")
+        id("com.google.devtools.ksp")
+    }
+
+    IMGLY.configure() {
+        pesdk {
+            enabled(true)
+            licensePath(null)
+        }
+
+        modules {
+            include("ui:core")
+            include("ui:text")
+            include("ui:focus")
+            include("ui:frame")
+            include("ui:brush")
+            include("ui:filter")
+            include("ui:sticker")
+            include("ui:overlay")
+            include("ui:transform")
+            include("ui:adjustment")
+            include("ui:text-design")
+
+            include("backend:serializer")
+            include("backend:headless")
+            include("assets:font-basic")
+            include("assets:frame-basic")
+            include("assets:filter-basic")
+            include("assets:overlay-basic")
+            include("assets:sticker-shapes")
+            include("assets:sticker-emoticons")
+            include("backend:sticker-smart")
+        }
     }
 
     android {
@@ -23,9 +58,13 @@
             }
         }
         compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_1_8
-            targetCompatibility = JavaVersion.VERSION_1_8
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
         }
+        kotlinOptions {
+            jvmTarget = "17"
+        }
+
     }
 
     dependencies {

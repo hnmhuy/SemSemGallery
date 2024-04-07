@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/copy_to_clipboard"
+        android:title="@string/copy_to_clipboard"
+        app:showAsAction="never"
+        />
+    <item
+        android:id="@+id/copy_to_album"
+        android:title="@string/copy_to_album"
+        app:showAsAction="never"
+        />
+    <item
+        android:id="@+id/move_to_album"
+        android:title="@string/move_to_album"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/set_as_wallpaper"
+        android:title="@string/set_as_wallpaper"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/print"
+        android:title="@string/print"
+        app:showAsAction="never"/>
+</menu>
