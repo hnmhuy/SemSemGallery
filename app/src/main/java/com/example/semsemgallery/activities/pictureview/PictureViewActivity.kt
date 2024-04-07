@@ -112,7 +112,7 @@ class PictureViewActivity : AppCompatActivity() {
 
                 filePath = pictureList[position].path
                 fileName = pictureList[position].fileName
-                date = pictureList[position].dateAdded
+                date = pictureList[position].dateTaken
                 isFavorite = pictureList[position].isFav;
                 Log.e("FILEPATH", filePath)
                 Log.e("DATE", date.toString())
