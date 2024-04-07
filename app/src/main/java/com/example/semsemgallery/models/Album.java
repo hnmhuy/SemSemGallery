@@ -1,22 +1,35 @@
 package com.example.semsemgallery.models;
 
 
-import java.util.List;
-
 public class Album {
 
     private String albumId;
-    private String imgWall;
+    private String wallId;
     private String name;
-    private int size;
+    private int count;
 
 
-
-    public Album(String albumId, String imgWall, String name) {
+    public Album(String albumId, String wallId, String name) {
         this.albumId = albumId;
-        this.imgWall = imgWall;
+        this.wallId = wallId;
         this.name = name;
-        this.size = 0;
+        this.count = 0;
+    }
+
+    public String getAlbumId() {
+        return albumId;
+    }
+
+    public void setAlbumId(String albumId) {
+        this.albumId = albumId;
+    }
+
+    public String getWallId() {
+        return wallId;
+    }
+
+    public void setWallId(String wallId) {
+        this.wallId = wallId;
     }
 
     public String getName() {
@@ -27,27 +40,11 @@ public class Album {
         this.name = name;
     }
 
-    public String getAlbumId() {
-        return albumId;
+    public int getCount() {
+        return count;
     }
 
-    public void setAlbumId(String albumId) {
-        this.albumId = albumId;
+    public void setCount(int count) {
+        this.count = count;
     }
-    public String getImgWall() {
-        return imgWall;
-    }
-
-    public void setImgWall(String imgWall) {
-        this.imgWall = imgWall;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public void setSize(int size) {
-        this.size = size;
-    }
-
 }

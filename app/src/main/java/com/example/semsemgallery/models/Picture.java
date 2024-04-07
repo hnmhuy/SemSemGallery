@@ -3,6 +3,8 @@ package com.example.semsemgallery.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.type.DateTime;
+
 import java.util.Date;
 
 public class Picture implements Parcelable {
@@ -10,16 +12,10 @@ public class Picture implements Parcelable {
     private String path;
     private String fileName;
     private Date dateTaken;
-    private String albumID;
     private boolean isFav;
-    public boolean isSelected = false;
-    public String getAlbumID() {
-        return albumID;
-    }
-
-    public void setAlbumID(String albumID) {
-        this.albumID = albumID;
-    }
+    private long fileSize; // in byte
+    private String albumID;
+    private String albumName;
 
     public Picture(String path, String fileName, Date dateAdded, String albumID, boolean isFav) {
         this.path = path;
@@ -36,18 +32,50 @@ public class Picture implements Parcelable {
         albumID = in.readString();
         isFav = in.readByte() != 0;
     }
-
     public static final Creator<Picture> CREATOR = new Creator<Picture>() {
         @Override
         public Picture createFromParcel(Parcel in) {
             return new Picture(in);
         }
-
         @Override
         public Picture[] newArray(int size) {
             return new Picture[size];
         }
     };
+
+    public Picture(long pictureId, String path, String fileName, Date dateTaken, boolean isFav, long fileSize, String albumID, String albumName) {
+        this.pictureId = pictureId;
+        this.path = path;
+        this.fileName = fileName;
+        this.dateTaken = dateTaken;
+        this.isFav = isFav;
+        this.fileSize = fileSize;
+        this.albumID = albumID;
+        this.albumName = albumName;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(path);
+        dest.writeString(fileName);
+        dest.writeLong(dateTaken.getTime());
+        dest.writeString(albumID);
+        dest.writeByte((byte) (isFav ? 1 : 0));
+    }
+
+    public long getPictureId() {
+        return pictureId;
+    }
+
+    public void setPictureId(long pictureId) {
+        this.pictureId = pictureId;
+    }
+
     public String getPath() {
         return path;
     }
@@ -80,17 +108,27 @@ public class Picture implements Parcelable {
         isFav = fav;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
+    public long getFileSize() {
+        return fileSize;
     }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(path);
-        dest.writeString(fileName);
-        dest.writeLong(dateTaken.getTime());
-        dest.writeString(albumID);
-        dest.writeByte((byte) (isFav ? 1 : 0));
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    public String getAlbumID() {
+        return albumID;
+    }
+
+    public void setAlbumID(String albumID) {
+        this.albumID = albumID;
+    }
+
+    public String getAlbumName() {
+        return albumName;
+    }
+
+    public void setAlbumName(String albumName) {
+        this.albumName = albumName;
     }
 }

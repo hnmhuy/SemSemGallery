@@ -46,11 +46,11 @@ public class AlbumRecyclerAdapter extends RecyclerView.Adapter<AlbumRecyclerAdap
     public void onBindViewHolder(@NonNull AlbumRecyclerAdapter.ViewHolder holder, int position) {
         Album album = albumList.get(position);
         Glide.with(context)
-                .load(album.getImgWall())
+                .load(album.getWallId())
                 .fitCenter()
                 .into(holder.imageView);
         holder.albumName.setText(album.getName());
-        holder.albumQuantity.setText(String.valueOf(album.getSize()));
+        holder.albumQuantity.setText(String.valueOf(album.getCount()));
         holder.setAlbumId(album.getAlbumId());
     }
 

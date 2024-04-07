@@ -92,11 +92,12 @@
     <string name="add_tag"># Add tag</string>
 
     <!--    Recently deleted screen-->
-    <string name="trash_description">Pictures deleted from Gallery, My Files, and some third party apps stay in the Trash for 30 days before being permanently deleted.</string>
+    <string name="trash_description">This feature can get the pictures which is trashed by this app only. Please use the default gallery for access all trash pictures.</string>
     <string name="empty">Empty</string>
     <string name="select_items">Select items</string>
     <string name="all">All</string>
     <string name="selected">selected</string>
+    <string name="restore">Restore</string>
 
 
     <!--    DateTimePicker -->

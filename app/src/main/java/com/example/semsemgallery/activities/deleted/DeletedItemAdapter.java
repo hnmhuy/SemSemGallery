@@ -1,6 +1,7 @@
 package com.example.semsemgallery.activities.deleted;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,13 +13,23 @@ import com.bumptech.glide.Glide;
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.models.Picture;
+import com.example.semsemgallery.models.TrashedPicture;
+
+import org.checkerframework.common.value.qual.StringVal;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
+import java.util.Date;
 
 public class DeletedItemAdapter extends RecyclerView.Adapter<DeletedViewHolder> {
 
-    private final ObservableGridMode<Picture> observedObj;
+    private final ObservableGridMode<TrashedPicture> observedObj;
     private final Context context;
 
-    public DeletedItemAdapter(ObservableGridMode<Picture> obj, Context context) {
+    public DeletedItemAdapter(ObservableGridMode<TrashedPicture> obj, Context context) {
         this.observedObj = obj;
         this.context = context;
     }
@@ -33,10 +44,20 @@ public class DeletedItemAdapter extends RecyclerView.Adapter<DeletedViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull DeletedViewHolder holder, int position) {
-        ObservableGridMode<Picture>.DataItem data = observedObj.getDataAt(position);
+        ObservableGridMode<TrashedPicture>.DataItem data = observedObj.getDataAt(position);
         holder.selector.setChecked(data.isSelected);
         //new ThumbnailLoader(holder.thumbnail).execute(data.data.getPath());
         Glide.with(context).load(data.data.getPath()).centerCrop().into(holder.thumbnail);
+        holder.remainingDate.setText(calRemainingDate(data.data.getExpired()));
+    }
+
+    private String calRemainingDate(Date expired) {
+        LocalDate currentDate = LocalDate.now();
+        Instant instant = expired.toInstant();
+        ZoneId zoneId = ZoneId.systemDefault();
+        LocalDate expiredDate = instant.atZone(zoneId).toLocalDate();
+        long daysDifference = ChronoUnit.DAYS.between(currentDate, expiredDate);
+        return String.valueOf(daysDifference - 1) + " day(s)";
     }
 
     @Override

@@ -109,7 +109,7 @@ public class MediaRetriever {
                         for (int i = 0; i < albumListTmp.size(); i++) {
                             if (Objects.equals(albumListTmp.get(i).getAlbumId(), albumId)) {
                                 checkPresent = true;
-                                albumListTmp.get(i).setSize(albumListTmp.get(i).getSize() + 1);
+                                albumListTmp.get(i).setCount(albumListTmp.get(i).getCount() + 1);
                                 break;
                             }
                         }
@@ -118,7 +118,7 @@ public class MediaRetriever {
                     if(!checkPresent) {
                         Log.d("Image path", imgWall);
                         Album album = new Album(albumId, imgWall, albumName);
-                        album.setSize(1);
+                        album.setCount(1);
                         albumListTmp.add(album);
                     }
                 }

@@ -23,7 +23,11 @@ public abstract class SelectableItem<DataType> extends RecyclerView.ViewHolder i
         itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                observedObj.setGridMode(SELECTING);
+                if (observedObj.getCurrentMode() == NORMAL) {
+                    observedObj.setGridMode(SELECTING);
+                    observedObj.selectItemAt(getAbsoluteAdapterPosition());
+                    selector.setChecked(true);
+                }
                 return true;
             }
         });
@@ -57,6 +61,11 @@ public abstract class SelectableItem<DataType> extends RecyclerView.ViewHolder i
     public void onSelectingAll(GridModeEvent event) {
         this.selector.setVisibility(View.VISIBLE);
         this.selector.setChecked(event.getNewSelectionForAll());
+        this.observedObj.getObservedObjects().get(getAbsoluteAdapterPosition()).isSelected = event.getNewSelectionForAll();
+    }
+
+    @Override
+    public void onSelectionChange(GridModeEvent event) {
 
     }
 }
