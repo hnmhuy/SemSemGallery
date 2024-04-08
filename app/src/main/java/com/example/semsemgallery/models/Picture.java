@@ -3,8 +3,6 @@ package com.example.semsemgallery.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.google.type.DateTime;
-
 import java.util.Date;
 
 public class Picture implements Parcelable {
@@ -12,6 +10,7 @@ public class Picture implements Parcelable {
     private String path;
     private String fileName;
     private Date dateTaken;
+    private String albumID;
     private boolean isFav;
     private long fileSize; // in byte
     private String albumID;
@@ -32,11 +31,13 @@ public class Picture implements Parcelable {
         albumID = in.readString();
         isFav = in.readByte() != 0;
     }
+
     public static final Creator<Picture> CREATOR = new Creator<Picture>() {
         @Override
         public Picture createFromParcel(Parcel in) {
             return new Picture(in);
         }
+
         @Override
         public Picture[] newArray(int size) {
             return new Picture[size];

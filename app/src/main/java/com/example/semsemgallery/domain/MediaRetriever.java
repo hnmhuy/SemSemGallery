@@ -1,6 +1,7 @@
 package com.example.semsemgallery.domain;
 
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
