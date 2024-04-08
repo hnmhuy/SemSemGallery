@@ -1,34 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/selectable_image"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:maxHeight="180dp"
     android:maxWidth="180dp"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/selectable_image"
+    android:maxHeight="180dp"
     android:orientation="vertical">
 
     <ImageView
-        android:contentDescription="@string/image"
+        android:id="@+id/thumbnail"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/thumbnail"
         android:adjustViewBounds="true"
+        android:contentDescription="@string/image"
         android:scaleType="centerCrop"
         android:src="@drawable/anya" />
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/overlay"
-        android:visibility="invisible"
-        android:gravity="top"
-        android:background="#30000000">
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/selector"
+        android:layout_width="30dp"
+        android:layout_height="30dp" />
 
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/selector"
-            android:layout_width="30dp"
-            android:layout_height="30dp" />
-
-    </RelativeLayout>
 </RelativeLayout>

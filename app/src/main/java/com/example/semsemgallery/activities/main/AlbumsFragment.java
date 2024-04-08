@@ -21,8 +21,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.album.AlbumViewActivity;
 import com.example.semsemgallery.activities.main.adapter.AlbumRecyclerAdapter;
-import com.example.semsemgallery.models.Album;
+import com.example.semsemgallery.domain.Album.AlbumHandler;
 import com.example.semsemgallery.domain.MediaRetriever;
+import com.example.semsemgallery.models.Album;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
@@ -131,7 +132,7 @@ public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnA
         // ====== Listener for CreateButton in InputDialog clicked
         createBtn.setOnClickListener(v -> {
             String albumName = inputName.getText().toString();
-            MediaRetriever.createAlbum(requireContext(), albumName);
+            AlbumHandler.createAlbum(requireContext(), albumName);
             dialog.dismiss();
         });
     }

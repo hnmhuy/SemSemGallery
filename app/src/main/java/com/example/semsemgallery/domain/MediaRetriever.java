@@ -6,17 +6,14 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.semsemgallery.models.Album;
 import com.example.semsemgallery.models.Picture;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -48,9 +45,9 @@ public class MediaRetriever {
                 null,
                 MediaStore.Images.Media.DATE_ADDED + " DESC");
 
-        if(cursor != null) {
+        if (cursor != null) {
             try {
-                while(cursor.moveToNext()){
+                while (cursor.moveToNext()) {
                     String path = cursor.getString((cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)));
                     String name = cursor.getString((cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)));
                     String albumID = cursor.getString((cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_ID)));
@@ -98,7 +95,7 @@ public class MediaRetriever {
         };
         Cursor cursor = activity.getContentResolver().query(uri, projection, null, null, null);
 
-        if(cursor != null) {
+        if (cursor != null) {
             try {
                 while (cursor.moveToNext()) {
                     boolean checkPresent = false;
@@ -106,7 +103,7 @@ public class MediaRetriever {
                     String albumId = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_ID));
                     String albumName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME));
                     // Create an Album object and add it to the list if it's not already present
-                    if(!albumListTmp.isEmpty()) {
+                    if (!albumListTmp.isEmpty()) {
                         for (int i = 0; i < albumListTmp.size(); i++) {
                             if (Objects.equals(albumListTmp.get(i).getAlbumId(), albumId)) {
                                 checkPresent = true;
@@ -116,7 +113,7 @@ public class MediaRetriever {
                         }
                     }
 
-                    if(!checkPresent) {
+                    if (!checkPresent) {
                         Log.d("Image path", imgWall);
                         Album album = new Album(albumId, imgWall, albumName);
                         album.setCount(1);
@@ -130,6 +127,10 @@ public class MediaRetriever {
         this.albumList = albumListTmp;
 
         return albumList;
+    }
+
+    public void setAlbumList(List<Album> albumList) {
+        this.albumList = albumList;
     }
 
     public List<Picture> getFavoriteAlbumList() {
@@ -147,9 +148,9 @@ public class MediaRetriever {
                 null,
                 MediaStore.Images.Media.DATE_ADDED + " DESC");
 
-        if(cursor != null) {
+        if (cursor != null) {
             try {
-                while(cursor.moveToNext()){
+                while (cursor.moveToNext()) {
                     String path = cursor.getString((cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)));
                     String name = cursor.getString((cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)));
                     String albumID = cursor.getString((cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_ID)));
@@ -166,37 +167,4 @@ public class MediaRetriever {
         return pictureList;
     }
 
-    public void setAlbumList(List<Album> albumList) {
-        this.albumList = albumList;
-    }
-
-    public static void createAlbum(Context context, String albumName) {
-        // Get DCIM Folder in device
-        File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-        // Create Album
-        File newAlbumDirectory = new File(dcimDirectory, albumName);
-
-        // Check exists
-        if (!newAlbumDirectory.exists()) {
-            // If it doesnt exists, create new
-            if (newAlbumDirectory.mkdirs()) {
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.Images.Media.BUCKET_DISPLAY_NAME, albumName);
-                values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
-
-                ContentResolver resolver = context.getContentResolver();
-                Uri uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
-                if (uri != null) {
-                    Toast.makeText(context, "Album created successfully", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(context, "Failed to create album", Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                Toast.makeText(context, "Failed to create album directory", Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            Toast.makeText(context, "Album already exists", Toast.LENGTH_SHORT).show();
-        }
-    }
 }
