@@ -8,7 +8,7 @@ import java.io.File;
 
 public class AlbumHandler {
 
-    public static void createAlbum(Context context, String albumName) {
+    public static boolean checkAlbumExists(Context context, String albumName) {
         // Get DCIM Folder in device
         File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
         // Get Album with name as albumName
@@ -17,17 +17,10 @@ public class AlbumHandler {
         // Check exists
         if (newAlbumDirectory.exists()) {
             Toast.makeText(context, "Album already exists", Toast.LENGTH_SHORT).show();
+            return true;
         }
-        else {
-            Toast.makeText(context, albumName, Toast.LENGTH_SHORT).show();
-
-            // Photo Picker
-
-        }
-
-
+        return false;
     }
-
 
 
 }
