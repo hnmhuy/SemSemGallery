@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +42,7 @@ public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnA
     private ArrayList<Uri> selectedImages;
     private String newAlbumName;
     private com.google.android.material.appbar.MaterialToolbar topBar;
+    private Context applicationContext;
 
     // ====== Activity Result Launcher for Photo Picker
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
@@ -56,11 +58,13 @@ public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnA
                             Uri imageUri = result.getData().getClipData().getItemAt(i).getUri();
                             selectedImages.add(imageUri);
                         }
+
+                        // ====== Open AlbumHandler Dialog after picking images
+                        showAlbumHandlerDialog();
                     }
                 }
             }
     );
-
 
     @Nullable
     @Override
@@ -83,6 +87,7 @@ public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnA
         topBar = view.findViewById(R.id.fragment_albums_topAppBar);
 
         selectedImages = new ArrayList<>();
+        applicationContext = requireContext();
 
         return view;
     }
@@ -167,14 +172,13 @@ public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnA
             // If not exists -> Open Photo Picker
             if (!AlbumHandler.checkAlbumExists(requireContext(), newAlbumName)) {
                 Intent photoPickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                // Intent photoPickerIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 photoPickerIntent.setType("image/*");
                 photoPickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 activityResultLauncher.launch(photoPickerIntent);
             }
 
             dialog.dismiss();
-
-            showAlbumHandlerDialog();
         });
     }
 
@@ -184,7 +188,7 @@ public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnA
         View dialogView = getLayoutInflater().inflate(R.layout.component_album_handler_dialog, null);
 
         // Create a MaterialAlertDialogBuilder with the dialog view
-        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(requireContext())
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(applicationContext)
                 .setView(dialogView);
 
         // Show the dialog
@@ -202,17 +206,17 @@ public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnA
 
         // ====== Listener for CopyButton in AlbumHandlerDialog clicked
         copyBtn.setOnClickListener(v -> {
-            Log.d("ALBUM HANDLER", "COPY");
-            Log.d("ALBUM HANDLER", selectedImages.size() + " images");
-
-
+            if (selectedImages != null && !selectedImages.isEmpty()) {
+                AlbumHandler.copyImagesToAlbum(applicationContext, selectedImages, newAlbumName);
+            } else {
+                Toast.makeText(applicationContext, "No images selected", Toast.LENGTH_SHORT).show();
+            }
+             dialog.dismiss();
         });
 
         // ====== Listener for MoveButton in AlbumHandlerDialog clicked
         moveBtn.setOnClickListener(v -> {
             Log.d("ALBUM HANDLER", "MOVE");
-
-
         });
     }
 
