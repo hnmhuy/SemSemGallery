@@ -6,10 +6,13 @@ import android.content.ContentValues
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.provider.Settings
+
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
@@ -162,22 +165,34 @@ class PictureViewActivity : AppCompatActivity() {
         toggleFavorite(isFavorite, favBtn);
 
         favBtn.setOnClickListener {
-            showMessage("Click")
-            val contentUri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-            val values = ContentValues().apply {
-                put(MediaStore.Images.Media.IS_FAVORITE, !isFavorite);
+
+            var isStorageManager = false
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                isStorageManager = Environment.isExternalStorageManager()
             }
 
-            val contentResolver: ContentResolver = applicationContext.contentResolver;
-            contentResolver.update(
-                contentUri,
-                values,
-                "${MediaStore.Images.Media.DATA}=?",
-                arrayOf(filePath)
-            );
-            isFavorite = !isFavorite
-            pictureList[position].isFav = isFavorite
-            toggleFavorite(isFavorite, favBtn);
+            if (isStorageManager) {
+                val contentUri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                val values = ContentValues().apply {
+                    put(MediaStore.Images.Media.IS_FAVORITE, !isFavorite);
+                }
+
+                val contentResolver: ContentResolver = applicationContext.contentResolver;
+                contentResolver.update(
+                    contentUri,
+                    values,
+                    "${MediaStore.Images.Media.DATA}=?",
+                    arrayOf(filePath)
+                );
+                isFavorite = !isFavorite
+                pictureList[position].isFav = isFavorite
+                toggleFavorite(isFavorite, favBtn);
+            } else {
+
+                val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                startActivity(intent)
+            }
+
         }
     }
 
@@ -193,7 +208,7 @@ class PictureViewActivity : AppCompatActivity() {
             favBtn.setColorFilter(color)
         } else {
             favBtn.setImageResource(R.drawable.ic_heart)
-            val color = ContextCompat.getColor(applicationContext, R.color.black)
+            val color = ContextCompat.getColor(applicationContext, R.color.picture_view_bottom_bar_bg)
             favBtn.setColorFilter(color)
         }
     }
