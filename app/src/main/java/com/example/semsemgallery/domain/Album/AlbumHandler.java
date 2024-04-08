@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 public class AlbumHandler {
 
+    // ====== Check if Album Exists
     public static boolean checkAlbumExists(Context context, String albumName) {
         if (albumName == null || albumName.isEmpty()) {
             Toast.makeText(context, "Album name cannot be empty", Toast.LENGTH_SHORT).show();
@@ -36,6 +37,7 @@ public class AlbumHandler {
         return false;
     }
 
+    // ====== Copy Images to Album (If Album doesn't exist, create new album)
     public static void copyImagesToAlbum(Context context, ArrayList<Uri> imageUris, String albumName) {
         // Get DCIM Folder in device
         File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
@@ -63,7 +65,7 @@ public class AlbumHandler {
                 if (inputStream != null) {
                     copyFile(inputStream, destFile);
                     Log.d("Copied", "File " + fileName);
-                    inputStream.close();
+                    inputStream.close(); // Close the InputStream
                 } else {
                     Log.d("Error", "Failed to open InputStream for " + fileName);
                 }
@@ -76,6 +78,57 @@ public class AlbumHandler {
         Toast.makeText(context, "Copy successfully to " + albumName, Toast.LENGTH_SHORT).show();
     }
 
+    // ====== Move Images to Album (If Album doesn't exist, create new album)
+    public static void moveImagesToAlbum(Context context, ArrayList<Uri> imageUris, String albumName) {
+        // Get DCIM Folder in device
+        File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+        // Get Album with name as albumName
+        File albumDirectory = new File(dcimDirectory, albumName);
+
+        // Create the album directory if it doesn't exist
+        if (!albumDirectory.exists()) {
+            albumDirectory.mkdirs();
+        }
+
+        // Move images to the album directory
+        for (Uri imageUri : imageUris) {
+            try {
+                String fileName = getFileName(context, imageUri);
+                File destFile = new File(albumDirectory, fileName);
+
+                // Check if the file already exists in the destination directory
+                if (destFile.exists()) {
+                    Log.d("Skipped", "File " + fileName + " already exists in the destination directory");
+                    continue;
+                }
+
+                InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
+                if (inputStream != null) {
+                    copyFile(inputStream, destFile);
+                    Log.d("Moved", "File " + fileName);
+                    inputStream.close(); // Close the InputStream
+
+                    // Delete the original file
+                    deleteImage(context, imageUri);
+                    Log.d("Deleted", "File " + fileName);
+                } else {
+                    Log.d("Error", "Failed to open InputStream for " + fileName);
+                }
+            } catch (IOException e) {
+                Toast.makeText(context, "Failed to move images", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
+        }
+
+        Toast.makeText(context, "Move successfully to " + albumName, Toast.LENGTH_SHORT).show();
+    }
+
+    // ====== Delete Image
+    private static void deleteImage(Context context, Uri imageUri) {
+        context.getContentResolver().delete(imageUri, null, null);
+    }
+
+    // ====== Get File Name from Uri
     private static String getFileName(Context context, Uri uri) {
         String fileName = null;
         String scheme = uri.getScheme();
@@ -92,6 +145,7 @@ public class AlbumHandler {
         return fileName;
     }
 
+    // ====== Copy File
     private static void copyFile(InputStream inputStream, File destFile) throws IOException {
         OutputStream outputStream = null;
         try {
@@ -104,7 +158,7 @@ public class AlbumHandler {
         } finally {
             if (outputStream != null) {
                 try {
-                    outputStream.close();
+                    outputStream.close(); // Close the OutputStream
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

@@ -60,7 +60,12 @@ public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnA
                         }
 
                         // ====== Open AlbumHandler Dialog after picking images
-                        showAlbumHandlerDialog();
+                        if (selectedImages.size() > 0) {
+                            showAlbumHandlerDialog();
+                        }
+                        else {
+                            Toast.makeText(applicationContext, "No images selected", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
             }
@@ -206,17 +211,14 @@ public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnA
 
         // ====== Listener for CopyButton in AlbumHandlerDialog clicked
         copyBtn.setOnClickListener(v -> {
-            if (selectedImages != null && !selectedImages.isEmpty()) {
-                AlbumHandler.copyImagesToAlbum(applicationContext, selectedImages, newAlbumName);
-            } else {
-                Toast.makeText(applicationContext, "No images selected", Toast.LENGTH_SHORT).show();
-            }
-             dialog.dismiss();
+            AlbumHandler.copyImagesToAlbum(applicationContext, selectedImages, newAlbumName);
+            dialog.dismiss();
         });
 
         // ====== Listener for MoveButton in AlbumHandlerDialog clicked
         moveBtn.setOnClickListener(v -> {
-            Log.d("ALBUM HANDLER", "MOVE");
+            AlbumHandler.moveImagesToAlbum(applicationContext, selectedImages, newAlbumName);
+            dialog.dismiss();
         });
     }
 
