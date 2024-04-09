@@ -21,10 +21,12 @@ public class PermissionHandler {
         this.requestPermissionLauncher = launcher;
     }
 
+
     public void checkAndRequestPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             String[] permissions = new String[]{
                     Manifest.permission.READ_MEDIA_IMAGES,
+                    Manifest.permission.CAMERA
             };
 
             List<String> permissionsToRequest = new ArrayList<>();
