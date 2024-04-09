@@ -12,8 +12,7 @@ public class Picture implements Parcelable {
     private Date dateTaken;
     private String albumID;
     private boolean isFav;
-    private long fileSize; // in byte
-    private String albumID;
+    private long fileSize;
     private String albumName;
 
     public Picture(String path, String fileName, Date dateAdded, String albumID, boolean isFav) {
