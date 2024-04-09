@@ -1,12 +1,20 @@
 package com.example.semsemgallery.domain;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 import android.widget.Toast;
+
+import com.example.semsemgallery.activities.search.SearchViewActivity;
+import com.example.semsemgallery.models.Tag;
+
+import java.io.File;
+import java.util.ArrayList;
 
 public class TagUtils extends SQLiteOpenHelper {
     private final Context mContext;
@@ -26,25 +34,33 @@ public class TagUtils extends SQLiteOpenHelper {
     public static final String COLUMN_TAGNAME = "TAGNAME";
 
     // Script creates Table PICTURETAG
-    private static final String CREATE_TABLE_PICTURETAG = String.format(
-            "CREATE TABLE %s(%s TEXT PRIMARY KEY,%s INTEGER PRIMARY)",
-            TABLE_PICTURETAG,
-            COLUMN_PICTUREID,
-            COLUMN_TAGID_PICTURETAG);
+    private static final String CREATE_TABLE_TAG = "CREATE TABLE " + TABLE_TAG + "("
+            + COLUMN_TAGID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+            + COLUMN_TAGNAME + " TEXT"
+            + ")";
+    private static final String CREATE_TABLE_PICTURETAG = "CREATE TABLE " + TABLE_PICTURETAG + "("
+            + COLUMN_PICTUREID + " TEXT,"
+            + COLUMN_TAGID_PICTURETAG + " INTEGER,"
+            + "PRIMARY KEY (" + COLUMN_PICTUREID + ", " + COLUMN_TAGID_PICTURETAG + ")"
+            + ")";
+//    private static final String CREATE_TABLE_PICTURETAG = String.format(
+//            "CREATE TABLE %s(%s TEXT PRIMARY KEY,%s INTEGER PRIMARY)",
+//            TABLE_PICTURETAG,
+//            COLUMN_PICTUREID,
+//            COLUMN_TAGID_PICTURETAG);
 
     // Script creates Table TAG
-    private static final String CREATE_TABLE_TAG = String.format(
-            "CREATE TABLE %s(%s INTEGER PRIMARY KEY AUTOINCREMENT,%s TEXT)",
-            TABLE_TAG,
-            COLUMN_TAGID,
-            COLUMN_TAGNAME);
+//    private static final String CREATE_TABLE_TAG = String.format(
+//            "CREATE TABLE %s(%s INTEGER PRIMARY KEY AUTOINCREMENT,%s TEXT)",
+//            TABLE_TAG,
+//            COLUMN_TAGID,
+//            COLUMN_TAGNAME);
 
     // Constructor
     public TagUtils(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         mContext = context;
     }
-
 
     @Override
     public void onCreate(SQLiteDatabase db) {
@@ -53,6 +69,7 @@ public class TagUtils extends SQLiteOpenHelper {
             db.execSQL(CREATE_TABLE_TAG);
             Toast.makeText(mContext, "Create database successfully", Toast.LENGTH_SHORT).show();
         } catch (SQLException e) {
+            Log.e("SearchViewActivity",e.toString());
             Toast.makeText(mContext, "Create database failed", Toast.LENGTH_SHORT).show();
         }
     }
@@ -71,7 +88,18 @@ public class TagUtils extends SQLiteOpenHelper {
 
     // Get Database
     public SQLiteDatabase myGetDatabase(Context context) {
-        return this.getWritableDatabase();
+//        return this.getWritableDatabase();
+        SQLiteDatabase db;
+
+        File dbFile = context.getDatabasePath(DATABASE_NAME);
+        if (dbFile.exists()) {
+            db = getReadableDatabase();
+        } else {
+            db = getWritableDatabase();
+        }
+
+        return db;
+
     }
 
 
@@ -117,12 +145,41 @@ public class TagUtils extends SQLiteOpenHelper {
         return db.query(TABLE_PICTURETAG, null, COLUMN_PICTUREID + " = ?", new String[]{pictureId}, null, null, null);
     }
 
-    public Cursor getAllTags(SQLiteDatabase db) {
-        return db.query(TABLE_TAG, null, null, null, null, null, null);
+    public ArrayList<Tag> getAllTags(SQLiteDatabase db) {
+//        return db.query(TABLE_TAG, null, null, null, null, null, null);
+        ArrayList<Tag> tags = new ArrayList<>();
+        String query = "SELECT * FROM " + TABLE_TAG;
+        Cursor cursor = db.rawQuery(query, null);
+
+
+        if(cursor != null && cursor.moveToFirst()){
+            do{
+                @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex(COLUMN_TAGID));
+                @SuppressLint("Range") String tagName = cursor.getString(cursor.getColumnIndex(COLUMN_TAGNAME));
+                Tag tag = new Tag(id, tagName);
+                tags.add(tag);
+            }while (cursor.moveToNext());
+        }
+        cursor.close();
+        return tags;
     }
 
-    public Cursor getAllPictureTags(SQLiteDatabase db) {
-        return db.query(TABLE_PICTURETAG, null, null, null, null, null, null);
+    public ArrayList<Tag> getAllPictureTags(SQLiteDatabase db) {
+        ArrayList<Tag> tags = new ArrayList<>();
+        String query = "SELECT * FROM " + TABLE_TAG;
+        Cursor cursor = db.rawQuery(query, null);
+
+
+        if(cursor != null && cursor.moveToFirst()){
+            do{
+                @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex(COLUMN_TAGID));
+                @SuppressLint("Range") String tagName = cursor.getString(cursor.getColumnIndex(COLUMN_TAGNAME));
+                Tag tag = new Tag(id, tagName);
+                tags.add(tag);
+            }while (cursor.moveToNext());
+        }
+        cursor.close();
+        return tags;
     }
 
     public Cursor getTagByName(SQLiteDatabase db, String tagName) {
@@ -152,5 +209,39 @@ public class TagUtils extends SQLiteOpenHelper {
     public Cursor getTagIdByPictureId(SQLiteDatabase db, String pictureId) {
         return db.query(TABLE_PICTURETAG, new String[]{COLUMN_TAGID_PICTURETAG}, COLUMN_PICTUREID + " = ?", new String[]{pictureId}, null, null, null);
     }
+    public Tag searchTag(SQLiteDatabase db, String keyword){
+        String selectionArgs = "%" + keyword + "%";
+
+        String query = "SELECT * FROM " + TABLE_TAG + " WHERE " + COLUMN_TAGNAME + " LIKE ?";
+        Cursor cursor = db.rawQuery(query, new String[]{selectionArgs});
+
+        Tag tag = null;
+        if(cursor != null && cursor.moveToFirst()) {
+            @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex(COLUMN_TAGID));
+            @SuppressLint("Range") String tagName = cursor.getString(cursor.getColumnIndex(COLUMN_TAGNAME));
+            tag = new Tag(id, tagName);
+        }
+
+        if(cursor != null) {
+            cursor.close();
+        }
+
+        return tag;
+    }
 
 }
+
+//    String query = "SELECT * FROM " + TABLE_TAG;
+//    Cursor cursor = db.rawQuery(query, null);
+//
+//
+//        if(cursor != null && cursor.moveToFirst()){
+//                do{
+//@SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex(COLUMN_TAGID));
+//@SuppressLint("Range") String tagName = cursor.getString(cursor.getColumnIndex(COLUMN_TAGNAME));
+//        Tag tag = new Tag(id, tagName);
+//        tags.add(tag);
+//        }while (cursor.moveToNext());
+//        }
+//        cursor.close();
+//        return tags;
