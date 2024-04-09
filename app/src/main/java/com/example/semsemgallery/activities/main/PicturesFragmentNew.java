@@ -23,6 +23,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.example.semsemgallery.R;
+import com.example.semsemgallery.activities.base.GridMode;
+import com.example.semsemgallery.activities.base.ObservableGridMode;
+import com.example.semsemgallery.activities.main.adapter.GalleryAdapter;
+import com.example.semsemgallery.activities.main.viewholders.DateHeaderItem;
+import com.example.semsemgallery.activities.main.viewholders.GalleryItem;
 import com.example.semsemgallery.domain.Picture.PictureLoadMode;
 import com.example.semsemgallery.domain.Picture.PictureLoader;
 import com.example.semsemgallery.models.Picture;
@@ -92,11 +97,11 @@ public class PicturesFragmentNew extends Fragment {
         return cal1.equals(cal2);
     }
 
-    private final TreeSet<Picture> sortedlist = new TreeSet<>();
+    private final TreeSet<GalleryItem> galleryItems = new TreeSet<>(Comparator.reverseOrder());
     private final TreeSet<Long> header = new TreeSet<>(Comparator.reverseOrder());
-    private List<Long> headerItem = null;
-
-    private List<Picture> dataList = null;
+    private List<GalleryItem> dataList = null;
+    private ObservableGridMode<GalleryItem> observableGridMode = null;
+    private GalleryAdapter adapter = null;
 
 //    private final List<GalleryItem> dataList = new ArrayList<>();
 //    private final List<Picture> pictureList = new ArrayList<>();
@@ -142,30 +147,41 @@ public class PicturesFragmentNew extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_pictures, container, false);
-        /// GalleryAdapter adapter = new GalleryAdapter(context, observedData);
         RecyclerView recyclerView = view.findViewById(R.id.picture_recycler_view);
-
         StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL); // Adjust the span count as needed
         recyclerView.setLayoutManager(layoutManager);
+
 
         PictureLoader loader = new PictureLoader(context) {
             @Override
             public void onProcessUpdate(Picture... pictures) {
-                sortedlist.add(pictures[0]);
+                galleryItems.add(new GalleryItem(pictures[0]));
                 header.add(pictures[0].getDateInMillis());
             }
 
             @Override
             public void postExecute(Boolean res) {
-                dataList = new ArrayList<>(sortedlist);
-                headerItem = new ArrayList<>(header);
-                for (Picture pic : dataList) {
-                    Log.d("Picture", "P: " + pic.getDateTaken().toString() + " - " + pic.getDateInMillis());
-                }
+                List<Long> temp = new ArrayList<>(header);
+//
+//                for (Long i : temp) {
+//                    Log.e("Picture", "H" + i);
+//                }
 
-                for (Long item : headerItem) {
-                    Log.d("Picture", "H:" + item);
+                for (Long item : temp) {
+                    galleryItems.add(new GalleryItem(new DateHeaderItem(new Date(item * 1000000))));
                 }
+                dataList = new ArrayList<>(galleryItems);
+//                for(GalleryItem item: dataList) {
+//                    if (item.getData() instanceof Picture) {
+//                        Log.d("Picture", "P - " + item.getTime());
+//                    } else {
+//                        Log.e("Picture", "H - " + item.getTime());
+//                    }
+//                }
+                observableGridMode = new ObservableGridMode<>(dataList, GridMode.NORMAL);
+                adapter = new GalleryAdapter(context, observableGridMode);
+                recyclerView.setAdapter(adapter);
+
             }
         };
 
