@@ -1,7 +1,5 @@
 package com.example.semsemgallery.activities.main;
 
-import static android.app.Activity.RESULT_OK;
-
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -12,57 +10,49 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.main.adapter.PicturesByDateRecyclerAdapter;
+import com.example.semsemgallery.activities.search.SearchViewActivity;
 import com.example.semsemgallery.models.Picture;
 import com.example.semsemgallery.domain.MediaRetriever;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
 public class PicturesFragment extends Fragment {
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
     Uri finalUri;
-
     private Context applicationContext;
 
-    Uri image;
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
@@ -82,6 +72,11 @@ public class PicturesFragment extends Fragment {
                 }
             });
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+    @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         applicationContext = context.getApplicationContext();
@@ -94,7 +89,6 @@ public class PicturesFragment extends Fragment {
 
         ContentResolver contentResolver = applicationContext.getContentResolver();
         View view = inflater.inflate(R.layout.fragment_pictures, container, false);
-
         Map<LocalDate, List<Picture>> partitionedMap = new HashMap<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
@@ -124,6 +118,19 @@ public class PicturesFragment extends Fragment {
         PicturesByDateRecyclerAdapter adapter = new PicturesByDateRecyclerAdapter(picturesByDateAdded, appCompatActivity);
         recyclerView.setLayoutManager(new LinearLayoutManager(appCompatActivity));
         recyclerView.setAdapter(adapter);
+
+        MaterialToolbar toolbar = (MaterialToolbar) view.findViewById(R.id.topAppBar);
+
+        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if(item.getItemId() == R.id.search){
+                    startActivity(new Intent(getActivity().getApplicationContext(), SearchViewActivity.class));
+                    return true;
+                }
+                return false;
+            }
+        });
         openCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -137,6 +144,8 @@ public class PicturesFragment extends Fragment {
                 if(uri == null){
                     uri = MediaStore.Images.Media.INTERNAL_CONTENT_URI;
                 }
+
+
                 // Create an intent to capture an image
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 String img = String.valueOf(Calendar.getInstance().getTimeInMillis());
