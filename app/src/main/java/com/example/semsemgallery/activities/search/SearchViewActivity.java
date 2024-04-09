@@ -22,7 +22,6 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.semsemgallery.activities.interfaces.MainCallbacks;
 import com.example.semsemgallery.activities.people.PeopleAdapter;
 import com.example.semsemgallery.activities.people.SeeAllPeopleActivity;
 import com.example.semsemgallery.domain.TagUtils;
@@ -33,14 +32,13 @@ import com.google.android.material.appbar.MaterialToolbar;
 
 import java.util.ArrayList;
 
-public class SearchViewActivity extends AppCompatActivity implements MainCallbacks {
+public class SearchViewActivity extends AppCompatActivity {
     FragmentTransaction ft;
     ListView listView;
     String[] name = {"Nguyen", "Styx", "Drink"};
     String[] tagName;
     Tag searchResult;
     ArrayAdapter<String> arrayAdapter;
-    ChoosePeopleFragment choosePeopleFragment;
     SQLiteDatabase db;
     private ArrayList<Tag> tagData = new ArrayList<>();
     private RecyclerView recyclerView;
@@ -182,13 +180,6 @@ public class SearchViewActivity extends AppCompatActivity implements MainCallbac
     protected void onDestroy() {
         super.onDestroy();
         db.close();
-    }
-
-    @Override
-    public void onMsgFromFragToMain(String sender, People data ) {
-        if(sender.equals("List")) {
-            choosePeopleFragment.onMsgFromMainToFragment(data);
-        }
     }
 
     @Override

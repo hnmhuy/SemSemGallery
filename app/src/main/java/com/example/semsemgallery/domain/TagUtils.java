@@ -230,18 +230,3 @@ public class TagUtils extends SQLiteOpenHelper {
     }
 
 }
-
-//    String query = "SELECT * FROM " + TABLE_TAG;
-//    Cursor cursor = db.rawQuery(query, null);
-//
-//
-//        if(cursor != null && cursor.moveToFirst()){
-//                do{
-//@SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex(COLUMN_TAGID));
-//@SuppressLint("Range") String tagName = cursor.getString(cursor.getColumnIndex(COLUMN_TAGNAME));
-//        Tag tag = new Tag(id, tagName);
-//        tags.add(tag);
-//        }while (cursor.moveToNext());
-//        }
-//        cursor.close();
-//        return tags;
