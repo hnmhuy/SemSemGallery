@@ -8,6 +8,9 @@ import java.util.Locale;
 
 public class DateHeaderItem {
     private Date date;
+    private String dateFormatted;
+
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH);
 
     public DateHeaderItem(Date value) {
         Calendar c1 = Calendar.getInstance();
@@ -19,9 +22,15 @@ public class DateHeaderItem {
         c1.set(Calendar.MILLISECOND, 999);
 
         date = c1.getTime();
+
+        dateFormatted = dateFormat.format(date);
     }
 
     public Date getDate() {
         return date;
+    }
+
+    public String getDateFormatted() {
+        return dateFormatted;
     }
 }

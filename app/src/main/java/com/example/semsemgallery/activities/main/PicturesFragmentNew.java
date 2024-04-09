@@ -23,11 +23,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.example.semsemgallery.R;
-import com.example.semsemgallery.activities.base.GridMode;
-import com.example.semsemgallery.activities.base.ObservableGridMode;
-import com.example.semsemgallery.activities.main.adapter.GalleryAdapter;
-import com.example.semsemgallery.activities.main.viewholders.DateHeaderItem;
-import com.example.semsemgallery.activities.main.viewholders.GalleryItem;
 import com.example.semsemgallery.domain.Picture.PictureLoadMode;
 import com.example.semsemgallery.domain.Picture.PictureLoader;
 import com.example.semsemgallery.models.Picture;
@@ -37,13 +32,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.NavigableSet;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalInt;
+import java.util.TreeSet;
 
 public class PicturesFragmentNew extends Fragment {
     private static final int REQUEST_IMAGE_CAPTURE = 1;
@@ -98,97 +92,84 @@ public class PicturesFragmentNew extends Fragment {
         return cal1.equals(cal2);
     }
 
-    private final ObservableGridMode<GalleryItem> observedData = new ObservableGridMode<>(null, GridMode.NORMAL);
-    private final List<GalleryItem> dataList = new ArrayList<>();
-    private final List<Picture> pictureList = new ArrayList<>();
-    private final List<DateHeaderItem> headerItemList = new ArrayList<>();
+    private final TreeSet<Picture> sortedlist = new TreeSet<>();
+    private final TreeSet<Long> header = new TreeSet<>(Comparator.reverseOrder());
+    private List<Long> headerItem = null;
 
-    private int AddData(GalleryItem data) {
-        int pos = Collections.binarySearch(dataList, data, new GalleryItem.GalleryItemComparator().reversed());
-        pos = pos < 0 ? -pos - 1 : pos;
-        dataList.add(pos, data);
-        observedData.addData(data, pos);
-        return pos;
-    }
+    private List<Picture> dataList = null;
 
-    private DateHeaderItem AddDataHeaderList(Picture pic) {
-        Optional<DateHeaderItem> findingHeader = headerItemList.stream().filter(dateHeaderItem -> isDateEqual(pic.getDateTaken(), dateHeaderItem.getDate())).findFirst();
-        if (findingHeader.isPresent()) return null;
-        else {
-            DateHeaderItem newData = new DateHeaderItem(pic.getDateTaken());
-            int insertPosition = Collections.binarySearch(headerItemList, newData, Comparator.comparing(DateHeaderItem::getDate).reversed());
-            insertPosition = insertPosition < 0 ? -insertPosition - 1 : insertPosition;
-            headerItemList.add(insertPosition, newData);
-            return newData;
-        }
-    }
-
-    private void AddDataPictureList(Picture pic) {
-        int position = Collections.binarySearch(pictureList, pic, Comparator.comparing(Picture::getDateTaken).reversed());
-        position = position < 0 ? -position - 1 : position;
-        pictureList.add(position, pic);
-    }
-
-    private int AddData(Picture pic) {
-        AddDataPictureList(pic);
-        DateHeaderItem temp = AddDataHeaderList(pic);
-        if (temp != null) {
-            return AddData(new GalleryItem(temp));
-        }
-        return AddData(new GalleryItem(pic));
-    }
+//    private final List<GalleryItem> dataList = new ArrayList<>();
+//    private final List<Picture> pictureList = new ArrayList<>();
+//    private final List<DateHeaderItem> headerItemList = new ArrayList<>();
+//
+//    private int AddData(GalleryItem data) {
+//        int pos = Collections.binarySearch(dataList, data, new GalleryItem.GalleryItemComparator().reversed());
+//        pos = pos < 0 ? -pos - 1 : pos;
+//        dataList.add(pos, data);
+//        observedData.addData(data, pos);
+//        return pos;
+//    }
+//
+//    private DateHeaderItem AddDataHeaderList(Picture pic) {
+//        Optional<DateHeaderItem> findingHeader = headerItemList.stream().filter(dateHeaderItem -> isDateEqual(pic.getDateTaken(), dateHeaderItem.getDate())).findFirst();
+//        if (findingHeader.isPresent()) return null;
+//        else {
+//            DateHeaderItem newData = new DateHeaderItem(pic.getDateTaken());
+//            int insertPosition = Collections.binarySearch(headerItemList, newData, Comparator.comparing(DateHeaderItem::getDate).reversed());
+//            insertPosition = insertPosition < 0 ? -insertPosition - 1 : insertPosition;
+//            headerItemList.add(insertPosition, newData);
+//            return newData;
+//        }
+//    }
+//
+//    private void AddDataPictureList(Picture pic) {
+////        int position = Collections.binarySearch(pictureList, pic, Comparator.comparing(Picture::getDateTaken).reversed());
+////        position = position < 0 ? -position - 1 : position;
+////        pictureList.add(position, pic);
+//        pictureList.add(pic);
+//    }
+//
+//    private void AddData(Picture pic) {
+//        AddDataPictureList(pic);
+//        DateHeaderItem temp = AddDataHeaderList(pic);
+//        if (temp != null) {
+//            AddData(new GalleryItem(temp));
+//        }
+//        AddData(new GalleryItem(pic));
+//    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_pictures, container, false);
-        GalleryAdapter adapter = new GalleryAdapter(context, observedData);
+        /// GalleryAdapter adapter = new GalleryAdapter(context, observedData);
         RecyclerView recyclerView = view.findViewById(R.id.picture_recycler_view);
 
         StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL); // Adjust the span count as needed
         recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(adapter);
 
         PictureLoader loader = new PictureLoader(context) {
             @Override
             public void onProcessUpdate(Picture... pictures) {
-                AddDataPictureList(pictures[0]);
-                DateHeaderItem temp = AddDataHeaderList(pictures[0]);
-                if (temp != null) {
-                    adapter.notifyItemInserted(AddData(new GalleryItem(temp)));
-                }
-
-                adapter.notifyItemInserted(AddData(new GalleryItem(pictures[0])));
+                sortedlist.add(pictures[0]);
+                header.add(pictures[0].getDateInMillis());
             }
 
             @Override
             public void postExecute(Boolean res) {
+                dataList = new ArrayList<>(sortedlist);
+                headerItem = new ArrayList<>(header);
+                for (Picture pic : dataList) {
+                    Log.d("Picture", "P: " + pic.getDateTaken().toString() + " - " + pic.getDateInMillis());
+                }
 
+                for (Long item : headerItem) {
+                    Log.d("Picture", "H:" + item);
+                }
             }
         };
 
         loader.execute(PictureLoadMode.ALL.toString());
-//        PictureLoader loader = new PictureLoader(context) {
-//            @Override
-//            public void onProcessUpdate(Picture... pictures) {
-//                 adapter.notifyItemInserted(addPicture(pictures[0]));
-//            }
-//
-//            @Override
-//            public void postExecute(Boolean res) {
-//                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-//                Log.d("Loader", "Completed with " + observedData.getDataSize() + "items");
-//                for (ObservableGridMode<Object>.DataItem item : observedData.getObservedObjects()) {
-//                    if (item.data instanceof DateHeaderItem) {
-//                        DateHeaderItem data = ((DateHeaderItem) item.data);
-//                        Log.e("Loader", "Header: " + data.getDate().toString() + " - " + data.getItemCount() + "-" + data.getIndex());
-//                    } else if (item.data instanceof Picture) {
-//                        Log.i("Loader", "Photo: " + ((Picture) item.data).getDateTaken().toString() + " - " + ((Picture) item.data).getPictureId() + ((Picture) item.data).getFileSize() );
-//                    }
-//                }
-//            }
-//        };
-//        loader.execute(PictureLoadMode.ALL.toString());
 
         return view;
     }

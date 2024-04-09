@@ -45,7 +45,7 @@ public abstract class PictureLoader extends TaskBase<String, Picture, Boolean> {
     private static String TRASH_SELECTOR = MediaStore.Images.Media.IS_TRASHED + "=?";
     private static String TRASHED_SELECTOR = MediaStore.Images.Media.IS_TRASHED + "= ?";
     private static String BY_ALBUM = MediaStore.Images.Media.BUCKET_ID + "=?";
-    private static String ORDER_DEFAULT = MediaStore.Images.Media.DATE_TAKEN + " DESC, " + MediaStore.Images.Media.DATE_ADDED + " DESC";
+    private static String ORDER_DEFAULT = MediaStore.Images.Media.DATE_TAKEN + " DESC";
     private static String ORDER_TRASHED = MediaStore.Images.Media.DATE_MODIFIED + " ASC";
 
     public PictureLoader(Context _context) {
