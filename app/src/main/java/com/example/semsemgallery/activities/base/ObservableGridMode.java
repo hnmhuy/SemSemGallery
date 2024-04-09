@@ -64,6 +64,16 @@ public class ObservableGridMode<DataType> {
         }
     }
 
+    public List<DataType> getAllSelectedItems() {
+        List<DataType> selectedItems = new ArrayList<>();
+        for (DataItem item : observedObjects) {
+            if (item.isSelected) {
+                selectedItems.add(item.data);
+            }
+        }
+        return selectedItems;
+    }
+
     public void fireSelectionChangeForAll(boolean selectionForAll) {
 
         // Set for all data

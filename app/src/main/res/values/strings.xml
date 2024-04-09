@@ -114,6 +114,10 @@
     <string name="lock_and_home_screens">Lock and Home screens</string>
     <string name="home_screen">Home screen</string>
     <string name="lock_screen">Lock screen</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
 
 
 </resources>
