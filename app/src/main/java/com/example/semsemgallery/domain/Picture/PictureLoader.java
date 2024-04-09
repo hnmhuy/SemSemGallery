@@ -3,6 +3,7 @@ package com.example.semsemgallery.domain.Picture;
 import android.content.Context;
 import android.database.Cursor;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import com.example.semsemgallery.domain.TaskBase;
 import com.example.semsemgallery.models.Picture;
@@ -44,8 +45,8 @@ public abstract class PictureLoader extends TaskBase<String, Picture, Boolean> {
     private static String TRASH_SELECTOR = MediaStore.Images.Media.IS_TRASHED + "=?";
     private static String TRASHED_SELECTOR = MediaStore.Images.Media.IS_TRASHED + "= ?";
     private static String BY_ALBUM = MediaStore.Images.Media.BUCKET_ID + "=?";
-    private static String ORDER_DEFAULT = MediaStore.Images.Media.DATE_TAKEN + " DESC";
-    private static String ORDER_TRASHED = MediaStore.Images.Media.DATE_EXPIRES + " ASC";
+    private static String ORDER_DEFAULT = MediaStore.Images.Media.DATE_TAKEN + " DESC, " + MediaStore.Images.Media.DATE_ADDED + " DESC";
+    private static String ORDER_TRASHED = MediaStore.Images.Media.DATE_MODIFIED + " ASC";
 
     public PictureLoader(Context _context) {
         this.context = _context;
@@ -75,12 +76,14 @@ public abstract class PictureLoader extends TaskBase<String, Picture, Boolean> {
                     long _id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
                     String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
                     String fileName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME));
-                    long dateInMillis = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_TAKEN));
+                    long dateTakenInMillis = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_TAKEN));
+                    long dateAddInSecond = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
                     boolean isFav = Objects.equals(cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.IS_FAVORITE)), "1");
                     long fileSize = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.SIZE));
                     String bucketId = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_ID));
                     String bucketName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME));
-                    Picture pic = new Picture(_id, path, fileName, new Date(dateInMillis), isFav, fileSize, bucketId, bucketName);
+                    long date = dateTakenInMillis == 0 ? dateAddInSecond * 1000L : dateTakenInMillis;
+                    Picture pic = new Picture(_id, path, fileName, new Date(date), isFav, fileSize, bucketId, bucketName);
                     mHandler.post(() -> onProcessUpdate(pic));
                 }
             } finally {

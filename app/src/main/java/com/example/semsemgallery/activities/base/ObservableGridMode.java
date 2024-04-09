@@ -5,6 +5,8 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 public class ObservableGridMode<DataType> {
     private final List<GridModeListener> observers = new ArrayList<>();
 
@@ -25,16 +27,26 @@ public class ObservableGridMode<DataType> {
     private List<DataItem> observedObjects = null;
     private GridMode currentMode;
 
-    public ObservableGridMode(List<DataType> data, GridMode initMode) {
+    public ObservableGridMode(@Nullable List<DataType> data, GridMode initMode) {
         this.currentMode = initMode;
-        observedObjects = new ArrayList<>(data.size());
-        for (DataType value : data) {
-            this.observedObjects.add(new DataItem(value));
+        observedObjects = new ArrayList<>();
+        if (data != null) {
+            for (DataType value : data) {
+                this.observedObjects.add(new DataItem(value));
+            }
         }
     }
 
     public void addData(DataType value) {
         this.observedObjects.add(new DataItem(value));
+    }
+
+    public void addData(DataType value, int index) {
+        if (index >= observedObjects.size()) {
+            observedObjects.add(new DataItem(value));
+        } else {
+            observedObjects.add(index, new DataItem(value));
+        }
     }
 
     public void addObserver(GridModeListener observer) {

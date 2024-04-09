@@ -21,9 +21,6 @@ public class DeletedViewHolder extends SelectableItem<TrashedPicture> {
         super(itemView, observedObj);
         thumbnail = itemView.findViewById(R.id.thumbnail);
         remainingDate = itemView.findViewById(R.id.remaining);
-        if (observedObj.getCurrentMode() == GridMode.SELECTING) {
-            selector.setVisibility(View.VISIBLE);
-        }
     }
 
     @Override
