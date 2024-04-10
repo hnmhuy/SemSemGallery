@@ -6,13 +6,13 @@
     android:layout_margin="10dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/setting_topAppBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:menu="@menu/top_bar_pictures"
-        android:minHeight="?attr/actionBarSize" />
-
+        android:minHeight="?attr/actionBarSize"
+        app:menu="@menu/top_bar_pictures" />
 
     <include android:id="@+id/included_setting" layout="@layout/component_setting_toggle"/>
 

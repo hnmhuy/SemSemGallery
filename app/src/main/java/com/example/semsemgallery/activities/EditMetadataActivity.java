@@ -209,14 +209,13 @@
                 String newFileName = imageName.getText().toString() + "." + imageFormat.getText().toString();
                 Log.d("NEW FILE NAME", newFileName);
                 renameFile(path, newFileName);
-                Toast.makeText(context, "Data Saved",Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Data Saved", Toast.LENGTH_SHORT).show();
 
 
             }
         };
 
-        public void UpdateDateByExif(String imagePath)
-        {
+        public void UpdateDateByExif(String imagePath) {
             ExifInterface exif = null;
             try {
                 Log.d("RUN", "Run in exiff");
@@ -233,14 +232,13 @@
             }
         }
 
-        public void renameFile(String oldFilePath, String newFileName){
+        public void renameFile(String oldFilePath, String newFileName) {
 
             Path oldFile = Paths.get(oldFilePath);
             try {
                 Files.move(oldFile, oldFile.resolveSibling(newFileName));
                 Log.d("renameFile", "File renamed successfully");
-            }catch (IOException e)
-            {
+            } catch (IOException e) {
                 Log.e("ERROR", e.getMessage());
             }
 //            File oldFile = new File(oldFilePath);

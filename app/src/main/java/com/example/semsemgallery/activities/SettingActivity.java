@@ -1,13 +1,17 @@
 package com.example.semsemgallery.activities;
 
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.example.semsemgallery.R;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.materialswitch.MaterialSwitch;
 
 public class SettingActivity extends AppCompatActivity {
@@ -18,6 +22,7 @@ public class SettingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
         View include = (View) findViewById(R.id.included_setting);
+
 
 
         materialSwitch = include.findViewById(R.id.switch_main);
@@ -35,5 +40,10 @@ public class SettingActivity extends AppCompatActivity {
                 }
             }
         });
+
+
+
+
     }
+
 }
