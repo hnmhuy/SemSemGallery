@@ -63,12 +63,18 @@ IMGLY.configure() {
         kotlinOptions {
             jvmTarget = "17"
         }
+        buildFeatures {
+            viewBinding = true
+        }
 
     }
 
     dependencies {
+
+        val fragment_version = "1.6.2"
+        implementation("androidx.fragment:fragment:$fragment_version")
         implementation("com.squareup.picasso:picasso:2.5.2")
-        implementation ("com.google.android.material:material:1.3.0-alpha02")
+        implementation("com.google.android.material:material:1.3.0-alpha02")
         implementation("androidx.recyclerview:recyclerview:1.3.2")
         implementation("de.hdodenhof:circleimageview:3.1.0")
         implementation("com.github.Kunzisoft:Android-SwitchDateTimePicker:2.1")
@@ -79,6 +85,10 @@ IMGLY.configure() {
         implementation(libs.constraintlayout)
         implementation(libs.firebase.firestore)
         implementation(libs.firebase.storage)
+        implementation(libs.lifecycle.livedata.ktx)
+        implementation(libs.lifecycle.viewmodel.ktx)
+        implementation(libs.navigation.fragment)
+        implementation(libs.navigation.ui)
         testImplementation(libs.junit)
         androidTestImplementation(libs.ext.junit)
         androidTestImplementation(libs.espresso.core)

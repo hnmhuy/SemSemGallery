@@ -8,6 +8,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import com.example.semsemgallery.activities.main.AlbumsFragment;
 import com.example.semsemgallery.activities.main.FavoritesFragment;
 import com.example.semsemgallery.activities.main.PicturesFragment;
+import com.example.semsemgallery.activities.main.PicturesFragmentNew;
 
 public class ViewPagerAdapter extends FragmentStateAdapter {
     public ViewPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
@@ -19,7 +20,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
     public Fragment createFragment(int position) {
         switch (position) {
             case 0:
-                return new PicturesFragment();
+                return new PicturesFragmentNew();
             case 1:
                 return new AlbumsFragment();
             case 2:

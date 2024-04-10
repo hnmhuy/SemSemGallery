@@ -55,7 +55,7 @@ public class MediaRetriever {
                     Date dateAdded = new Date(timestamp * 1000L);
                     String isFavStr = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.IS_FAVORITE));
                     boolean isFav = Objects.equals(isFavStr, "1");
-                    picturesList.add(new Picture(path, name, dateAdded, albumID, isFav));
+                    //picturesList.add(new Picture(path, name, dateAdded, albumID, isFav));
                 }
             } finally {
                 cursor.close();
@@ -156,7 +156,7 @@ public class MediaRetriever {
                     String albumID = cursor.getString((cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_ID)));
                     long timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
                     Date dateAdded = new Date(timestamp * 1000L);
-                    picturesList.add(new Picture(path, name, dateAdded, albumID, true));
+                    //picturesList.add(new Picture(path, name, dateAdded, albumID, true));
                 }
             } finally {
                 cursor.close();

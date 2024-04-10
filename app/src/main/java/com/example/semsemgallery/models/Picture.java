@@ -5,22 +5,32 @@ import android.os.Parcelable;
 
 import java.util.Date;
 
-public class Picture implements Parcelable {
+public class Picture implements Parcelable, Comparable<Picture> {
     private long pictureId;
+    private long dateInMillis;
     private String path;
     private String fileName;
     private Date dateTaken;
+
+    public long getDateInMillis() {
+        return dateInMillis;
+    }
+
+    public void setDateInMillis(long dateInMillis) {
+        this.dateInMillis = dateInMillis;
+    }
     private String albumID;
     private boolean isFav;
     private long fileSize; // in byte
     private String albumName;
 
-    public Picture(String path, String fileName, Date dateAdded, String albumID, boolean isFav) {
+    public Picture(String path, String fileName, Date dateTaken, String albumID, boolean isFav) {
         this.path = path;
         this.fileName = fileName;
-        this.dateTaken = dateAdded;
+        this.dateTaken = dateTaken;
         this.albumID = albumID;
         this.isFav = isFav;
+        dateInMillis = dateTaken.getTime() / 1000000;
     }
     protected Picture(Parcel in) {
         path = in.readString();
@@ -52,6 +62,7 @@ public class Picture implements Parcelable {
         this.fileSize = fileSize;
         this.albumID = albumID;
         this.albumName = albumName;
+        dateInMillis = dateTaken.getTime() / 1000000;
     }
 
     @Override
@@ -131,4 +142,12 @@ public class Picture implements Parcelable {
     public void setAlbumName(String albumName) {
         this.albumName = albumName;
     }
+
+
+    @Override
+    public int compareTo(Picture other) {
+        return this.dateTaken.compareTo(other.dateTaken) * (-1);
+    }
+
+
 }

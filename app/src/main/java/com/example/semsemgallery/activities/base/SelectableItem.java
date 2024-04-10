@@ -42,6 +42,9 @@ public abstract class SelectableItem<DataType> extends RecyclerView.ViewHolder i
                 }
             }
         });
+        if (observedObj.getCurrentMode() == GridMode.SELECTING) {
+            selector.setVisibility(View.VISIBLE);
+        }
     }
     public abstract void clickOnNormalMode(View v);
 

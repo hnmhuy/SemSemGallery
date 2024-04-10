@@ -19,7 +19,6 @@ import java.util.List;
 public class PictureRecyclerAdapter extends RecyclerView.Adapter<PictureRecyclerAdapter.ViewHolder>{
     private final List<Picture> pictureList;
     private final Context context;
-
     private OnPictureItemClickListener listener;
     public PictureRecyclerAdapter(List<Picture> pictureList, Context context) {
         this.pictureList = pictureList;
