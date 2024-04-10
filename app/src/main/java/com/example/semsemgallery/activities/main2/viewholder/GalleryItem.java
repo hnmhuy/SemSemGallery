@@ -82,13 +82,11 @@ public class GalleryItem implements Comparable<GalleryItem> {
 
     @Override
     public int compareTo(GalleryItem other) {
+
         long time1 = time.getTime() == 0 ? timeAdded.getTime() : time.getTime();
         long time2 = other.getTime().getTime() == 0 ? other.getTimeAdded().getTime() : other.getTime().getTime();
 
-        int comparison = Long.compare(time1, time2);
-        if (comparison == 0)
-            return 1;
-        else return comparison;
+        return Long.compare(time1, time2);
     }
 
 }

@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -81,6 +82,7 @@ public class PicturesFragment extends Fragment {
             @Override
             public void onProcessUpdate(Picture... pictures) {
                 galleryItems.add(new GalleryItem(pictures[0]));
+
                 header.add(pictures[0].getDateInMillis());
                 pictureList.add(pictures[0]);
             }
@@ -89,7 +91,10 @@ public class PicturesFragment extends Fragment {
             public void postExecute(Boolean res) {
                 List<Long> temp = new ArrayList<>(header);
                 for (Long item : temp) {
-                    galleryItems.add(new GalleryItem(new DateHeaderItem(new Date(item * (1000 * 86400)))));
+
+                    DateHeaderItem i = new DateHeaderItem(new Date(item * (1000 * 86400)));
+                    Log.d("Header", "Data: " + item);
+                    galleryItems.add(new GalleryItem(i));
                 }
                 dataList = new ArrayList<>(galleryItems);
                 observableGridMode = new ObservableGridMode<>(dataList, GridMode.NORMAL);

@@ -65,7 +65,7 @@ public class Picture implements Parcelable, Comparable<Picture> {
         this.albumID = albumID;
         this.albumName = albumName;
         long temp = dateTaken.getTime() == 0 ? dateAdded.getTime() : dateTaken.getTime();
-        dateInMillis = temp / (1000 * 86400);
+        dateInMillis = Math.round((double) temp / 86400000);
     }
 
     @Override
@@ -158,12 +158,9 @@ public class Picture implements Parcelable, Comparable<Picture> {
     @Override
     public int compareTo(Picture other) {
         long time1 = dateTaken.getTime() == 0 ? dateAdded.getTime() : dateTaken.getTime();
-        long time2 = other.getDateTaken().getTime() == 0 ? other.getDateAdded().getTime() : dateAdded.getTime();
+        long time2 = other.getDateTaken().getTime() == 0 ? other.getDateAdded().getTime() : other.getDateTaken().getTime();
 
-        int comparison = Long.compare(time1, time2);
-        if (comparison == 0)
-            return 1;
-        else return comparison;
+        return Long.compare(time1, time2);
     }
 
 

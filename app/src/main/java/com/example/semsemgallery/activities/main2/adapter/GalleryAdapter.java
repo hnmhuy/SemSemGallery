@@ -31,10 +31,31 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryItemViewHolder> 
     private Context context;
     private ArrayList<Picture> dataList;
 
+    private static int findIndexOf(Picture pic, ArrayList<Picture> list) {
+        int low = 0;
+        int high = list.size() - 1;
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            Picture dataMid = list.get(mid);
+            if (dataMid.getPictureId() == pic.getPictureId()) {
+                return mid;
+            } else if (dataMid.compareTo(pic) < 0) {
+                high = mid - 1;
+            } else {
+                low = mid + 1;
+            }
+        }
+
+        return -1;
+    }
+
     public GalleryAdapter(Context context, ObservableGridMode<GalleryItem> data, ArrayList<Picture> list) {
         this.context = context;
         observableGridMode = data;
         dataList = list;
+        Picture temp = list.get(0);
+        Log.e("Pictures", "P - " + temp.getPictureId() + " - " + temp.getPath() + " - " + temp.getDateTaken().getTime() + " - " + temp.getDateAdded().getTime() + " - " + temp.getDateInMillis());
+
     }
 
     @NonNull
@@ -50,11 +71,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryItemViewHolder> 
                     intent.putParcelableArrayListExtra("pictureList", dataList);
                     ObservableGridMode<GalleryItem>.DataItem item = observableGridMode.getDataAt(getAbsoluteAdapterPosition());
                     Picture data = (Picture) item.data.getData();
-                    int pos = dataList.indexOf(data);
-                    Log.d("Pictures", "Pos = " + pos);
-
-                    //intent.putExtra("position", pos);
-                    //startActivity(context, intent, null);
+                    int pos = findIndexOf(data, dataList);
+                    intent.putExtra("position", pos);
+                    startActivity(context, intent, null);
                 }
             };
         } else if (viewType == GalleryItem.GROUPDATE) {
