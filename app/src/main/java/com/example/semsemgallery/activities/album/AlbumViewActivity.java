@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.semsemgallery.R;
-import com.example.semsemgallery.activities.main.adapter.PictureRecyclerAdapter;
+import com.example.semsemgallery.activities.main2.adapter.FavoriteAdapter;
 import com.example.semsemgallery.activities.pictureview.PictureViewActivity;
 import com.example.semsemgallery.models.Picture;
 import com.example.semsemgallery.domain.MediaRetriever;
@@ -20,7 +20,7 @@ import com.example.semsemgallery.domain.MediaRetriever;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AlbumViewActivity extends AppCompatActivity implements PictureRecyclerAdapter.OnPictureItemClickListener{
+public class AlbumViewActivity extends AppCompatActivity {
 
     private String albumId;
     private String albumName;
@@ -47,11 +47,11 @@ public class AlbumViewActivity extends AppCompatActivity implements PictureRecyc
             // Render data to gallery_recycler
             pictureList = new MediaRetriever(this).getPicturesByAlbumId(albumId);
             RecyclerView recyclerView = findViewById(R.id.activity_album_view_recycler);
-            PictureRecyclerAdapter adapter = new PictureRecyclerAdapter(pictureList, this);
-            adapter.setOnPictureItemClickListener(this);
+            //FavoriteAdapter adapter = new FavoriteAdapter(pictureList, this);
+            //adapter.setOnPictureItemClickListener(this);
             GridLayoutManager manager = new GridLayoutManager(this, 4);
             recyclerView.setLayoutManager(manager);
-            recyclerView.setAdapter(adapter);
+            //recyclerView.setAdapter(adapter);
         }
 
         // ====== Set title of Top bar
@@ -69,12 +69,12 @@ public class AlbumViewActivity extends AppCompatActivity implements PictureRecyc
         super.onResume();
         topBar.setNavigationOnClickListener(v -> finish());
     }
-    @Override
-    public void onPictureItemClickListener(List<Picture> pictureList, int position) {
-        Intent intent = new Intent(this, PictureViewActivity.class);
-        intent.putParcelableArrayListExtra("pictureList", new ArrayList<>(pictureList));
-        intent.putExtra("position", position);
-        startActivity(intent);
-    }
+//    @Override
+//    public void onPictureItemClickListener(List<Picture> pictureList, int position) {
+//        Intent intent = new Intent(this, PictureViewActivity.class);
+//        intent.putParcelableArrayListExtra("pictureList", new ArrayList<>(pictureList));
+//        intent.putExtra("position", position);
+//        startActivity(intent);
+//    }
 
 }

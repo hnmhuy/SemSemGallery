@@ -1,4 +1,4 @@
-package com.example.semsemgallery.activities.main;
+package com.example.semsemgallery.activities.main2.fragment;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -35,14 +35,13 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.TreeSet;
 
-public class PicturesFragmentNew extends Fragment {
+public class PicturesFragment extends Fragment {
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     Uri finalUri;
     private Context context;
@@ -60,91 +59,56 @@ public class PicturesFragmentNew extends Fragment {
                         }
                     }
                 } else {
-                    // Image capture failed or was canceleds
                     Toast.makeText(getActivity(), "Image capture failed", Toast.LENGTH_SHORT).show();
                 }
             });
+
+
+    private final TreeSet<GalleryItem> galleryItems = new TreeSet<>(Comparator.reverseOrder());
+    private final TreeSet<Picture> pictureList = new TreeSet<>(Comparator.reverseOrder());
+    private final TreeSet<Long> header = new TreeSet<>(Comparator.reverseOrder());
+    private List<GalleryItem> dataList = null;
+    private ObservableGridMode<GalleryItem> observableGridMode = null;
+    private GalleryAdapter adapter = null;
+    private PictureLoader loader;
+    private RecyclerView recyclerView;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         this.context = context;
-
-    }
-
-    private boolean isDateEqual(Date value1, Date value2) {
-        // Create calendar instances for both dates
-        Calendar cal1 = Calendar.getInstance();
-        cal1.setTime(value1);
-
-        Calendar cal2 = Calendar.getInstance();
-        cal2.setTime(value2);
-
-        // Clear time parts from both calendars
-        cal1.set(Calendar.HOUR_OF_DAY, 0);
-        cal1.set(Calendar.MINUTE, 0);
-        cal1.set(Calendar.SECOND, 0);
-        cal1.set(Calendar.MILLISECOND, 0);
-
-        cal2.set(Calendar.HOUR_OF_DAY, 0);
-        cal2.set(Calendar.MINUTE, 0);
-        cal2.set(Calendar.SECOND, 0);
-        cal2.set(Calendar.MILLISECOND, 0);
-
-        // Compare the dates
-        return cal1.equals(cal2);
-    }
-
-    private final TreeSet<GalleryItem> galleryItems = new TreeSet<>(Comparator.reverseOrder());
-    private final TreeSet<Long> header = new TreeSet<>(Comparator.reverseOrder());
-    private List<GalleryItem> dataList = null;
-    private ObservableGridMode<GalleryItem> observableGridMode = null;
-    private GalleryAdapter adapter = null;
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_pictures, container, false);
-        RecyclerView recyclerView = view.findViewById(R.id.picture_recycler_view);
-        StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL); // Adjust the span count as needed
-        recyclerView.setLayoutManager(layoutManager);
-
-
-        PictureLoader loader = new PictureLoader(context) {
+        loader = new PictureLoader(context) {
             @Override
             public void onProcessUpdate(Picture... pictures) {
                 galleryItems.add(new GalleryItem(pictures[0]));
                 header.add(pictures[0].getDateInMillis());
+                pictureList.add(pictures[0]);
             }
 
             @Override
             public void postExecute(Boolean res) {
                 List<Long> temp = new ArrayList<>(header);
-//
-//                for (Long i : temp) {
-//                    Log.e("Picture", "H" + i + " - " + new Date( i * 1000 * 86400).toString());
-//                }
-
                 for (Long item : temp) {
                     galleryItems.add(new GalleryItem(new DateHeaderItem(new Date(item * (1000 * 86400)))));
                 }
                 dataList = new ArrayList<>(galleryItems);
-//                for(GalleryItem item: dataList) {
-//                    if (item.getData() instanceof Picture) {
-//                        Log.d("Picture", "P - " + item.getTime());
-//                    } else {
-//                        Log.e("Picture", "H - " + item.getTime());
-//                    }
-//                }
                 observableGridMode = new ObservableGridMode<>(dataList, GridMode.NORMAL);
-                adapter = new GalleryAdapter(context, observableGridMode, null);
+                adapter = new GalleryAdapter(context, observableGridMode, new ArrayList<>(pictureList));
                 recyclerView.setAdapter(adapter);
-
             }
         };
 
-        loader.execute(PictureLoadMode.ALL.toString());
+    }
 
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_pictures, container, false);
+        recyclerView = view.findViewById(R.id.picture_recycler_view);
+        StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL); // Adjust the span count as needed
+        recyclerView.setLayoutManager(layoutManager);
+        loader.execute(PictureLoadMode.ALL.toString());
         return view;
     }
 

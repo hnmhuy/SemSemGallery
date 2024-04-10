@@ -2,6 +2,8 @@ package com.example.semsemgallery.activities.base;
 
 import android.util.Log;
 
+import com.example.semsemgallery.models.Picture;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +37,14 @@ public class ObservableGridMode<DataType> {
                 this.observedObjects.add(new DataItem(value));
             }
         }
+    }
+
+    public ArrayList<DataType> getDataList() {
+        ArrayList<DataType> res = new ArrayList<>();
+        for (DataItem item : observedObjects) {
+            res.add(item.data);
+        }
+        return res;
     }
 
     public void addData(DataType value) {

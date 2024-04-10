@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.semsemgallery.R;
+import com.example.semsemgallery.activities.main2.adapter.FavoriteAdapter;
 import com.example.semsemgallery.activities.pictureview.PictureViewActivity;
 import com.example.semsemgallery.models.Picture;
 
@@ -22,7 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-public class PicturesByDateRecyclerAdapter extends RecyclerView.Adapter<PicturesByDateRecyclerAdapter.ViewHolder> implements PictureRecyclerAdapter.OnPictureItemClickListener{
+public class PicturesByDateRecyclerAdapter extends RecyclerView.Adapter<PicturesByDateRecyclerAdapter.ViewHolder> {
     private final List<List<Picture>> pictureList;
     private final Context context;
 
@@ -46,11 +47,11 @@ public class PicturesByDateRecyclerAdapter extends RecyclerView.Adapter<Pictures
         Date date = p.get(0).getDateTaken();
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH);
         String formattedDate = dateFormat.format(date);
-        PictureRecyclerAdapter innerAdapter = new PictureRecyclerAdapter(p, context);
+        //FavoriteAdapter innerAdapter = new FavoriteAdapter(p, context);
         GridLayoutManager manager = new GridLayoutManager(context, 4);
-        innerAdapter.setOnPictureItemClickListener(this);
+        //innerAdapter.setOnPictureItemClickListener(this);
         holder.recyclerView.setLayoutManager(manager);
-        holder.recyclerView.setAdapter(innerAdapter);
+        //holder.recyclerView.setAdapter(innerAdapter);
         holder.txtView.setText(formattedDate);
     }
 
@@ -60,15 +61,15 @@ public class PicturesByDateRecyclerAdapter extends RecyclerView.Adapter<Pictures
         return pictureList.size();
     }
 
-    @Override
-    public void onPictureItemClickListener(List<Picture> pictureList, int position) {
-        Intent intent = new Intent(context, PictureViewActivity.class);
-        intent.putParcelableArrayListExtra("pictureList", new ArrayList<>(pictureList));
-        intent.putExtra("position", position);
-
-        // Start the activity
-        context.startActivity(intent);
-    }
+//    @Override
+//    public void onPictureItemClickListener(List<Picture> pictureList, int position) {
+//        Intent intent = new Intent(context, PictureViewActivity.class);
+//        intent.putParcelableArrayListExtra("pictureList", new ArrayList<>(pictureList));
+//        intent.putExtra("position", position);
+//
+//        // Start the activity
+//        context.startActivity(intent);
+//    }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView txtView;

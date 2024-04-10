@@ -9,10 +9,15 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.semsemgallery.R;
-import com.example.semsemgallery.activities.main.PicturesFragment;
-import com.example.semsemgallery.activities.main.PicturesFragmentNew;
+import com.example.semsemgallery.activities.main.AlbumsFragment;
+import com.example.semsemgallery.activities.main2.fragment.FavoritesFragment;
+import com.example.semsemgallery.activities.main2.fragment.MoreOptionsBottomSheet;
+import com.example.semsemgallery.activities.main2.fragment.PicturesFragment;
+import com.google.android.material.navigation.NavigationBarView;
 
 public class MainActivity extends AppCompatActivity {
+
+    private NavigationBarView navbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,8 +33,35 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .setReorderingAllowed(true)
-                    .add(R.id.main_content, PicturesFragmentNew.class, null)
+                    .add(R.id.main_content, PicturesFragment.class, null)
                     .commit();
         }
+        navbar = findViewById(R.id.navigation_bar);
+        navbar.setOnItemSelectedListener(
+                item -> {
+                    int id = item.getItemId();
+                    if (id == R.id.pictures_page) {
+                        NavigateTo(PicturesFragment.class);
+                        return true;
+                    } else if (id == R.id.albums_page) {
+                        NavigateTo(AlbumsFragment.class);
+                        return true;
+                    } else if (id == R.id.favorite_page) {
+                        NavigateTo(FavoritesFragment.class);
+                        return true;
+                    } else if (id == R.id.more_option) {
+                        MoreOptionsBottomSheet botSheetFrag = new MoreOptionsBottomSheet();
+                        botSheetFrag.show(getSupportFragmentManager(), botSheetFrag.getTag());
+                        return false;
+                    } else return false;
+                }
+        );
+    }
+
+    private void NavigateTo(Class fragment) {
+        getSupportFragmentManager().beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(R.id.main_content, fragment, null)
+                .commit();
     }
 }

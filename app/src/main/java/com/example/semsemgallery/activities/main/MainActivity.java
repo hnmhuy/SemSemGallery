@@ -15,6 +15,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.main.adapter.ViewPagerAdapter;
+import com.example.semsemgallery.activities.main2.fragment.MoreOptionsBottomSheet;
 import com.example.semsemgallery.domain.PermissionHandler;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;

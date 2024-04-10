@@ -1,4 +1,4 @@
-package com.example.semsemgallery.activities.main.viewholders;
+package com.example.semsemgallery.activities.main2.viewholder;
 
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
