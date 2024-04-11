@@ -18,7 +18,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/sync_title"
+            android:text="Your Cloud"
             android:textSize="18sp"
             android:textStyle="bold"
             />
@@ -26,7 +26,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/sync_description"
+            android:text="Upload your pictures to SemSem Gallery folder in Firestore."
             />
 
         <TextView
@@ -34,7 +34,7 @@
             android:textSize="14sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/sync_switch_status_off"/>
+            android:text="Unsigned"/>
 
 
 

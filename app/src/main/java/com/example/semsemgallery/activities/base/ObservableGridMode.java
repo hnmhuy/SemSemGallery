@@ -129,5 +129,4 @@ public class ObservableGridMode<DataType> {
             this.isSelected = false;
         }
     }
-
 }

@@ -3,6 +3,7 @@ plugins {
     id("ly.img.android.sdk").version("10.9.0")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
+    id("com.google.gms.google-services")
 }
 
 IMGLY.configure() {
@@ -73,6 +74,7 @@ IMGLY.configure() {
 
         val fragment_version = "1.6.2"
         implementation("androidx.fragment:fragment:$fragment_version")
+        implementation ("com.google.android.gms:play-services-auth:21.0.0")
         implementation("com.squareup.picasso:picasso:2.5.2")
         implementation("com.google.android.material:material:1.3.0-alpha02")
         implementation("androidx.recyclerview:recyclerview:1.3.2")
@@ -89,6 +91,7 @@ IMGLY.configure() {
         implementation(libs.lifecycle.viewmodel.ktx)
         implementation(libs.navigation.fragment)
         implementation(libs.navigation.ui)
+        implementation(libs.firebase.auth)
         testImplementation(libs.junit)
         androidTestImplementation(libs.ext.junit)
         androidTestImplementation(libs.espresso.core)

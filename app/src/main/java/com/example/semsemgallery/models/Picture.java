@@ -1,11 +1,16 @@
 package com.example.semsemgallery.models;
 
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.File;
 import java.util.Date;
 
 public class Picture implements Parcelable, Comparable<Picture> {
+
+    private String url;
     private long pictureId;
     private long dateInMillis;
     private String path;
@@ -23,7 +28,19 @@ public class Picture implements Parcelable, Comparable<Picture> {
     private boolean isFav;
     private long fileSize; // in byte
     private String albumName;
-
+    private Bitmap bitmap;
+    public Picture(String fileName, String url){
+        this.url = url;
+        this.fileName = fileName;
+    }
+    public Picture(Uri uri) {
+        String path = uri.getPath();
+        File file = new File(path);
+        this.path = path;
+        this.fileName = file.getName();
+        this.dateTaken = new Date(file.lastModified());
+        this.dateInMillis = this.dateTaken.getTime() / 1000;
+    }
     public Picture(String path, String fileName, Date dateTaken, String albumID, boolean isFav) {
         this.path = path;
         this.fileName = fileName;
@@ -142,6 +159,7 @@ public class Picture implements Parcelable, Comparable<Picture> {
     public void setAlbumName(String albumName) {
         this.albumName = albumName;
     }
+    public String getUrl(){return url;}
 
 
     @Override
@@ -149,5 +167,8 @@ public class Picture implements Parcelable, Comparable<Picture> {
         return this.dateTaken.compareTo(other.dateTaken) * (-1);
     }
 
-
+    public void setBitmap(Bitmap input){
+        this.bitmap = input.copy(input.getConfig(), true);
+    }
+    public Bitmap getBitmap(){return bitmap;}
 }

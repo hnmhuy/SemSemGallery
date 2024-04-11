@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,12 +29,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.semsemgallery.R;
+import com.example.semsemgallery.activities.cloudbackup.CloudActivity;
 import com.example.semsemgallery.activities.main.adapter.PicturesByDateRecyclerAdapter;
 import com.example.semsemgallery.activities.search.SearchViewActivity;
 import com.example.semsemgallery.models.Picture;
 import com.example.semsemgallery.domain.MediaRetriever;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -50,6 +54,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class PicturesFragment extends Fragment {
+    FirebaseAuth auth = FirebaseAuth.getInstance();
     Uri finalUri;
     private Context applicationContext;
 
@@ -84,6 +89,8 @@ public class PicturesFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        FirebaseApp.initializeApp(requireContext());
+
         AppCompatActivity appCompatActivity = (AppCompatActivity) getActivity();
         List<Picture> picturesRetriever = new MediaRetriever(appCompatActivity).getAllPictureList();
 
@@ -124,13 +131,21 @@ public class PicturesFragment extends Fragment {
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
+
                 if(item.getItemId() == R.id.search){
                     startActivity(new Intent(getActivity().getApplicationContext(), SearchViewActivity.class));
+                    return true;
+                } else if (item.getItemId() == R.id.cloud){
+                    startActivity(new Intent(getActivity().getApplicationContext(), CloudActivity.class));
                     return true;
                 }
                 return false;
             }
         });
+        if(auth.getCurrentUser() == null){
+            Menu menu = toolbar.getMenu();
+            menu.removeItem(R.id.cloud);
+        }
         openCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

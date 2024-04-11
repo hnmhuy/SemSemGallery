@@ -119,5 +119,7 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
 
+    <string name="cloud_feature">This feature can get the pictures uploaded by this app only.</string>
+    <string name="client_id">764863812102-2ra6ljef2bq889f5hmdojipk6te2uggp.apps.googleusercontent.com</string>
 
 </resources>

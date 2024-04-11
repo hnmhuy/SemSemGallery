@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:id="@+id/recently_delete_activity"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.cloudbackup.CloudActivity">
+
+    <RelativeLayout
+        android:id="@+id/toolbar"
+        android:layout_alignParentTop="true"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:menu="@menu/cloud"
+            android:visibility="visible"
+            android:minHeight="?attr/actionBarSize"
+            app:navigationIcon="@drawable/ic_backward"
+            app:title="Cloud" />
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/topAppBar"
+            android:id="@+id/progress"/>
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar_SelectingMode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
+            android:visibility="invisible">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/select_all"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center_horizontal" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/all" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/select_items"
+                style="@style/TextAppearance.Material3.TitleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="12dp"
+                android:text="@string/select_items" />
+        </com.google.android.material.appbar.MaterialToolbar>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/description"
+        android:layout_below="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:text="@string/cloud_feature" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_below="@id/description"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="12dp"
+        android:id="@+id/deleted_item_recycler_view">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <LinearLayout
+        android:visibility="invisible"
+        android:id="@+id/bottomActions"
+        android:weightSum="2"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/download_selected"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            style="?attr/materialIconButtonStyle"
+            android:drawableTop="@drawable/imgly_icon_download"
+            android:text="Download" />
+
+        <Button
+            android:id="@+id/delete_selected"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            style="?attr/materialIconButtonStyle"
+            android:drawableTop="@drawable/ic_delete"
+            android:text="@string/delete" />
+    </LinearLayout>
+
+</RelativeLayout>
