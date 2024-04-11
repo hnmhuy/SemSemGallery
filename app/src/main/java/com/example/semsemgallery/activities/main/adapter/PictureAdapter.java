@@ -13,7 +13,7 @@ import com.example.semsemgallery.models.Picture;
 import java.util.ArrayList;
 
 public class PictureAdapter extends FragmentStateAdapter {
-    private ArrayList<Picture> pictures;
+    public ArrayList<Picture> pictures;
     private int position;
     public PictureAdapter(@NonNull FragmentActivity fragmentActivity, ArrayList<Picture> pictures, int position) {
         super(fragmentActivity);
@@ -24,6 +24,7 @@ public class PictureAdapter extends FragmentStateAdapter {
     @NonNull
     @Override
     public Fragment createFragment(int position) {
+        if (position < 0) return null;
         Picture picture = pictures.get(position);
         Bundle args = new Bundle();
         args.putInt("position", position);

@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.LongDef;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
@@ -29,7 +30,7 @@ import java.util.TreeSet;
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryItemViewHolder> {
     private ObservableGridMode<GalleryItem> observableGridMode;
     private Context context;
-    private ArrayList<Picture> dataList;
+    //private ArrayList<Picture> dataList;
 
     private static int findIndexOf(Picture pic, ArrayList<Picture> list) {
         int low = 0;
@@ -52,9 +53,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryItemViewHolder> 
     public GalleryAdapter(Context context, ObservableGridMode<GalleryItem> data, ArrayList<Picture> list) {
         this.context = context;
         observableGridMode = data;
-        dataList = list;
-        Picture temp = list.get(0);
-        Log.e("Pictures", "P - " + temp.getPictureId() + " - " + temp.getPath() + " - " + temp.getDateTaken().getTime() + " - " + temp.getDateAdded().getTime() + " - " + temp.getDateInMillis());
+        //dataList = list;
+        //Picture temp = list.get(0);
+        //Log.e("Pictures", "P - " + temp.getPictureId() + " - " + temp.getPath() + " - " + temp.getDateTaken().getTime() + " - " + temp.getDateAdded().getTime() + " - " + temp.getDateInMillis());
 
     }
 
@@ -68,11 +69,13 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryItemViewHolder> 
                 @Override
                 public void clickOnNormalMode(View v) {
                     Intent intent = new Intent(context, PictureViewActivity.class);
-                    intent.putParcelableArrayListExtra("pictureList", dataList);
+                    //intent.putParcelableArrayListExtra("pictureList", dataList);
                     ObservableGridMode<GalleryItem>.DataItem item = observableGridMode.getDataAt(getAbsoluteAdapterPosition());
                     Picture data = (Picture) item.data.getData();
-                    int pos = findIndexOf(data, dataList);
-                    intent.putExtra("position", pos);
+                    intent.putExtra("selectingPic", data);
+                    Log.d("PictureViewActivity", "ID = " + data.getPictureId());
+//                    int pos = findIndexOf(data, dataList);
+//                    intent.putExtra("position", pos);
                     startActivity(context, intent, null);
                 }
             };

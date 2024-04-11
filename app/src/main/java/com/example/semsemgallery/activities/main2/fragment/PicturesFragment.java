@@ -92,7 +92,7 @@ public class PicturesFragment extends Fragment {
                 List<Long> temp = new ArrayList<>(header);
                 for (Long item : temp) {
 
-                    DateHeaderItem i = new DateHeaderItem(new Date(item * (1000 * 86400)));
+                    DateHeaderItem i = new DateHeaderItem(new Date(item));
                     Log.d("Header", "Data: " + item);
                     galleryItems.add(new GalleryItem(i));
                 }

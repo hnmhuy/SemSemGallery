@@ -17,6 +17,7 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -25,6 +26,8 @@ import com.example.semsemgallery.R
 import com.example.semsemgallery.activities.main.adapter.PictureAdapter
 import com.example.semsemgallery.activities.pictureview.fragment.MetaDataBottomSheet
 import com.example.semsemgallery.domain.PhotoActionsHandler
+import com.example.semsemgallery.domain.Picture.PictureLoadMode
+import com.example.semsemgallery.domain.Picture.PictureLoader
 import com.example.semsemgallery.models.Picture
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -50,16 +53,22 @@ import ly.img.android.pesdk.ui.model.state.UiConfigSticker
 import ly.img.android.pesdk.ui.model.state.UiConfigText
 import ly.img.android.pesdk.ui.panels.item.PersonalStickerAddItem
 import java.io.File
+import java.util.Collections
 import java.util.Date
+import java.util.TreeSet
 
 class PictureViewActivity : AppCompatActivity() {
     companion object {
-        const val PESDK_RESULT = 1;
+        const val PESDK_RESULT = 1
     }
 
+    private lateinit var fragmentActivity: PictureViewActivity
     private lateinit var topBar: MaterialToolbar
     private lateinit var actions: MaterialToolbar
     private var filePath: String = ""
+    private var position: Int = -1
+    private var selectingPic: Picture? = null
+    private lateinit var viewPager: ViewPager2
     private fun createPesdkSettingsList() =
         PhotoEditorSettingsList(false)
             .configure<UiConfigFilter> {
@@ -85,28 +94,78 @@ class PictureViewActivity : AppCompatActivity() {
                 it.setOutputToGallery()
             }
 
+    //    private var pictureTree : TreeSet<Picture> = TreeSet(Comparator.reverseOrder<Picture>())
+    private var pictureList: ArrayList<Picture> = ArrayList()
+    private lateinit var adapter: PictureAdapter
+    fun findIndexOf(pic: Picture, list: ArrayList<Picture>): Int {
+        var low = 0
+        var high = list.size - 1
+        while (low <= high) {
+            val mid = (low + high) / 2
+            val dataMid = list[mid]
+            if (dataMid.pictureId == pic.pictureId) {
+                return mid
+            } else if (dataMid.compareTo(pic) < 0) {
+                high = mid - 1
+            } else {
+                low = mid + 1
+            }
+        }
+        return -1
+    }
+
+    private var loader = object : PictureLoader(this) {
+        override fun onProcessUpdate(vararg processes: Picture) {
+            if (processes[0].pictureId == selectingPic!!.pictureId) return;
+            var predictPos =
+                Collections.binarySearch(pictureList, processes[0], Comparator.reverseOrder());
+            if (predictPos < 0) predictPos = -predictPos - 1;
+            pictureList.add(predictPos, processes[0]);
+            //adapter.notifyItemInserted(predictPos);
+//            if (predictPos < position) {
+//                position++
+//                viewPager.setCurrentItem(position, false);
+//            }
+        }
+
+        override fun postExecute(res: Boolean?) {
+            viewPager.setCurrentItem(findIndexOf(selectingPic!!, pictureList), false);
+        }
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_picture_view)
-        val pictureList = intent.getParcelableArrayListExtra<Picture>("pictureList")
-        val position = intent.getIntExtra("position", 0)
+        enableEdgeToEdge()
+        fragmentActivity = this
+        viewPager = findViewById(R.id.vp_image)
+        selectingPic = intent.getParcelableExtra<Picture>("selectingPic")
+        pictureList.add(selectingPic!!)
+        adapter = PictureAdapter(fragmentActivity, pictureList, 0)
+        viewPager.adapter = adapter
+        viewPager.setCurrentItem(0, false);
+        loader.execute(PictureLoadMode.ALL.toString())
+//        val pictureList = intent.getParcelableArrayListExtra<Picture>("pictureList")
+//        val position = intent.getIntExtra("position", 0)
 
         topBar = findViewById(R.id.activity_picture_view_topAppBar)
-        actions = findViewById(R.id.more_photo_action);
-        actions.setOnMenuItemClickListener { menuItem ->
-            onOptionsItemSelected(menuItem)
-        }
+        topBar.setOnMenuItemClickListener { menuItem -> onOptionsItemSelected(menuItem) }
+//        actions = findViewById(R.id.more_photo_action);
+//        actions.setOnMenuItemClickListener { menuItem ->
+//            onOptionsItemSelected(menuItem)
+//        }
 
-        val viewPager: ViewPager2 = findViewById(R.id.vp_image)
-        val adapter = PictureAdapter(this, pictureList, position)
-        viewPager.adapter = adapter
-        viewPager.offscreenPageLimit = 4;
-        viewPager.setCurrentItem(position, true)
-        filePath = pictureList!![position].path
-        var fileName = pictureList[position].fileName
+        viewPager = findViewById(R.id.vp_image)
+        viewPager.offscreenPageLimit = 4
+
+//        filePath = pictureList!![position].path
+//        var fileName = pictureList[position].fileName
+        var fileName = ""
         var date: Date?
-        var isFavorite = pictureList[position].isFav;
-        val favBtn: ImageButton = findViewById(R.id.favorite_button);
+//        var isFavorite = pictureList[position].isFav;
+        var isFavorite = false
+        val favBtn: ImageButton = findViewById(R.id.favorite_button)
         val infoBtn: ImageButton = findViewById(R.id.info_button)
         val shareBtn: ImageButton = findViewById(R.id.share_button)
 
@@ -117,11 +176,11 @@ class PictureViewActivity : AppCompatActivity() {
                 filePath = pictureList[position].path
                 fileName = pictureList[position].fileName
                 date = pictureList[position].dateTaken
-                isFavorite = pictureList[position].isFav;
+                isFavorite = pictureList[position].isFav
                 Log.e("FILEPATH", filePath)
                 Log.e("DATE", date.toString())
 
-                toggleFavorite(isFavorite, favBtn);
+                toggleFavorite(isFavorite, favBtn)
             }
         })
 
@@ -163,7 +222,7 @@ class PictureViewActivity : AppCompatActivity() {
 
         // Favorite Icon
 
-        toggleFavorite(isFavorite, favBtn);
+        toggleFavorite(isFavorite, favBtn)
 
         favBtn.setOnClickListener {
 
@@ -173,21 +232,21 @@ class PictureViewActivity : AppCompatActivity() {
             }
 
             if (isStorageManager) {
-                val contentUri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                val contentUri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
                 val values = ContentValues().apply {
-                    put(MediaStore.Images.Media.IS_FAVORITE, !isFavorite);
+                    put(MediaStore.Images.Media.IS_FAVORITE, !isFavorite)
                 }
 
-                val contentResolver: ContentResolver = applicationContext.contentResolver;
+                val contentResolver: ContentResolver = applicationContext.contentResolver
                 contentResolver.update(
                     contentUri,
                     values,
                     "${MediaStore.Images.Media.DATA}=?",
                     arrayOf(filePath)
-                );
+                )
                 isFavorite = !isFavorite
                 pictureList[position].isFav = isFavorite
-                toggleFavorite(isFavorite, favBtn);
+                toggleFavorite(isFavorite, favBtn)
             } else {
 
                 val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
@@ -268,8 +327,8 @@ class PictureViewActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.copy_to_clipboard -> {
                 // Handle copy to clipboard action
-                handler.copyToClipboard(this, filePath);
-                Log.e("Image Path", filePath);
+                handler.copyToClipboard(this, filePath)
+                Log.e("Image Path", filePath)
                 return true
             }
 
@@ -290,9 +349,9 @@ class PictureViewActivity : AppCompatActivity() {
             R.id.set_as_wallpaper -> {
                 // Handle set as wallpaper action
                 val bottomSheetView =
-                    layoutInflater.inflate(R.layout.fragment_picture_options, null);
-                val dialog = BottomSheetDialog(this);
-                dialog.setContentView(bottomSheetView);
+                    layoutInflater.inflate(R.layout.fragment_picture_options, null)
+                val dialog = BottomSheetDialog(this)
+                dialog.setContentView(bottomSheetView)
 
                 val lockScreenTextView = bottomSheetView.findViewById<TextView>(R.id.lock_screen)
                 val homeScreenTextView = bottomSheetView.findViewById<TextView>(R.id.home_screen)

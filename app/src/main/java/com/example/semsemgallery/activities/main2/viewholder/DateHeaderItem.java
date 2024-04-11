@@ -13,15 +13,15 @@ public class DateHeaderItem {
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH);
 
     public DateHeaderItem(Date value) {
-        Calendar c1 = Calendar.getInstance();
-        c1.setTime(value);
+//        Calendar c1 = Calendar.getInstance();
+//        c1.setTime(value);
+//
+//        c1.set(Calendar.HOUR_OF_DAY, 23);
+//        c1.set(Calendar.MINUTE, 59);
+//        c1.set(Calendar.SECOND, 59);
+//        c1.set(Calendar.MILLISECOND, 999);
 
-        c1.set(Calendar.HOUR_OF_DAY, 23);
-        c1.set(Calendar.MINUTE, 59);
-        c1.set(Calendar.SECOND, 59);
-        c1.set(Calendar.MILLISECOND, 999);
-
-        date = c1.getTime();
+        date = value;
 
         dateFormatted = dateFormat.format(date);
     }

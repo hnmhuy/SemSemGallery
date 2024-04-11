@@ -5,10 +5,13 @@ import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.Calendar;
 import java.io.File;
 import java.util.Date;
 
 public class Picture implements Parcelable, Comparable<Picture> {
+
+    private static Calendar calendar = Calendar.getInstance();
 
     private String url;
     private long pictureId;
@@ -51,11 +54,25 @@ public class Picture implements Parcelable, Comparable<Picture> {
         dateInMillis = dateTaken.getTime() / 1000000;
     }
     protected Picture(Parcel in) {
+//        dest.writeLong(pictureId);
+//        dest.writeLong(dateInMillis);
+//        dest.writeString(path);
+//        dest.writeString(fileName);
+//        dest.writeLong(dateTaken.getTime());
+//        dest.writeLong(dateAdded.getTime());
+//        dest.writeString(albumID);
+//        dest.writeString(albumName);
+//        dest.writeLong(fileSize);
+//        dest.writeByte((byte) (isFav ? 1 : 0));
+        pictureId = in.readLong();
+        dateInMillis = in.readLong();
         path = in.readString();
         fileName = in.readString();
-        long dateLong = in.readLong();
-        dateTaken = new Date(dateLong);
+        dateTaken = new Date(in.readLong());
+        dateAdded = new Date(in.readLong());
         albumID = in.readString();
+        albumName = in.readString();
+        fileSize = in.readLong();
         isFav = in.readByte() != 0;
     }
 
@@ -81,8 +98,15 @@ public class Picture implements Parcelable, Comparable<Picture> {
         this.fileSize = fileSize;
         this.albumID = albumID;
         this.albumName = albumName;
-        long temp = dateTaken.getTime() == 0 ? dateAdded.getTime() : dateTaken.getTime();
-        dateInMillis = Math.round((double) temp / 86400000);
+        Date temp = dateTaken.getTime() == 0 ? dateAdded : dateTaken;
+//        dateInMillis = Math.round((double) temp / 86400000);
+        calendar.setTime(temp);
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND, 999);
+        dateInMillis = calendar.getTimeInMillis();
+
     }
 
     @Override
@@ -92,10 +116,15 @@ public class Picture implements Parcelable, Comparable<Picture> {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(pictureId);
+        dest.writeLong(dateInMillis);
         dest.writeString(path);
         dest.writeString(fileName);
         dest.writeLong(dateTaken.getTime());
+        dest.writeLong(dateAdded.getTime());
         dest.writeString(albumID);
+        dest.writeString(albumName);
+        dest.writeLong(fileSize);
         dest.writeByte((byte) (isFav ? 1 : 0));
     }
 
