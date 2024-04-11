@@ -38,27 +38,69 @@ public class AIHandler {
         return instance;
     }
 
-    public void getTextRecognition(Bitmap bitmap)
+    public List<String> getTextRecognition(Context context, Uri uri)
     {
-        InputImage inputImage = InputImage.fromBitmap(bitmap, 0);
+        InputImage image = null;
+        List<String> labelName = new ArrayList<>();
+        try {
+            image = InputImage.fromFilePath(context, uri);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // Using Latin script
         TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
+        List<String> lines = new ArrayList<>();
+        Task<Text> result =
+                recognizer.process(image)
+                        .addOnSuccessListener(new OnSuccessListener<Text>() {
+                            @Override
+                            public void onSuccess(Text visionText) {
+                                // Task completed successfully
+                                for (Text.TextBlock block: visionText.getTextBlocks())
+                                {
+                                    String blockText = block.getText();
+                                    lines.add(blockText); // Add entire block's text to the list
+                                }
+                            }
+                        })
+                        .addOnFailureListener(
+                                new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        // Task failed with an exception
+                                        // ...
+                                    }});
 
-
-
+        return lines;
     }
-//    private List<String> processTextBlock(Text result)
-//    {
-//        List<String> lines = new ArrayList<>();
-//        // [START mlkit_process_text_block]
-//        String resulText = result.getText();
-//        for (Text.TextBlock block: result.getTextBlocks())
-//        {
-//            String blockText = block.getText();
-//            lines.add(blockText); // Add entire block's text to the list
-//        }
-//        // [END mlkit_process_text_block]
-//        return lines;
-//    }
+
+    public boolean checkTextInImage(Context context, Uri uri)
+    {
+        InputImage image = null;
+        List<String> labelName = new ArrayList<>();
+        try {
+            image = InputImage.fromFilePath(context, uri);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        final boolean[] textFound = {false}; // Array to hold the result
+
+        // Create a text recognizer with default options
+        TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
+        // Start text recognition
+        recognizer.process(image)
+                .addOnSuccessListener(visionText -> {
+                    // Check if any text blocks are recognized in the image
+                    textFound[0] = !visionText.getTextBlocks().isEmpty();
+                })
+                .addOnFailureListener(e -> {
+                    // Handle failure if the recognizer fails
+                    Log.e("ERROR", "Text recognition failed", e);
+                });
+
+        return textFound[0];
+    }
+
 
     public List<String> getImageLabeling(Context context, Uri uri)
     {
