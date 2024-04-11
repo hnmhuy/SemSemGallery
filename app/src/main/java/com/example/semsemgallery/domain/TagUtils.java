@@ -10,11 +10,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.semsemgallery.activities.search.SearchViewActivity;
 import com.example.semsemgallery.models.Tag;
 
-import java.io.File;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class TagUtils extends SQLiteOpenHelper {
     private final Context mContext;
@@ -50,6 +49,7 @@ public class TagUtils extends SQLiteOpenHelper {
         mContext = context;
     }
 
+    // Override methods
     @Override
     public void onCreate(SQLiteDatabase db) {
         try {
@@ -57,11 +57,10 @@ public class TagUtils extends SQLiteOpenHelper {
             db.execSQL(CREATE_TABLE_TAG);
             Toast.makeText(mContext, "Create database successfully", Toast.LENGTH_SHORT).show();
         } catch (SQLException e) {
-            Log.e("SearchViewActivity",e.toString());
+            Log.e("SearchViewActivity", e.toString());
             Toast.makeText(mContext, "Create database failed", Toast.LENGTH_SHORT).show();
         }
     }
-
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -76,60 +75,151 @@ public class TagUtils extends SQLiteOpenHelper {
 
     // Get Database
     public SQLiteDatabase myGetDatabase(Context context) {
-        SQLiteDatabase db;
-
-        File dbFile = context.getDatabasePath(DATABASE_NAME);
-        if (dbFile.exists()) {
-            db = getReadableDatabase();
-        } else {
-            db = getWritableDatabase();
-        }
-        return db;
+        return context.getDatabasePath(DATABASE_NAME).exists() ?
+                getReadableDatabase() : getWritableDatabase();
     }
 
     // Insert a new Tag
     public void insertTag(SQLiteDatabase db, String tagName) {
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_TAGNAME, tagName);
-        db.insert(TABLE_TAG, null, values);
+        try {
+            if (!checkAddedTag(db, tagName)) {
+                ContentValues values = new ContentValues();
+                values.put(COLUMN_TAGNAME, tagName);
+                db.insert(TABLE_TAG, null, values);
+                showToast("Added tag successfully");
+            } else {
+                showToast("This" + tagName + " already added");
+            }
+        } catch (SQLException e) {
+            Log.e("TagUtils", Objects.requireNonNull(e.getMessage()));
+        }
+
     }
 
+    public void insertTagPicture(SQLiteDatabase db, String tagName, String pictureId) {
+        if (!checkAddedTag(db, tagName)) {
+            insertTag(db, tagName);
+        }
+        try {
+            String tagId = getTagInfo(db, tagName, false);
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_TAGID_PICTURETAG, tagId);
+            values.put(COLUMN_PICTUREID, pictureId);
+            db.insert(TABLE_PICTURETAG, null, values);
+            showToast("Successfully added");
+        } catch (SQLException e) {
+            Log.e("TagUtils", Objects.requireNonNull(e.getMessage()));
+        }
+    }
+
+    // Get all tags
     public ArrayList<Tag> getAllTags(SQLiteDatabase db) {
         ArrayList<Tag> tags = new ArrayList<>();
         String query = "SELECT * FROM " + TABLE_TAG;
         Cursor cursor = db.rawQuery(query, null);
 
 
-        if(cursor != null && cursor.moveToFirst()){
-            do{
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
                 @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex(COLUMN_TAGID));
                 @SuppressLint("Range") String tagName = cursor.getString(cursor.getColumnIndex(COLUMN_TAGNAME));
                 Tag tag = new Tag(id, tagName);
                 tags.add(tag);
-            }while (cursor.moveToNext());
+            } while (cursor.moveToNext());
         }
         cursor.close();
         return tags;
     }
 
-    public Tag searchTag(SQLiteDatabase db, String keyword){
+    // Search tag by keywords
+    public Tag searchTag(SQLiteDatabase db, String keyword) {
         String selectionArgs = "%" + keyword + "%";
 
         String query = "SELECT * FROM " + TABLE_TAG + " WHERE " + COLUMN_TAGNAME + " LIKE ?";
         Cursor cursor = db.rawQuery(query, new String[]{selectionArgs});
 
         Tag tag = null;
-        if(cursor != null && cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
             @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex(COLUMN_TAGID));
             @SuppressLint("Range") String tagName = cursor.getString(cursor.getColumnIndex(COLUMN_TAGNAME));
             tag = new Tag(id, tagName);
         }
 
-        if(cursor != null) {
+        if (cursor != null) {
             cursor.close();
         }
 
         return tag;
     }
 
+    // Show toast methods
+    private void showToast(String message) {
+        Toast.makeText(mContext, message, Toast.LENGTH_LONG).show();
+    }
+
+    // Check added tag
+    private boolean checkAddedTag(SQLiteDatabase db, String tagName) {
+        String selection = COLUMN_TAGNAME + " = ?";
+        String[] selectionArgs = {tagName};
+        try (Cursor cursor = db.query(TABLE_TAG, null, selection, selectionArgs, null, null, null)) {
+            return cursor != null && cursor.getCount() > 0;
+        }
+    }
+
+    /* getTagInfo usage
+     * if isTagId == true, value == tagId => get TagName by TagId
+     * if isTagId == false, value == tagName => getTagId by TagName
+     * */
+    @SuppressLint("Range")
+    private String getTagInfo(SQLiteDatabase db, String value, boolean isTagId) {
+        String info = "";
+        String columnName = isTagId ? COLUMN_TAGID : COLUMN_TAGNAME;
+        String query = "SELECT " + columnName + " FROM " + TABLE_TAG + " WHERE " + (isTagId ? COLUMN_TAGNAME + " = ?" : COLUMN_TAGID + " = ?");
+
+        try (Cursor cursor = db.rawQuery(query, new String[]{value})) {
+            if (cursor != null && cursor.moveToFirst()) {
+                info = cursor.getString(cursor.getColumnIndex(columnName));
+            }
+        } catch (Exception e) {
+            Log.e("TagUtils", Objects.requireNonNull(e.getMessage()));
+        }
+
+        return info;
+    }
+
+    public ArrayList<Tag> getTagsByPictureId(SQLiteDatabase db, String pictureId) {
+        ArrayList<Tag> data = new ArrayList<>();
+        String query = "SELECT DISTINCT " + TABLE_TAG + "." + COLUMN_TAGID + ", " + TABLE_TAG + "." + COLUMN_TAGNAME +
+                " FROM " + TABLE_TAG +
+                " LEFT JOIN " + TABLE_PICTURETAG +
+                " ON " + COLUMN_PICTUREID + " = " + "'" + pictureId + "'";
+
+        try(Cursor cursor = db.rawQuery(query, null)) {
+            if(cursor != null && cursor.moveToFirst()) {
+                do {
+                    @SuppressLint("Range") int tagId = cursor.getInt(cursor.getColumnIndex(COLUMN_TAGID));
+                    @SuppressLint("Range") String tagName = cursor.getString(cursor.getColumnIndex(COLUMN_TAGNAME));
+                    data.add(new Tag(tagId, tagName));
+                } while(cursor.moveToNext());
+            }
+        }
+        return data;
+    }
+
+    public ArrayList<String> getPictureIdsByTagName(SQLiteDatabase db, String tagName) {
+        ArrayList<String> data = new ArrayList<>();
+        String query = "SELECT DISTINCT " + TABLE_PICTURETAG + "." + COLUMN_PICTUREID  +
+                " FROM " + TABLE_TAG +
+                " INNER JOIN " + TABLE_PICTURETAG +
+                " ON " + TABLE_TAG + "." + COLUMN_TAGNAME + " = " + "\"" + tagName + "\"";
+        try(Cursor cursor = db.rawQuery(query, null)) {
+            if(cursor != null && cursor.moveToFirst()) {
+                do {
+                    @SuppressLint("Range") String pictureId = cursor.getString(cursor.getColumnIndex(COLUMN_PICTUREID));
+                    data.add(pictureId);
+                } while(cursor.moveToNext());
+            }
+        }
+        return data;
+    }
 }

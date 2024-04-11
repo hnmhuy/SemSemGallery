@@ -16,6 +16,7 @@ public class Picture implements Parcelable, Comparable<Picture> {
     private String path;
     private String fileName;
     private Date dateTaken;
+    private Date dateAdded;
 
     public long getDateInMillis() {
         return dateInMillis;
@@ -70,16 +71,18 @@ public class Picture implements Parcelable, Comparable<Picture> {
         }
     };
 
-    public Picture(long pictureId, String path, String fileName, Date dateTaken, boolean isFav, long fileSize, String albumID, String albumName) {
+    public Picture(long pictureId, String path, String fileName, Date dateTaken, Date dateAdded, boolean isFav, long fileSize, String albumID, String albumName) {
         this.pictureId = pictureId;
         this.path = path;
         this.fileName = fileName;
         this.dateTaken = dateTaken;
         this.isFav = isFav;
+        this.dateAdded = dateAdded;
         this.fileSize = fileSize;
         this.albumID = albumID;
         this.albumName = albumName;
-        dateInMillis = dateTaken.getTime() / 1000000;
+        long temp = dateTaken.getTime() == 0 ? dateAdded.getTime() : dateTaken.getTime();
+        dateInMillis = Math.round((double) temp / 86400000);
     }
 
     @Override
@@ -161,10 +164,21 @@ public class Picture implements Parcelable, Comparable<Picture> {
     }
     public String getUrl(){return url;}
 
+    public void setDateAdded(Date value) {
+        this.dateAdded = value;
+    }
+
+    public Date getDateAdded() {
+        return dateAdded;
+    }
+
 
     @Override
     public int compareTo(Picture other) {
-        return this.dateTaken.compareTo(other.dateTaken) * (-1);
+        long time1 = dateTaken.getTime() == 0 ? dateAdded.getTime() : dateTaken.getTime();
+        long time2 = other.getDateTaken().getTime() == 0 ? other.getDateAdded().getTime() : other.getDateTaken().getTime();
+
+        return Long.compare(time1, time2);
     }
 
     public void setBitmap(Bitmap input){

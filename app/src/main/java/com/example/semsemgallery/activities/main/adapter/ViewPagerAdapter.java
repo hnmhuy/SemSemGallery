@@ -6,8 +6,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.example.semsemgallery.activities.main.AlbumsFragment;
-import com.example.semsemgallery.activities.main.FavoritesFragment;
-import com.example.semsemgallery.activities.main.PicturesFragment;
+import com.example.semsemgallery.activities.main2.fragment.FavoritesFragment;
 import com.example.semsemgallery.activities.main.PicturesFragmentNew;
 
 public class ViewPagerAdapter extends FragmentStateAdapter {

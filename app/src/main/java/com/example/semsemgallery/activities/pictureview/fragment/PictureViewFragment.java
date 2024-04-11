@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.models.Picture;
 import com.github.chrisbanes.photoview.PhotoView;
@@ -35,7 +36,9 @@ public class PictureViewFragment extends Fragment {
 
             // Use the retrieved data as needed
             PhotoView ptv = view.findViewById(R.id.iv_image);
-            ptv.setImageURI(Uri.fromFile(new File(picture.getPath())));
+//            ptv.setImageURI(Uri.fromFile(new File(picture.getPath())));
+
+            Glide.with(this).load(picture.getPath()).into(ptv);
         }
         return view;
     }

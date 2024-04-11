@@ -1,6 +1,6 @@
-package com.example.semsemgallery.activities.main.viewholders;
+package com.example.semsemgallery.activities.main2.viewholder;
 
-import android.media.Image;
+import android.content.Intent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -11,7 +11,7 @@ import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.base.SelectableItem;
 
-public class GalleryItemViewHolder extends SelectableItem<GalleryItem> {
+public abstract class GalleryItemViewHolder extends SelectableItem<GalleryItem> {
 
     private int type;
     public ImageView thumnail = null;
@@ -25,11 +25,6 @@ public class GalleryItemViewHolder extends SelectableItem<GalleryItem> {
         } else if (type == GalleryItem.GROUPDATE) {
             groupDisplayText = itemView.findViewById(R.id.group_date);
         }
-
-    }
-
-    @Override
-    public void clickOnNormalMode(View v) {
 
     }
 }

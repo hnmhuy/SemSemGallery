@@ -100,7 +100,8 @@ class PictureViewActivity : AppCompatActivity() {
         val viewPager: ViewPager2 = findViewById(R.id.vp_image)
         val adapter = PictureAdapter(this, pictureList, position)
         viewPager.adapter = adapter
-        viewPager.setCurrentItem(position, false)
+        viewPager.offscreenPageLimit = 4;
+        viewPager.setCurrentItem(position, true)
         filePath = pictureList!![position].path
         var fileName = pictureList[position].fileName
         var date: Date?

@@ -1,4 +1,4 @@
-package com.example.semsemgallery.activities.main;
+package com.example.semsemgallery.activities.main2.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
