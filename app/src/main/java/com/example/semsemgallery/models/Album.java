@@ -5,9 +5,16 @@ public class Album {
 
     private String albumId;
     private String wallId;
+    private String wallPath;
     private String name;
     private int count;
 
+    public Album(String albumId, String wallId, String wallPath, String name) {
+        this.albumId = albumId;
+        this.wallId = wallId;
+        this.wallPath = wallPath;
+        this.name = name;
+    }
 
     public Album(String albumId, String wallId, String name) {
         this.albumId = albumId;
@@ -46,5 +53,13 @@ public class Album {
 
     public void setCount(int count) {
         this.count = count;
+    }
+
+    public String getWallPath() {
+        return wallPath;
+    }
+
+    public void setWallPath(String wallPath) {
+        this.wallPath = wallPath;
     }
 }

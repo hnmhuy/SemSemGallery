@@ -61,14 +61,13 @@ class PictureViewActivity : AppCompatActivity() {
     companion object {
         const val PESDK_RESULT = 1
     }
-
-    private lateinit var fragmentActivity: PictureViewActivity
     private lateinit var topBar: MaterialToolbar
     private lateinit var actions: MaterialToolbar
-    private var filePath: String = ""
     private var position: Int = -1
-    private var selectingPic: Picture? = null
+    private lateinit var selectingPic: Picture
     private lateinit var viewPager: ViewPager2
+    private lateinit var favBtn: ImageButton
+    private val treeSet: TreeSet<Picture> = TreeSet(Comparator.reverseOrder<Picture>())
     private fun createPesdkSettingsList() =
         PhotoEditorSettingsList(false)
             .configure<UiConfigFilter> {
@@ -116,20 +115,17 @@ class PictureViewActivity : AppCompatActivity() {
 
     private var loader = object : PictureLoader(this) {
         override fun onProcessUpdate(vararg processes: Picture) {
-            if (processes[0].pictureId == selectingPic!!.pictureId) return;
-            var predictPos =
-                Collections.binarySearch(pictureList, processes[0], Comparator.reverseOrder());
-            if (predictPos < 0) predictPos = -predictPos - 1;
-            pictureList.add(predictPos, processes[0]);
-            //adapter.notifyItemInserted(predictPos);
-//            if (predictPos < position) {
-//                position++
-//                viewPager.setCurrentItem(position, false);
-//            }
+            treeSet.add(processes[0])
         }
 
         override fun postExecute(res: Boolean?) {
-            viewPager.setCurrentItem(findIndexOf(selectingPic!!, pictureList), false);
+            pictureList = ArrayList(treeSet)
+            adapter.pictures = pictureList
+            if (treeSet.contains(selectingPic)) {
+                viewPager.setCurrentItem(treeSet.headSet(selectingPic).size, false)
+            }
+//            Log.d("Pictures", "Pos: " + findIndexOf(selectingPic, pictureList))
+//            viewPager.setCurrentItem(findIndexOf(selectingPic, pictureList), false)
         }
 
     }
@@ -138,62 +134,43 @@ class PictureViewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_picture_view)
         enableEdgeToEdge()
-        fragmentActivity = this
-        viewPager = findViewById(R.id.vp_image)
-        selectingPic = intent.getParcelableExtra<Picture>("selectingPic")
-        pictureList.add(selectingPic!!)
-        adapter = PictureAdapter(fragmentActivity, pictureList, 0)
-        viewPager.adapter = adapter
-        viewPager.setCurrentItem(0, false);
-        loader.execute(PictureLoadMode.ALL.toString())
-//        val pictureList = intent.getParcelableArrayListExtra<Picture>("pictureList")
-//        val position = intent.getIntExtra("position", 0)
 
-        topBar = findViewById(R.id.activity_picture_view_topAppBar)
-        topBar.setOnMenuItemClickListener { menuItem -> onOptionsItemSelected(menuItem) }
-//        actions = findViewById(R.id.more_photo_action);
-//        actions.setOnMenuItemClickListener { menuItem ->
-//            onOptionsItemSelected(menuItem)
-//        }
-
+        // Load data
         viewPager = findViewById(R.id.vp_image)
         viewPager.offscreenPageLimit = 4
+        selectingPic = intent.getParcelableExtra<Picture>("selectingPic")!!
+        Log.d("Pictures", "Got Id: " + selectingPic.pictureId)
+        pictureList.add(selectingPic)
+        adapter = PictureAdapter(this, pictureList, 0)
+        viewPager.adapter = adapter
+        viewPager.setCurrentItem(0, false);
+        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(pos: Int) {
+                super.onPageSelected(pos)
+                selectingPic = pictureList[pos];
+                toggleFavorite(selectingPic.isFav)
+            }
+        })
+        loader.execute(PictureLoadMode.ALL.toString())
 
-//        filePath = pictureList!![position].path
-//        var fileName = pictureList[position].fileName
-        var fileName = ""
-        var date: Date?
-//        var isFavorite = pictureList[position].isFav;
-        var isFavorite = false
-        val favBtn: ImageButton = findViewById(R.id.favorite_button)
+        // UI handler
+        topBar = findViewById(R.id.activity_picture_view_topAppBar)
+        favBtn = findViewById(R.id.favorite_button)
+        val editBtn: ImageButton = findViewById(R.id.edit_picture_button)
         val infoBtn: ImageButton = findViewById(R.id.info_button)
         val shareBtn: ImageButton = findViewById(R.id.share_button)
 
-        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-
-                filePath = pictureList[position].path
-                fileName = pictureList[position].fileName
-                date = pictureList[position].dateTaken
-                isFavorite = pictureList[position].isFav
-                Log.e("FILEPATH", filePath)
-                Log.e("DATE", date.toString())
-
-                toggleFavorite(isFavorite, favBtn)
-            }
-        })
+        topBar.setOnMenuItemClickListener { menuItem -> onOptionsItemSelected(menuItem) }
 
 
         infoBtn.setOnClickListener {
-            val botSheetFrag = MetaDataBottomSheet(filePath, fileName)
+            val botSheetFrag = MetaDataBottomSheet(selectingPic.path, selectingPic.fileName)
             botSheetFrag.show(supportFragmentManager, botSheetFrag.tag)
         }
 
         // Event share to other apps
         shareBtn.setOnClickListener {
-            Log.d("Image Path", filePath)
-            val imageFile = File(filePath)
+            val imageFile = File(selectingPic.path)
             val imageUri = FileProvider.getUriForFile(
                 this,
                 applicationContext.packageName + ".provider",
@@ -203,14 +180,12 @@ class PictureViewActivity : AppCompatActivity() {
             shareIntent.type = "image/*"
             shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri)
             shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // Grant read permission
-
             startActivity(Intent.createChooser(shareIntent, "Share image via..."))
         }
 
         // Event edit image
-        val editBtn: ImageButton = findViewById(R.id.edit_picture_button)
         editBtn.setOnClickListener {
-            val imageFile = File(filePath)
+            val imageFile = File(selectingPic.path)
             val imageUri = FileProvider.getUriForFile(
                 this,
                 applicationContext.packageName + ".provider",
@@ -219,13 +194,7 @@ class PictureViewActivity : AppCompatActivity() {
             openEditor(imageUri)
         }
 
-
-        // Favorite Icon
-
-        toggleFavorite(isFavorite, favBtn)
-
         favBtn.setOnClickListener {
-
             var isStorageManager = false
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
                 isStorageManager = Environment.isExternalStorageManager()
@@ -234,7 +203,7 @@ class PictureViewActivity : AppCompatActivity() {
             if (isStorageManager) {
                 val contentUri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
                 val values = ContentValues().apply {
-                    put(MediaStore.Images.Media.IS_FAVORITE, !isFavorite)
+                    put(MediaStore.Images.Media.IS_FAVORITE, !selectingPic.isFav)
                 }
 
                 val contentResolver: ContentResolver = applicationContext.contentResolver
@@ -242,13 +211,11 @@ class PictureViewActivity : AppCompatActivity() {
                     contentUri,
                     values,
                     "${MediaStore.Images.Media.DATA}=?",
-                    arrayOf(filePath)
+                    arrayOf(selectingPic.path)
                 )
-                isFavorite = !isFavorite
-                pictureList[position].isFav = isFavorite
-                toggleFavorite(isFavorite, favBtn)
+                selectingPic.isFav = !selectingPic.isFav
+                toggleFavorite(selectingPic.isFav)
             } else {
-
                 val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
                 startActivity(intent)
             }
@@ -261,7 +228,7 @@ class PictureViewActivity : AppCompatActivity() {
         topBar.setNavigationOnClickListener { v: View? -> finish() }
     }
 
-    private fun toggleFavorite(isFavorite: Boolean, favBtn: ImageButton) {
+    private fun toggleFavorite(isFavorite: Boolean) {
         if (isFavorite) {
             favBtn.setImageResource(R.drawable.ic_heart_fill);
             val color = ContextCompat.getColor(applicationContext, R.color.is_favorite)
@@ -327,8 +294,8 @@ class PictureViewActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.copy_to_clipboard -> {
                 // Handle copy to clipboard action
-                handler.copyToClipboard(this, filePath)
-                Log.e("Image Path", filePath)
+                handler.copyToClipboard(this, selectingPic.path)
+                Log.e("Image Path", selectingPic.path)
                 return true
             }
 
@@ -361,7 +328,7 @@ class PictureViewActivity : AppCompatActivity() {
                     GlobalScope.launch {
                         // Start the background task in a coroutine
                         val job = launch {
-                            handler.setAsLockScreen(filePath)
+                            handler.setAsLockScreen(selectingPic.path)
                         }
 
                         // Display "Processing" message on the main thread
@@ -382,7 +349,7 @@ class PictureViewActivity : AppCompatActivity() {
                     GlobalScope.launch {
                         // Start the background task in a coroutine
                         val job = launch {
-                            handler.setAsHomeScreen(filePath)
+                            handler.setAsHomeScreen(selectingPic.path)
                         }
 
                         // Display "Processing" message on the main thread
@@ -403,7 +370,7 @@ class PictureViewActivity : AppCompatActivity() {
                     GlobalScope.launch {
                         // Start the background task in a coroutine
                         val job = launch {
-                            handler.setAsHomeScreenAndLockScreen(filePath)
+                            handler.setAsHomeScreenAndLockScreen(selectingPic.path)
                         }
 
                         // Display "Processing" message on the main thread

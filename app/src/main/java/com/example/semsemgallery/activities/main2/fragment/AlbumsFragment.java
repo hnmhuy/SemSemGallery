@@ -1,4 +1,4 @@
-package com.example.semsemgallery.activities.main;
+package com.example.semsemgallery.activities.main2.fragment;
 
 import android.content.Context;
 import android.content.Intent;
@@ -28,20 +28,28 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.album.AlbumViewActivity;
+import com.example.semsemgallery.activities.base.GridMode;
+import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.main.adapter.AlbumRecyclerAdapter;
 import com.example.semsemgallery.domain.Album.AlbumHandler;
+import com.example.semsemgallery.domain.Album.AlbumLoader;
 import com.example.semsemgallery.domain.MediaRetriever;
 import com.example.semsemgallery.models.Album;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnAlbumItemClickListener {
+public class AlbumsFragment extends Fragment {
 
     private ArrayList<Uri> selectedImages;
     private String newAlbumName;
-    private com.google.android.material.appbar.MaterialToolbar topBar;
+    private AlbumLoader loader = null;
+    private final ArrayList<Album> albumArrayList = new ArrayList<>();
+    private final ObservableGridMode<Album> observedObj = new ObservableGridMode<>(null, GridMode.NORMAL);
+    private AlbumRecyclerAdapter adapter = null;
+    private MaterialToolbar topBar;
     private Context applicationContext;
 
     // ====== Activity Result Launcher for Photo Picker
@@ -71,6 +79,25 @@ public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnA
             }
     );
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (adapter == null) {
+            observedObj.getObservedObjects().clear();
+            albumArrayList.clear();
+            adapter = new AlbumRecyclerAdapter(context, observedObj);
+        }
+        loader = new AlbumLoader(context) {
+            @Override
+            public void onProcessUpdate(Album... albums) {
+                albumArrayList.add(albums[0]);
+                observedObj.addData(albums[0]);
+                Log.d("AlbumLoader", albums[0].getAlbumId() + " - " + albums[0].getName() + " - " + albums[0].getWallPath());
+                adapter.notifyItemInserted(albumArrayList.size() - 1);
+            }
+        };
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -80,13 +107,14 @@ public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnA
         View view = inflater.inflate(R.layout.fragment_albums, container, false);
 
         RecyclerView recyclerView = view.findViewById(R.id.album_recycler);
-        AlbumRecyclerAdapter adapter = new AlbumRecyclerAdapter(albumsRetriever, appCompatActivity);
 
-        adapter.setOnAlbumItemClickListener(this); // Event Click
+        // adapter.setOnAlbumItemClickListener(this); // Event Click
 
         GridLayoutManager manager = new GridLayoutManager(getActivity(), 3);
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
+
+        loader.execute();
 
         // ====== Get TopBar
         topBar = view.findViewById(R.id.fragment_albums_topAppBar);
@@ -97,14 +125,14 @@ public class AlbumsFragment extends Fragment implements AlbumRecyclerAdapter.OnA
         return view;
     }
 
-    @Override
-    public void onAlbumItemClick(String albumId, String albumName) {
-        // Move to AlbumViewActivity & provide albumId
-        Intent intent = new Intent(requireContext(), AlbumViewActivity.class);
-        intent.putExtra("albumId", albumId);
-        intent.putExtra("albumName", albumName);
-        startActivity(intent);
-    }
+//    @Override
+//    public void onAlbumItemClick(String albumId, String albumName) {
+//        // Move to AlbumViewActivity & provide albumId
+//        Intent intent = new Intent(requireContext(), AlbumViewActivity.class);
+//        intent.putExtra("albumId", albumId);
+//        intent.putExtra("albumName", albumName);
+//        startActivity(intent);
+//    }
 
     // ====== Set Listener for Icon in Top Bar right here
     @Override

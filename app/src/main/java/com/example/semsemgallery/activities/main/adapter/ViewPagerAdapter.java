@@ -5,7 +5,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.example.semsemgallery.activities.main.AlbumsFragment;
+import com.example.semsemgallery.activities.main2.fragment.AlbumsFragment;
 import com.example.semsemgallery.activities.main2.fragment.FavoritesFragment;
 import com.example.semsemgallery.activities.main.PicturesFragmentNew;
 

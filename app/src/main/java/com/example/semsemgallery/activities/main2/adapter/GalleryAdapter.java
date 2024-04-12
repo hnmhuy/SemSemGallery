@@ -73,7 +73,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryItemViewHolder> 
                     ObservableGridMode<GalleryItem>.DataItem item = observableGridMode.getDataAt(getAbsoluteAdapterPosition());
                     Picture data = (Picture) item.data.getData();
                     intent.putExtra("selectingPic", data);
-                    Log.d("PictureViewActivity", "ID = " + data.getPictureId());
+                    Log.d("Pictures", "ID = " + data.getPictureId());
 //                    int pos = findIndexOf(data, dataList);
 //                    intent.putExtra("position", pos);
                     startActivity(context, intent, null);

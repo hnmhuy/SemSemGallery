@@ -9,7 +9,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.semsemgallery.R;
-import com.example.semsemgallery.activities.main.AlbumsFragment;
+import com.example.semsemgallery.activities.main2.fragment.AlbumsFragment;
 import com.example.semsemgallery.activities.main2.fragment.FavoritesFragment;
 import com.example.semsemgallery.activities.main2.fragment.MoreOptionsBottomSheet;
 import com.example.semsemgallery.activities.main2.fragment.PicturesFragment;

@@ -204,10 +204,13 @@ public class Picture implements Parcelable, Comparable<Picture> {
 
     @Override
     public int compareTo(Picture other) {
+        if (pictureId == other.pictureId) return 0;
         long time1 = dateTaken.getTime() == 0 ? dateAdded.getTime() : dateTaken.getTime();
         long time2 = other.getDateTaken().getTime() == 0 ? other.getDateAdded().getTime() : other.getDateTaken().getTime();
-
-        return Long.compare(time1, time2);
+        int comparison = Long.compare(time1, time2);
+        if (comparison == 0) {
+            return 1;
+        } else return comparison;
     }
 
     public void setBitmap(Bitmap input){
