@@ -52,9 +52,6 @@ public class AlbumsFragment extends Fragment {
     private MaterialToolbar topBar;
     private Context applicationContext;
 
-    private AlertDialog loadingDialog;
-    private View loadingOverlayView; // Overlay for avoid touching UI outside Loading Dialog
-
     // ====== Activity Result Launcher for Photo Picker
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -73,8 +70,7 @@ public class AlbumsFragment extends Fragment {
                         // ====== Open AlbumHandler Dialog after picking images
                         if (selectedImages.size() > 0) {
                             showAlbumHandlerDialog();
-                        }
-                        else {
+                        } else {
                             Toast.makeText(applicationContext, "No images selected", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -126,7 +122,6 @@ public class AlbumsFragment extends Fragment {
         topBar = view.findViewById(R.id.fragment_albums_topAppBar);
         selectedImages = new ArrayList<>();
         applicationContext = requireContext();
-        loadingDialog = myLoadingDialog();
 
         return view;
     }
@@ -146,7 +141,6 @@ public class AlbumsFragment extends Fragment {
             return false;
         });
     }
-
 
     // ====== Show Option Dialog
     private void showOptionDialog() {
@@ -213,8 +207,7 @@ public class AlbumsFragment extends Fragment {
     private void showAlbumHandlerDialog() {
         View dialogView = getLayoutInflater().inflate(R.layout.component_album_handler_dialog, null);
 
-        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(applicationContext)
-                .setView(dialogView);
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(applicationContext).setView(dialogView);
 
         AlertDialog dialog = dialogBuilder.create();
         dialog.show();
@@ -232,6 +225,7 @@ public class AlbumsFragment extends Fragment {
         copyBtn.setOnClickListener(v -> {
             dialog.dismiss();
 
+            AlertDialog loadingDialog = myLoadingDialog();
             loadingDialog.show(); // Show Loading Dialog
             TextView dialogTitle = loadingDialog.findViewById(R.id.component_loading_dialog_title);
             dialogTitle.setText("Copying items to " + newAlbumName);
@@ -242,6 +236,7 @@ public class AlbumsFragment extends Fragment {
                 public void onLoadingComplete() {
                     loadingDialog.dismiss();
                 }
+
                 @Override
                 public void onLoadingProgressUpdate(int progress) {
                     ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
@@ -253,10 +248,32 @@ public class AlbumsFragment extends Fragment {
             AlbumHandler.copyImagesToAlbumHandler(applicationContext, selectedImages, newAlbumName, loadingListener);
         });
 
+
         // ====== Listener for MoveButton in AlbumHandlerDialog clicked
         moveBtn.setOnClickListener(v -> {
-            // AlbumHandler.moveImagesToAlbum(applicationContext, selectedImages, newAlbumName);
             dialog.dismiss();
+
+            AlertDialog loadingDialog = myLoadingDialog();
+            loadingDialog.show(); // Show Loading Dialog
+            TextView dialogTitle = loadingDialog.findViewById(R.id.component_loading_dialog_title);
+            dialogTitle.setText("Moving items to " + newAlbumName);
+
+            // Create a listener for completion & set progress
+            AlbumHandler.OnLoadingListener loadingListener = new AlbumHandler.OnLoadingListener() {
+                @Override
+                public void onLoadingComplete() {
+                    loadingDialog.dismiss();
+                }
+
+                @Override
+                public void onLoadingProgressUpdate(int progress) {
+                    ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
+                    int progressPercent = (int) (((progress) / (float) selectedImages.size()) * 100);
+                    progressBar.setProgress(progressPercent);
+                }
+            };
+
+            AlbumHandler.moveImagesToAlbumHandler(applicationContext, selectedImages, newAlbumName, loadingListener);
         });
     }
 
@@ -265,12 +282,13 @@ public class AlbumsFragment extends Fragment {
     private AlertDialog myLoadingDialog() {
         View dialogView = getLayoutInflater().inflate(R.layout.component_loading_dialog, null);
         MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(applicationContext).setView(dialogView);
+
         AlertDialog dialog = dialogBuilder.create();
+        dialog.setCanceledOnTouchOutside(false);
 
         Button cancelButton = dialogView.findViewById(R.id.component_loading_dialog_cancelButton);
-
         cancelButton.setOnClickListener(v -> {
-            Log.d("AlbumFragment", "CANCEL HANDLING");
+            AlbumHandler.stopHandling();
         });
 
         return dialog;

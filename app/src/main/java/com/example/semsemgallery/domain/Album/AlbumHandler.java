@@ -18,6 +18,16 @@
     import java.util.ArrayList;
 
     public class AlbumHandler {
+        private static boolean isHandling = false;
+
+        public static void stopHandling() {
+            isHandling = false;
+        }
+
+        public interface OnLoadingListener {
+            void onLoadingComplete();
+            void onLoadingProgressUpdate(int progress);
+        }
 
         // ====== Check if Album Exists
         public static boolean checkAlbumExists(Context context, String albumName) {
@@ -78,16 +88,11 @@
             }
         }
 
-
-        public interface OnLoadingListener {
-            void onLoadingComplete();
-            void onLoadingProgressUpdate(int progress);
-        }
-
         // Copy Images to Album - but split Thread for show Loading Dialog
         public static void copyImagesToAlbumHandler(Context context, ArrayList<Uri> imageUris, String albumName, OnLoadingListener listener) {
             new Thread(() -> {
                 int totalImages = imageUris.size();
+                isHandling = true;
 
                 // Get DCIM Folder in device & Album with name as albumName
                 File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
@@ -100,6 +105,8 @@
 
                 // Copy images to the album directory
                 for (int i = 0; i < totalImages; i++) {
+                    if (!isHandling) break;
+
                     Uri imageUri = imageUris.get(i);
                     try {
                         String fileName = getFileName(context, imageUri);
@@ -120,6 +127,7 @@
                 listener.onLoadingComplete();
             }).start();
         }
+
 
         // ====== Move Images to Album (If Album doesn't exist, create new album)
         public static void moveImagesToAlbum(Context context, ArrayList<Uri> imageUris, String albumName) {
@@ -165,6 +173,48 @@
 
             Toast.makeText(context, "Move successfully to " + albumName, Toast.LENGTH_SHORT).show();
         }
+
+        // Move Images to Album - but split Thread for show Loading Dialog
+        public static void moveImagesToAlbumHandler(Context context, ArrayList<Uri> imageUris, String albumName, OnLoadingListener listener) {
+            new Thread(() -> {
+                int totalImages = imageUris.size();
+                isHandling = true;
+
+                // Get DCIM Folder in device & Album with name as albumName
+                File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+                File albumDirectory = new File(dcimDirectory, albumName);
+
+                // Create the album directory if it doesn't exist
+                if (!albumDirectory.exists()) {
+                    albumDirectory.mkdirs();
+                }
+
+                // Copy images to the album directory
+                for (int i = 0; i < totalImages; i++) {
+                    if (!isHandling) break;
+
+                    Uri imageUri = imageUris.get(i);
+                    try {
+                        String fileName = getFileName(context, imageUri);
+                        File destFile = new File(albumDirectory, fileName);
+                        if (destFile.exists()) { continue; }
+
+                        InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
+                        if (inputStream != null) {
+                            copyFile(inputStream, destFile);
+                            listener.onLoadingProgressUpdate(i + 1);
+                            inputStream.close();
+                            deleteImage(context, imageUri);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                listener.onLoadingComplete();
+            }).start();
+        }
+
 
         // ====== Delete Image
         private static void deleteImage(Context context, Uri imageUri) {
