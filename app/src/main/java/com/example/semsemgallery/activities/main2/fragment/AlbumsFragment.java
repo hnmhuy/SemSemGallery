@@ -240,8 +240,7 @@ public class AlbumsFragment extends Fragment {
                 @Override
                 public void onLoadingProgressUpdate(int progress) {
                     ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
-                    int progressPercent = (int) (((progress) / (float) selectedImages.size()) * 100);
-                    progressBar.setProgress(progressPercent);
+                    progressBar.setProgress(progress);
                 }
             };
 
@@ -268,8 +267,7 @@ public class AlbumsFragment extends Fragment {
                 @Override
                 public void onLoadingProgressUpdate(int progress) {
                     ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
-                    int progressPercent = (int) (((progress) / (float) selectedImages.size()) * 100);
-                    progressBar.setProgress(progressPercent);
+                    progressBar.setProgress(progress);
                 }
             };
 

@@ -116,7 +116,10 @@
                         InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
                         if (inputStream != null) {
                             copyFile(inputStream, destFile);
-                            listener.onLoadingProgressUpdate(i + 1);
+
+                            int progress = (int) (((i + 1) / (float) totalImages) * 100);
+                            listener.onLoadingProgressUpdate(progress);
+
                             inputStream.close();
                         }
                     } catch (IOException e) {
@@ -202,7 +205,10 @@
                         InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
                         if (inputStream != null) {
                             copyFile(inputStream, destFile);
-                            listener.onLoadingProgressUpdate(i + 1);
+
+                            int progress = (int) (((i + 1) / (float) totalImages) * 100);
+                            listener.onLoadingProgressUpdate(progress);
+
                             inputStream.close();
                             deleteImage(context, imageUri);
                         }
@@ -214,6 +220,39 @@
                 listener.onLoadingComplete();
             }).start();
         }
+
+        // ====== Delete Album
+        public static void deleteAlbumHandler(Context context, String albumName, OnLoadingListener listener) {
+            new Thread(() -> {
+                isHandling = true;
+
+                File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+                File albumDirectory = new File(dcimDirectory, albumName);
+
+                if (albumDirectory.exists()) {
+                    File[] files = albumDirectory.listFiles();
+                    int totalFiles = files != null ? files.length : 0;
+                    int deletedFiles = 0;
+
+                    if (files != null) {
+                        for (File file : files) {
+                            if (!isHandling) break;
+                            file.delete();
+                            deletedFiles++;
+
+                            int progress = (int) (((float) deletedFiles / totalFiles) * 100);
+                            listener.onLoadingProgressUpdate(progress);
+                        }
+                    }
+
+                    albumDirectory.delete();
+                }
+
+                listener.onLoadingComplete();
+            }).start();
+        }
+
+
 
 
         // ====== Delete Image
