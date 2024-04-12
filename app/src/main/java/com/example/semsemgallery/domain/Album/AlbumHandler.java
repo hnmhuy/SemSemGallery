@@ -221,7 +221,7 @@
             }).start();
         }
 
-        // ====== Delete Album
+        // ====== Delete Album (Remembers to check if the album exists before deleting)
         public static void deleteAlbumHandler(Context context, String albumName, OnLoadingListener listener) {
             new Thread(() -> {
                 isHandling = true;
@@ -244,7 +244,6 @@
                             listener.onLoadingProgressUpdate(progress);
                         }
                     }
-
                     albumDirectory.delete();
                 }
 
@@ -252,7 +251,17 @@
             }).start();
         }
 
+        // ====== Rename album (Remembers to check if the album exists before renaming)
+        public static void renameAlbum(Context context, String oldAlbumName, String newAlbumName) {
+                File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+                
+                File oldAlbumDirectory = new File(dcimDirectory, oldAlbumName);
+                File newAlbumDirectory = new File(dcimDirectory, newAlbumName);
 
+                if (oldAlbumDirectory.exists()) {
+                    oldAlbumDirectory.renameTo(newAlbumDirectory);
+                }
+        }
 
 
         // ====== Delete Image
