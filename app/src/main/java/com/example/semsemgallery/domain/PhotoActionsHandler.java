@@ -14,8 +14,11 @@ import android.widget.Toast;
 
 import androidx.core.content.FileProvider;
 
+import com.example.semsemgallery.domain.Album.AlbumHandler;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class PhotoActionsHandler {
     private static volatile PhotoActionsHandler instance;
@@ -36,17 +39,26 @@ public class PhotoActionsHandler {
         return instance;
     }
 
-    public void copyToClipboard(Context context, String imagePath) {
-
+    public void copyToClipboard(Context context, Uri imageUri) {
+        ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newUri(context.getContentResolver(), "a Photo", imageUri);
+        clipboard.setPrimaryClip(clip);
     }
 
-    public void copyToAlbum() {
+    public void copyToAlbum(Context context, Uri imageUri, String albumName) {
         // Implement copy to album functionality here
+        ArrayList<Uri> uris = new ArrayList<>();
+        uris.add(imageUri);
+        AlbumHandler.copyImagesToAlbum(context, uris, albumName );
+
         showToast("Copied to album");
     }
 
-    public void moveToAlbum() {
+    public void moveToAlbum(Context context, Uri imageUri, String albumName) {
         // Implement move to album functionality here
+        ArrayList<Uri> uris = new ArrayList<>();
+        uris.add(imageUri);
+        AlbumHandler.moveImagesToAlbum(context, uris, albumName );
         showToast("Moved to album");
     }
 
