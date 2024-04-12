@@ -164,7 +164,8 @@ class PictureViewActivity : AppCompatActivity() {
 
 
         infoBtn.setOnClickListener {
-            val botSheetFrag = MetaDataBottomSheet(selectingPic.path, selectingPic.fileName)
+            var temp = if (selectingPic.dateTaken.time != 0L) selectingPic.dateTaken else selectingPic.dateAdded
+            val botSheetFrag = MetaDataBottomSheet(selectingPic.pictureId,selectingPic.path, selectingPic.fileName, temp, selectingPic.fileSize)
             botSheetFrag.show(supportFragmentManager, botSheetFrag.tag)
         }
 

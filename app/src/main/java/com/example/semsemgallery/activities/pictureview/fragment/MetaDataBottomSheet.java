@@ -1,6 +1,9 @@
 package com.example.semsemgallery.activities.pictureview.fragment;
 
+import static android.content.ContentUris.appendId;
+
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,21 +19,31 @@ import androidx.exifinterface.media.ExifInterface;
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.EditMetadataActivity;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.type.DateTime;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 
 public class MetaDataBottomSheet extends BottomSheetDialogFragment {
-    public TextView date, time, name, filePath, device, size, height, width, megaPixels, iso, focalLength, ev, fNumber, exTime;
-    public LinearLayout row1, row2;
-    public  MetaDataBottomSheet()
+    private TextView date, time, name, filePath, device, size, height, width, megaPixels, iso, focalLength, ev, fNumber, exTime;
+    private LinearLayout row1, row2;
+    private MetaDataBottomSheet()
     {}
-    public String path;
-    public String fileName;
-    public MetaDataBottomSheet(String path, String fileName)
+    private String path;
+    private String fileName;
+    private Long id;
+    private Long fileSize;
+    private Date datetime;
+    public MetaDataBottomSheet(Long id, String path, String fileName, Date datetime, Long fileSize)
     {
+        this.id = id;
         this.path = path;
         this.fileName = fileName;
+        this.datetime = datetime;
+        this.fileSize = fileSize;
     }
 
     @Override
@@ -68,6 +81,8 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
                 intent.putExtra("date", date.getText());
                 intent.putExtra("time", time.getText());
                 intent.putExtra("filePath", path);
+                intent.putExtra("id", id);
+
                 startActivity(intent);
             }
         });
@@ -78,84 +93,16 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
     public void initMetaDate()
     {
         try {
-//            GET the exif
-//            MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
-//            metadataRetriever.setDataSource(path);
-
             ExifInterface exifInterface = new ExifInterface(path);
-            String datetime = exifInterface.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL);
 
-
-
-            String datetimeTemp = convertDateTimeFormat(datetime);
-            Log.e("NEW ERROR", datetime);
-            String[] dateTimeFormatted = splitDateTime(datetimeTemp);
-
-
-            String Model = exifInterface.getAttribute(ExifInterface.TAG_MODEL);
-            String softWare = exifInterface.getAttribute(ExifInterface.TAG_SOFTWARE);
-
-            if(Model != null)
-            {
-                device.setText(Model);
-            }
-            else if (softWare != null && softWare.contains("Android"))
-            {
-                device.setText("Screenshots");
-            }
-            else device.setText("Image Info");
-
-
-
-//      ------- Case 1 & Case 2
-            String heightContent = exifInterface.getAttribute(ExifInterface.TAG_IMAGE_LENGTH);
-            String widthContent = exifInterface.getAttribute(ExifInterface.TAG_IMAGE_WIDTH);
-            Log.d("HEIGHT", heightContent);
-            Log.d("WIDTH", widthContent);
-
-//      ------- If megapixel is < 0 => hide it
-            int megaPixelsNumber = (int) (Integer.parseInt(heightContent) * Integer.parseInt(widthContent) / 1e6);
-            String megaPixelsContent = megaPixelsNumber > 0 ? String.format("%sMP", megaPixelsNumber) : "";
-
-
-//      ------- Case 3
-            String isoContent = exifInterface.getAttribute(ExifInterface.TAG_PHOTOGRAPHIC_SENSITIVITY);
-            if (isoContent == null) {
-                row2.setVisibility(View.INVISIBLE);
-            } else {
-                String focal = exifInterface.getAttribute(ExifInterface.TAG_FOCAL_LENGTH_IN_35MM_FILM);
-                String evContent = exifInterface.getAttribute(ExifInterface.TAG_EXPOSURE_TIME);
-
-                float evNumber = Float.parseFloat(evContent);
-                String evContentFormat = String.format("%.1f", evNumber);
-
-                String fNumberContent = exifInterface.getAttribute(ExifInterface.TAG_F_NUMBER);
-                Double exTimeNumber = Double.valueOf(exifInterface.getAttribute(ExifInterface.TAG_EXPOSURE_TIME));
-                String exTimeContent = convertDecimalToFraction(exTimeNumber);
-
-                iso.setText(String.format("ISO %s", isoContent));
-                focalLength.setText(String.format("%smm", focal));
-                ev.setText(String.format("%sev", evContentFormat));
-                fNumber.setText(String.format("F%s", fNumberContent));
-                exTime.setText(String.format("%s s", exTimeContent));
-            }
-
-
-//            Log.e("model", Model);
-
-//            Assign to TextView
-            date.setText(dateTimeFormatted[0]);
-            time.setText(dateTimeFormatted[1]);
-            name.setText(fileName);
-            filePath.setText(path);
-
-
-//            size.setText(bytesIntoHumanReadable(bytes));
-
-            height.setText(heightContent);
-            width.setText(widthContent);
-            megaPixels.setText(megaPixelsContent);
-
+            String[] dateTimeFormatted = splitDateTimeFormat(String.valueOf(datetime));
+            setDateAndTime(dateTimeFormatted);
+            appendId(name, fileName);
+            processDirectoryPath(path);
+            processDeviceText(exifInterface);
+            processFileSize(fileSize);
+            processImageDimensions(exifInterface);
+            processImageInfoCamera(exifInterface);
 
         }catch (Exception e)
         {
@@ -163,48 +110,137 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
         }
     }
 
-    public static String convertDateTimeFormat(String datetime) {
+
+    // [START] Set datetime content
+    private String[] splitDateTimeFormat(String dateTime) {
         try {
-            // Parse input datetime string
-            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
+            Log.d("Date", dateTime.toString());
+            SimpleDateFormat inputFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
             SimpleDateFormat outputFormat = new SimpleDateFormat("MMMM dd yyyy HH:mm");
+            Date date = inputFormat.parse(dateTime);
+            String formattedDateTime = outputFormat.format(date);
+            String[] temp = formattedDateTime.split(" ");
+            String dateTemp = temp[0] + " " + temp[1] + ", " + temp[2];
+            return new String[]{dateTemp, temp[3]};
 
-            // Parse and format datetime
-            return outputFormat.format(Objects.requireNonNull(inputFormat.parse(datetime)));
-        } catch (Exception e) {
-            Log.e("ERROR IN META DATA:", e.getMessage());
-            return null;
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return new String[]{"", ""};
         }
+    }
+    private void setDateAndTime(String[] dateTimeFormatted) {
+        appendId(date, dateTimeFormatted[0]);
+        appendId(time, dateTimeFormatted[1]);
+    }
+    // [END] Set datetime content
 
+    private void appendId(TextView view, String content) {
+        view.setText(content);
     }
 
-    public String[] splitDateTime(String datetimeContent) {
-        // Split the formatted date string into date and time components
-        String[] parts = datetimeContent.split(" ");
+    // [START] Set path
+    private void processDirectoryPath(String fullPath) {
+        int lastSlashIndex = fullPath.lastIndexOf("/");
+        if (lastSlashIndex != -1) {
+            appendId(filePath,fullPath.substring(0, lastSlashIndex));
+        } else {
+            // No directory path found
+            appendId(filePath," ");
+        }
+    }
+    // [END] Set path
 
-        // Extract date and time components
-        String date = parts[0] + " " + parts[1] + ", " + parts[2]; // Date component
-        String time = parts[3]; // Time component
+    // [START] Set Device content
+    private void processDeviceText(ExifInterface exifInterface) {
+        String model = exifInterface.getAttribute(ExifInterface.TAG_MODEL);
+        String software = exifInterface.getAttribute(ExifInterface.TAG_SOFTWARE);
+        if (model != null) {
+            appendId(device, model);
+        } else if (software != null && software.contains("Android")) {
+            appendId(device, "Screenshots");
+        } else {
+            appendId(device, "Image Info");
+        }
+    }
+    // [END] Set Device content
 
-        return new String[]{date, time};
+    // [START] Set fileSize content
+    private void processFileSize(long bytes)
+    {
+        String sizeContent = bytesIntoHumanReadable(bytes);
+        appendId(size, sizeContent);
+    }
+    // [END] Set fileSize content
+
+
+    // [START] Set Dimension content
+    private void processImageDimensions(ExifInterface exifInterface) {
+        String heightContent = exifInterface.getAttribute(ExifInterface.TAG_IMAGE_LENGTH);
+        String widthContent = exifInterface.getAttribute(ExifInterface.TAG_IMAGE_WIDTH);
+        Log.d("HEIGHT", heightContent);
+        Log.d("WIDTH", widthContent);
+
+        int megaPixelsNumber = calculateMegaPixels(heightContent, widthContent);
+        String megaPixelsContent = megaPixelsNumber > 0 ? String.format("%sMP", megaPixelsNumber) : "";
+        setDimensionViews(heightContent, widthContent, megaPixelsContent);
+    }
+    private int calculateMegaPixels(String heightContent, String widthContent) {
+        return (int) (Integer.parseInt(heightContent) * Integer.parseInt(widthContent) / 1e6);
     }
 
-    private String bytesIntoHumanReadable(int bytes) {
-        long kilobyte = 1024;
-        long megabyte = kilobyte * 1024;
-        long gigabyte = megabyte * 1024;
+    private void setDimensionViews(String heightContent, String widthContent, String megaPixelsContent) {
+        appendId(height, heightContent);
+        appendId(width, widthContent);
+        appendId(megaPixels, megaPixelsContent);
+    }
+    // [END] Set Dimension
+
+    // [START] Set row2: Detail Information of image: focal, ev,..
+    private void processImageInfoCamera(ExifInterface exifInterface) {
+        String isoContent = exifInterface.getAttribute(ExifInterface.TAG_PHOTOGRAPHIC_SENSITIVITY);
+        if (isoContent == null) {
+            row2.setVisibility(View.INVISIBLE);
+        } else {
+            String focal = exifInterface.getAttribute(ExifInterface.TAG_FOCAL_LENGTH_IN_35MM_FILM);
+            String evContent = exifInterface.getAttribute(ExifInterface.TAG_EXPOSURE_TIME);
+            float evNumber = Float.parseFloat(evContent);
+            String evContentFormat = String.format("%.1f", evNumber);
+            String fNumberContent = exifInterface.getAttribute(ExifInterface.TAG_F_NUMBER);
+            Double exTimeNumber = Double.valueOf(exifInterface.getAttribute(ExifInterface.TAG_EXPOSURE_TIME));
+            String exTimeContent = convertDecimalToFraction(exTimeNumber);
+
+            setImageInfoCameraViews(isoContent, focal, evContentFormat, fNumberContent, exTimeContent);
+        }
+    }
+    private void setImageInfoCameraViews(String isoContent, String focal, String evContentFormat, String fNumberContent, String exTimeContent) {
+        iso.setText(String.format("ISO %s", isoContent));
+        focalLength.setText(String.format("%smm", focal));
+        ev.setText(String.format("%sev", evContentFormat));
+        fNumber.setText(String.format("F%s", fNumberContent));
+        exTime.setText(String.format("%s s", exTimeContent));
+    }
+    // [END] Set row2: Detail Information of image: focal, ev,..
+
+
+
+
+    private String bytesIntoHumanReadable(long _bytes) {
+        float kilobyte = 1024;
+        float megabyte = kilobyte * 1024;
+        float gigabyte = megabyte * 1024;
+        float bytes = (float) _bytes;
 
         if ((bytes >= 0) && (bytes < kilobyte)) {
-            return bytes + " B";
+            return String.format("%.2f", bytes) + " B";
 
         } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
-            return (bytes / kilobyte) + " KB";
+            return String.format("%.2f", bytes / kilobyte) + " KB";
 
         } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
-            return (bytes / megabyte) + " MB";
+            return String.format("%.2f", bytes / megabyte) + " MB";
 
         } else {
-            return bytes + " Bytes";
+            return String.format("%.2f", bytes / gigabyte) + " GB";
         }
     }
 
