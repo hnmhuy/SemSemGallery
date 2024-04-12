@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,10 +26,9 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.semsemgallery.R;
-import com.example.semsemgallery.activities.album.AlbumViewActivity;
 import com.example.semsemgallery.activities.base.GridMode;
 import com.example.semsemgallery.activities.base.ObservableGridMode;
-import com.example.semsemgallery.activities.main.adapter.AlbumRecyclerAdapter;
+import com.example.semsemgallery.activities.main2.adapter.AlbumRecyclerAdapter;
 import com.example.semsemgallery.domain.Album.AlbumHandler;
 import com.example.semsemgallery.domain.Album.AlbumLoader;
 import com.example.semsemgallery.domain.MediaRetriever;
@@ -125,20 +123,10 @@ public class AlbumsFragment extends Fragment {
         return view;
     }
 
-//    @Override
-//    public void onAlbumItemClick(String albumId, String albumName) {
-//        // Move to AlbumViewActivity & provide albumId
-//        Intent intent = new Intent(requireContext(), AlbumViewActivity.class);
-//        intent.putExtra("albumId", albumId);
-//        intent.putExtra("albumName", albumName);
-//        startActivity(intent);
-//    }
-
     // ====== Set Listener for Icon in Top Bar right here
     @Override
     public void onResume() {
         super.onResume();
-
         // ====== Listener for AddIcon in TopBar clicked
         topBar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.add) {

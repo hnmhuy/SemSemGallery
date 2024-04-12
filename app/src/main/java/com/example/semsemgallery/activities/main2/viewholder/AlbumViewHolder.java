@@ -1,5 +1,6 @@
 package com.example.semsemgallery.activities.main2.viewholder;
 
+import android.content.Context;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -11,7 +12,7 @@ import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.base.SelectableItem;
 import com.example.semsemgallery.models.Album;
 
-public class AlbumViewHolder extends SelectableItem<Album> {
+public abstract class AlbumViewHolder extends SelectableItem<Album> {
 
     public ImageView thumbnail;
     public TextView albumName;
@@ -22,10 +23,5 @@ public class AlbumViewHolder extends SelectableItem<Album> {
         thumbnail = itemView.findViewById(R.id.component_album_item_image);
         albumName = itemView.findViewById(R.id.component_album_item_name);
         albumQuantity = itemView.findViewById(R.id.component_album_item_quantity);
-    }
-
-    @Override
-    public void clickOnNormalMode(View v) {
-
     }
 }

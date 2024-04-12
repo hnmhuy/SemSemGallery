@@ -1,6 +1,9 @@
-package com.example.semsemgallery.activities.main.adapter;
+package com.example.semsemgallery.activities.main2.adapter;
+
+import static androidx.core.content.ContextCompat.startActivity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.semsemgallery.R;
+import com.example.semsemgallery.activities.album.AlbumViewActivity;
 import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.main2.viewholder.AlbumViewHolder;
 import com.example.semsemgallery.models.Album;
@@ -31,7 +35,17 @@ public class AlbumRecyclerAdapter extends RecyclerView.Adapter<AlbumViewHolder> 
     @Override
     public AlbumViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.component_album_item, parent, false);
-        return new AlbumViewHolder(view, observabledObj);
+        return new AlbumViewHolder(view, observabledObj) {
+            @Override
+            public void clickOnNormalMode(View v) {
+                ObservableGridMode<Album>.DataItem data = observabledObj.getDataAt(getAbsoluteAdapterPosition());
+                Intent intent = new Intent(context, AlbumViewActivity.class);
+                intent.putExtra("albumId", data.data.getAlbumId());
+                intent.putExtra("albumName", data.data.getName());
+                intent.putExtra("albumQuantity", data.data.getCount());
+                startActivity(context, intent, null);
+            }
+        };
     }
 
     @Override

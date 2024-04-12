@@ -13,8 +13,11 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.window.OnBackInvokedDispatcher;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -131,6 +134,17 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
                 observedObj.fireSelectionChangeForAll(isCheck);
             }
         });
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (observedObj.getCurrentMode() == GridMode.NORMAL)
+                    finish();
+                else {
+                    observedObj.setGridMode(GridMode.NORMAL);
+                }
+            }
+        });
     }
 
     @Override
@@ -158,20 +172,18 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
             selectedCounts.setText(R.string.select_items);
         }
     }
-
     @Override
     public void onSelectingAll(GridModeEvent event) {
 
         selectAll.setChecked(event.getNewSelectionForAll());
         selectedCounts.setText(String.valueOf(observedObj.getNumberOfSelected()) + " selected");
     }
-
-    @Override
-    public void onBackPressed() {
-        if (observedObj.getCurrentMode() == GridMode.NORMAL)
-            super.onBackPressed();
-        else {
-            observedObj.setGridMode(GridMode.NORMAL);
-        }
-    }
+//    @Override
+//    public void onBackPressed() {
+//        if (observedObj.getCurrentMode() == GridMode.NORMAL)
+//            super.onBackPressed();
+//        else {
+//            observedObj.setGridMode(GridMode.NORMAL);
+//        }
+//    }
 }
