@@ -8,8 +8,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +51,9 @@ public class AlbumsFragment extends Fragment {
     private AlbumRecyclerAdapter adapter = null;
     private MaterialToolbar topBar;
     private Context applicationContext;
+
+    private AlertDialog loadingDialog;
+    private View loadingOverlayView; // Overlay for avoid touching UI outside Loading Dialog
 
     // ====== Activity Result Launcher for Photo Picker
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
@@ -98,13 +103,6 @@ public class AlbumsFragment extends Fragment {
         };
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Log.i("AlbumFragment", "On create");
-
-    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -116,7 +114,6 @@ public class AlbumsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_albums, container, false);
 
         RecyclerView recyclerView = view.findViewById(R.id.album_recycler);
-
         // adapter.setOnAlbumItemClickListener(this); // Event Click
 
         GridLayoutManager manager = new GridLayoutManager(getActivity(), 3);
@@ -127,18 +124,11 @@ public class AlbumsFragment extends Fragment {
 
         // ====== Get TopBar
         topBar = view.findViewById(R.id.fragment_albums_topAppBar);
-
         selectedImages = new ArrayList<>();
         applicationContext = requireContext();
+        loadingDialog = myLoadingDialog();
 
         return view;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        Log.i("AlbumFragment", "On start");
-
     }
 
     // ====== Set Listener for Icon in Top Bar right here
@@ -157,40 +147,6 @@ public class AlbumsFragment extends Fragment {
         });
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        Log.i("AlbumFragment", "On pause");
-
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        Log.i("AlbumFragment", "On stop");
-
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        Log.i("AlbumFragment", "On destroy view");
-
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.i("AlbumFragment", "On destroy");
-
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        Log.i("AlbumFragment", "On detach");
-
-    }
 
     // ====== Show Option Dialog
     private void showOptionDialog() {
@@ -221,14 +177,11 @@ public class AlbumsFragment extends Fragment {
 
     // ====== Show Input Dialog
     private void showInputDialog() {
-        // Inflate the custom input dialog layout
         View dialogView = getLayoutInflater().inflate(R.layout.component_input_dialog, null);
 
-        // Create a MaterialAlertDialogBuilder with the dialog view
         MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(requireContext())
                 .setView(dialogView);
 
-        // Show the dialog
         AlertDialog dialog = dialogBuilder.create();
         dialog.show();
 
@@ -244,30 +197,25 @@ public class AlbumsFragment extends Fragment {
         // ====== Listener for CreateButton in InputDialog clicked
         createBtn.setOnClickListener(v -> {
             newAlbumName = inputName.getText().toString();
+            dialog.dismiss();
 
-            // If not exists -> Open Photo Picker
+            // If album does not exist -> Open Photo Picker
             if (!AlbumHandler.checkAlbumExists(requireContext(), newAlbumName)) {
                 Intent photoPickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
-                // Intent photoPickerIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 photoPickerIntent.setType("image/*");
                 photoPickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 activityResultLauncher.launch(photoPickerIntent);
             }
-
-            dialog.dismiss();
         });
     }
 
     // ====== Show Album Handler Dialog
     private void showAlbumHandlerDialog() {
-        // Inflate the custom album handler dialog layout
         View dialogView = getLayoutInflater().inflate(R.layout.component_album_handler_dialog, null);
 
-        // Create a MaterialAlertDialogBuilder with the dialog view
         MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(applicationContext)
                 .setView(dialogView);
 
-        // Show the dialog
         AlertDialog dialog = dialogBuilder.create();
         dialog.show();
 
@@ -282,15 +230,50 @@ public class AlbumsFragment extends Fragment {
 
         // ====== Listener for CopyButton in AlbumHandlerDialog clicked
         copyBtn.setOnClickListener(v -> {
-            AlbumHandler.copyImagesToAlbum(applicationContext, selectedImages, newAlbumName);
             dialog.dismiss();
+
+            loadingDialog.show(); // Show Loading Dialog
+            TextView dialogTitle = loadingDialog.findViewById(R.id.component_loading_dialog_title);
+            dialogTitle.setText("Copying items to " + newAlbumName);
+
+            // Create a listener for completion & set progress
+            AlbumHandler.OnLoadingListener loadingListener = new AlbumHandler.OnLoadingListener() {
+                @Override
+                public void onLoadingComplete() {
+                    loadingDialog.dismiss();
+                }
+                @Override
+                public void onLoadingProgressUpdate(int progress) {
+                    ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
+                    int progressPercent = (int) (((progress) / (float) selectedImages.size()) * 100);
+                    progressBar.setProgress(progressPercent);
+                }
+            };
+
+            AlbumHandler.copyImagesToAlbumHandler(applicationContext, selectedImages, newAlbumName, loadingListener);
         });
 
         // ====== Listener for MoveButton in AlbumHandlerDialog clicked
         moveBtn.setOnClickListener(v -> {
-            AlbumHandler.moveImagesToAlbum(applicationContext, selectedImages, newAlbumName);
+            // AlbumHandler.moveImagesToAlbum(applicationContext, selectedImages, newAlbumName);
             dialog.dismiss();
         });
+    }
+
+
+    // ==== Just only able to init Dialog in Fragment/Activity
+    private AlertDialog myLoadingDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.component_loading_dialog, null);
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(applicationContext).setView(dialogView);
+        AlertDialog dialog = dialogBuilder.create();
+
+        Button cancelButton = dialogView.findViewById(R.id.component_loading_dialog_cancelButton);
+
+        cancelButton.setOnClickListener(v -> {
+            Log.d("AlbumFragment", "CANCEL HANDLING");
+        });
+
+        return dialog;
     }
 
 }

@@ -6,6 +6,8 @@
     import android.os.Environment;
     import android.provider.MediaStore;
     import android.util.Log;
+    import android.widget.ProgressBar;
+    import android.widget.RelativeLayout;
     import android.widget.Toast;
 
     import java.io.File;
@@ -74,8 +76,49 @@
                     e.printStackTrace();
                 }
             }
+        }
 
-            Toast.makeText(context, "Copy successfully to " + albumName, Toast.LENGTH_SHORT).show();
+
+        public interface OnLoadingListener {
+            void onLoadingComplete();
+            void onLoadingProgressUpdate(int progress);
+        }
+
+        // Copy Images to Album - but split Thread for show Loading Dialog
+        public static void copyImagesToAlbumHandler(Context context, ArrayList<Uri> imageUris, String albumName, OnLoadingListener listener) {
+            new Thread(() -> {
+                int totalImages = imageUris.size();
+
+                // Get DCIM Folder in device & Album with name as albumName
+                File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+                File albumDirectory = new File(dcimDirectory, albumName);
+
+                // Create the album directory if it doesn't exist
+                if (!albumDirectory.exists()) {
+                    albumDirectory.mkdirs();
+                }
+
+                // Copy images to the album directory
+                for (int i = 0; i < totalImages; i++) {
+                    Uri imageUri = imageUris.get(i);
+                    try {
+                        String fileName = getFileName(context, imageUri);
+                        File destFile = new File(albumDirectory, fileName);
+                        if (destFile.exists()) { continue; }
+
+                        InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
+                        if (inputStream != null) {
+                            copyFile(inputStream, destFile);
+                            listener.onLoadingProgressUpdate(i + 1);
+                            inputStream.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                listener.onLoadingComplete();
+            }).start();
         }
 
         // ====== Move Images to Album (If Album doesn't exist, create new album)
