@@ -69,22 +69,27 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
             int size = observedObj.getDataSize();
             String postFix = size == 1 ? " picture" : " pictures";
             toolbar.setSubtitle(size + postFix);
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                PendingIntent trashRequest;
-                List<Uri> uris = new ArrayList<>();
-                for (int i=0; i < 10; i++) {
-                    Uri temp = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, observedObj.getDataAt(i).data.getId());
-                    //Uri temp = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, observedObj.getDataAt(0).data.getPath());
-                    uris.add(temp);
-                }
-                trashRequest = MediaStore.createTrashRequest(getContentResolver(), uris, true);
 
-                try {
-                    startIntentSenderForResult(trashRequest.getIntentSender(), 101, null, 0, 0, 0, null);
-                } catch (IntentSender.SendIntentException e) {
-                    throw new RuntimeException(e);
-                }
+            for (TrashedPicture p : pictureList) {
+                Log.d("TrashedPicture", "TP - " + p.getId() + p.getPath());
             }
+
+//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+//                PendingIntent trashRequest;
+//                List<Uri> uris = new ArrayList<>();
+//                for (int i=0; i < 10; i++) {
+//                    Uri temp = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, observedObj.getDataAt(i).data.getId());
+//                    //Uri temp = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, observedObj.getDataAt(0).data.getPath());
+//                    uris.add(temp);
+//                }
+//                trashRequest = MediaStore.createTrashRequest(getContentResolver(), uris, true);
+//
+//                try {
+//                    startIntentSenderForResult(trashRequest.getIntentSender(), 101, null, 0, 0, 0, null);
+//                } catch (IntentSender.SendIntentException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
         }
     };
 

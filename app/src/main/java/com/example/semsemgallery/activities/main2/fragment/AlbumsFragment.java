@@ -80,6 +80,8 @@ public class AlbumsFragment extends Fragment {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
+        Log.i("AlbumFragment", "On attach");
+
         if (adapter == null) {
             observedObj.getObservedObjects().clear();
             albumArrayList.clear();
@@ -96,9 +98,18 @@ public class AlbumsFragment extends Fragment {
         };
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.i("AlbumFragment", "On create");
+
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.i("AlbumFragment", "On create view");
+
         // ====== Render View
         AppCompatActivity appCompatActivity = (AppCompatActivity) getActivity();
         List<Album> albumsRetriever = new MediaRetriever(appCompatActivity).getAlbumList();
@@ -123,10 +134,19 @@ public class AlbumsFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.i("AlbumFragment", "On start");
+
+    }
+
     // ====== Set Listener for Icon in Top Bar right here
     @Override
     public void onResume() {
         super.onResume();
+        Log.i("AlbumFragment", "On resume");
+
         // ====== Listener for AddIcon in TopBar clicked
         topBar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.add) {
@@ -135,6 +155,41 @@ public class AlbumsFragment extends Fragment {
             }
             return false;
         });
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.i("AlbumFragment", "On pause");
+
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.i("AlbumFragment", "On stop");
+
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.i("AlbumFragment", "On destroy view");
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.i("AlbumFragment", "On destroy");
+
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        Log.i("AlbumFragment", "On detach");
+
     }
 
     // ====== Show Option Dialog

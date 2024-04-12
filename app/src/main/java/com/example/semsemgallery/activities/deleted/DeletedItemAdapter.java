@@ -47,7 +47,7 @@ public class DeletedItemAdapter extends RecyclerView.Adapter<DeletedViewHolder> 
         ObservableGridMode<TrashedPicture>.DataItem data = observedObj.getDataAt(position);
         holder.selector.setChecked(data.isSelected);
         //new ThumbnailLoader(holder.thumbnail).execute(data.data.getPath());
-        Glide.with(context).load(data.data.getPath()).centerCrop().into(holder.thumbnail);
+        Glide.with(context).load(data.data.getPath()).into(holder.thumbnail);
         holder.remainingDate.setText(calRemainingDate(data.data.getExpired()));
     }
 
