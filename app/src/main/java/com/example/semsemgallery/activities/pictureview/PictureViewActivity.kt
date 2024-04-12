@@ -1,5 +1,6 @@
 package com.example.semsemgallery.activities.pictureview
 
+import android.R.attr
 import android.app.Activity
 import android.content.ContentResolver
 import android.content.ContentValues
@@ -8,16 +9,16 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.Settings
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.provider.Settings
-
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -53,14 +54,40 @@ import ly.img.android.pesdk.ui.model.state.UiConfigSticker
 import ly.img.android.pesdk.ui.model.state.UiConfigText
 import ly.img.android.pesdk.ui.panels.item.PersonalStickerAddItem
 import java.io.File
-import java.util.Collections
-import java.util.Date
 import java.util.TreeSet
+
 
 class PictureViewActivity : AppCompatActivity() {
     companion object {
         const val PESDK_RESULT = 1
     }
+    private lateinit var imageUri:Uri
+
+    private lateinit var handler:PhotoActionsHandler
+
+    private var albumName : String? = ""
+    private var choice: String?=""
+
+    private val activityResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data = result.data
+            if (data != null) {
+                val returnedData = data?.getStringExtra("key")
+                albumName = returnedData
+                if(choice == "copy")
+                    handler.copyToAlbum(this, imageUri ,albumName)
+                else if(choice =="move"){
+                    handler.moveToAlbum(this, imageUri ,albumName)
+                }
+                // Now you have the returned data from OtherActivity
+                // Process it as needed
+            }
+        }
+    }
+
+    private lateinit var fragmentActivity: PictureViewActivity
     private lateinit var topBar: MaterialToolbar
     private lateinit var actions: MaterialToolbar
     private var position: Int = -1
@@ -134,6 +161,7 @@ class PictureViewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_picture_view)
         enableEdgeToEdge()
+        handler = PhotoActionsHandler.getInstance(applicationContext)
 
         // Load data
         viewPager = findViewById(R.id.vp_image)
@@ -154,6 +182,7 @@ class PictureViewActivity : AppCompatActivity() {
         loader.execute(PictureLoadMode.ALL.toString())
 
         // UI handler
+
         topBar = findViewById(R.id.activity_picture_view_topAppBar)
         favBtn = findViewById(R.id.favorite_button)
         val editBtn: ImageButton = findViewById(R.id.edit_picture_button)
@@ -290,25 +319,43 @@ class PictureViewActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle menu item clicks
-        val handler = PhotoActionsHandler.getInstance(applicationContext)
+
         when (item.itemId) {
             R.id.copy_to_clipboard -> {
-                // Handle copy to clipboard action
-                handler.copyToClipboard(this, selectingPic.path)
+                Log.e("Image Path", selectingPic.path)
+                val imageFile = File(selectingPic.path)
+                val imageUri = FileProvider.getUriForFile(
+                    this,
+                    applicationContext.packageName + ".provider",
+                    imageFile
+                )
+                handler.copyToClipboard(this, imageUri)
                 Log.e("Image Path", selectingPic.path)
                 return true
             }
 
             R.id.copy_to_album -> {
                 // Handle copy to album action
-                handler.copyToAlbum()
-
+                val imageFile = File(selectingPic.path)
+                imageUri = FileProvider.getUriForFile(
+                    this,
+                    applicationContext.packageName + ".provider",
+                    imageFile
+                )
+                choice = "copy"
+                pickAlbum()
                 return true
             }
 
             R.id.move_to_album -> {
-                // Handle move to album action
-                handler.moveToAlbum()
+                val imageFile = File(selectingPic.path)
+                imageUri = FileProvider.getUriForFile(
+                    this,
+                    applicationContext.packageName + ".provider",
+                    imageFile
+                )
+                choice = "move"
+                pickAlbum()
 
                 return true
             }
@@ -399,6 +446,10 @@ class PictureViewActivity : AppCompatActivity() {
 
             else -> return super.onOptionsItemSelected(item)
         }
+    }
+    private fun pickAlbum() {
+        val myIntent = Intent(this, ChooseAlbumActivity::class.java)
+        activityResultLauncher.launch(myIntent)
     }
 
     // Function to show a message on the main thread
