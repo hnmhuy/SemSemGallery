@@ -26,6 +26,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.example.semsemgallery.R
 import com.example.semsemgallery.activities.main.adapter.PictureAdapter
 import com.example.semsemgallery.activities.pictureview.fragment.MetaDataBottomSheet
+import com.example.semsemgallery.domain.AIHandler
 import com.example.semsemgallery.domain.PhotoActionsHandler
 import com.example.semsemgallery.domain.Picture.PictureLoadMode
 import com.example.semsemgallery.domain.Picture.PictureLoader
@@ -94,6 +95,9 @@ class PictureViewActivity : AppCompatActivity() {
     private lateinit var selectingPic: Picture
     private lateinit var viewPager: ViewPager2
     private lateinit var favBtn: ImageButton
+    private lateinit var ocrBtn: ImageButton
+    private lateinit var linesText: List<String>
+    private val aiHandler: AIHandler = AIHandler.getInstance()
     private val treeSet: TreeSet<Picture> = TreeSet(Comparator.reverseOrder<Picture>())
     private fun createPesdkSettingsList() =
         PhotoEditorSettingsList(false)
@@ -185,14 +189,51 @@ class PictureViewActivity : AppCompatActivity() {
                 super.onPageSelected(pos)
                 selectingPic = pictureList[pos];
                 toggleFavorite(selectingPic.isFav)
+                val textRecognitionTask = aiHandler.getTextRecognition(applicationContext, selectingPic.pictureId)
+                textRecognitionTask.addOnSuccessListener { lines ->
+                    // Text recognition succeeded, do something with the lines of text
+                    if (lines.isEmpty()) {
+                        ocrBtn.visibility = View.INVISIBLE
+                        Log.d("TEXT_RECOGNITION", "No text recognized")
+                    } else {
+                        ocrBtn.visibility = View.VISIBLE
+
+                        for (line in lines) {
+                            Log.d("TEXT_RECOGNITION", "Recognized line: $line")
+                        }
+                    }
+                }.addOnFailureListener { e ->
+                    // Text recognition failed, handle the exception
+                    Log.e("TEXT_RECOGNITION", "Text recognition failed", e)
+                }
+                val imageLabelingTask = aiHandler.getImageLabeling(applicationContext, selectingPic.pictureId)
+                imageLabelingTask.addOnSuccessListener { labels ->
+                    // Image labeling succeeded, do something with the labels
+                    if (labels.isEmpty()) {
+                        // Handle the case where no labels were found
+                        Log.d("IMAGE_LABELING", "No labels found")
+                    } else {
+                        // Handle the case where labels were found
+                        for (label in labels) {
+                            Log.d("IMAGE_LABELING", "Label: $label")
+                        }
+                    }
+                }.addOnFailureListener { e ->
+                    // Image labeling failed, handle the exception
+                    Log.e("IMAGE_LABELING", "Image labeling failed", e)
+                }
             }
         })
         loader.execute(PictureLoadMode.ALL.toString())
+
+
 
         // UI handler
 
         topBar = findViewById(R.id.activity_picture_view_topAppBar)
         favBtn = findViewById(R.id.favorite_button)
+        ocrBtn = findViewById(R.id.ocr_button)
+
         val editBtn: ImageButton = findViewById(R.id.edit_picture_button)
         val infoBtn: ImageButton = findViewById(R.id.info_button)
         val shareBtn: ImageButton = findViewById(R.id.share_button)
@@ -277,6 +318,8 @@ class PictureViewActivity : AppCompatActivity() {
             favBtn.setColorFilter(color)
         }
     }
+
+
 
     private fun openEditor(imageUri: Uri) {
         // Implement your open editor functionality here

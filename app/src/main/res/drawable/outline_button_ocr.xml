@@ -1,0 +1,8 @@
+<!-- res/drawable/button_outline.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/ocr_background"/>
+    <stroke
+        android:width="1dp"
+        android:color="@color/ocr" /> <!-- Set the desired color here -->
+</shape>

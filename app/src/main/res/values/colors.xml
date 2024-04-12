@@ -15,5 +15,7 @@
     <color name="add_tag_border">#d6d6d6</color>
     <color name="text_color_black">#FF000000</color>
     <color name="picture_view_bottom_bar_bg">#E6FFFFFF</color>
+    <color name="ocr">#ebd058</color>
+    <color name="ocr_background">#989a97</color>
 
 </resources>

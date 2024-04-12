@@ -46,20 +46,12 @@
 
         // --------- End variable of DateTimePicker dialog ---------
 
-        public LinearLayout datetimeContainerClick;
-        public TextView dateContent;
-        public TextView timeContent;
-        public EditText imageName;
-        public TextView imageFormat;
-        public TextView location;
-        public ImageButton addLocationBtn;
-        public ImageButton removeLocationBtn;
-        public ImageButton backBtn;
-        public Button saveBtn;
-        public Button cancelBtn;
-
-        public String path;
-
+        private LinearLayout datetimeContainerClick;
+        private TextView dateContent, timeContent, imageFormat, location;
+        private EditText imageName;
+        private ImageButton addLocationBtn, removeLocationBtn, backBtn;
+        private Button saveBtn, cancelBtn;
+        private String path;
         @Override
         protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);

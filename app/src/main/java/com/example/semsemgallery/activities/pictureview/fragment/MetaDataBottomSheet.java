@@ -82,7 +82,6 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
                 intent.putExtra("time", time.getText());
                 intent.putExtra("filePath", path);
                 intent.putExtra("id", id);
-
                 startActivity(intent);
             }
         });
@@ -220,9 +219,6 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
         exTime.setText(String.format("%s s", exTimeContent));
     }
     // [END] Set row2: Detail Information of image: focal, ev,..
-
-
-
 
     private String bytesIntoHumanReadable(long _bytes) {
         float kilobyte = 1024;
