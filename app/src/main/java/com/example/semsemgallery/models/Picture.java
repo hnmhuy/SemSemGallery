@@ -54,16 +54,6 @@ public class Picture implements Parcelable, Comparable<Picture> {
         dateInMillis = dateTaken.getTime() / 1000000;
     }
     protected Picture(Parcel in) {
-//        dest.writeLong(pictureId);
-//        dest.writeLong(dateInMillis);
-//        dest.writeString(path);
-//        dest.writeString(fileName);
-//        dest.writeLong(dateTaken.getTime());
-//        dest.writeLong(dateAdded.getTime());
-//        dest.writeString(albumID);
-//        dest.writeString(albumName);
-//        dest.writeLong(fileSize);
-//        dest.writeByte((byte) (isFav ? 1 : 0));
         pictureId = in.readLong();
         dateInMillis = in.readLong();
         path = in.readString();

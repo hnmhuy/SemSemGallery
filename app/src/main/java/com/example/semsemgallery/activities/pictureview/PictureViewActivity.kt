@@ -146,8 +146,17 @@ class PictureViewActivity : AppCompatActivity() {
         }
 
         override fun postExecute(res: Boolean?) {
+            pictureList.clear();
             pictureList = ArrayList(treeSet)
+            adapter.pictures.clear()
             adapter.pictures = pictureList
+
+            for ((index, value) in pictureList.withIndex()) {
+                if (value.pictureId != selectingPic.pictureId) {
+                    adapter.notifyItemInserted(index)
+                }
+            }
+
             if (treeSet.contains(selectingPic)) {
                 viewPager.setCurrentItem(treeSet.headSet(selectingPic).size, false)
             }
@@ -165,7 +174,6 @@ class PictureViewActivity : AppCompatActivity() {
 
         // Load data
         viewPager = findViewById(R.id.vp_image)
-        viewPager.offscreenPageLimit = 4
         selectingPic = intent.getParcelableExtra<Picture>("selectingPic")!!
         Log.d("Pictures", "Got Id: " + selectingPic.pictureId)
         pictureList.add(selectingPic)
