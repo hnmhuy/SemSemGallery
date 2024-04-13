@@ -2,9 +2,20 @@ package com.example.semsemgallery.activities.album;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -15,14 +26,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.base.GridMode;
 import com.example.semsemgallery.activities.base.ObservableGridMode;
-import com.example.semsemgallery.activities.main2.adapter.FavoriteAdapter;
 import com.example.semsemgallery.activities.main2.adapter.GalleryAdapter;
 import com.example.semsemgallery.activities.main2.viewholder.GalleryItem;
-import com.example.semsemgallery.activities.pictureview.PictureViewActivity;
+import com.example.semsemgallery.domain.Album.AlbumHandler;
 import com.example.semsemgallery.domain.Picture.PictureLoadMode;
 import com.example.semsemgallery.domain.Picture.PictureLoader;
 import com.example.semsemgallery.models.Picture;
-import com.example.semsemgallery.domain.MediaRetriever;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -40,6 +50,33 @@ public class AlbumViewActivity extends AppCompatActivity {
     private com.google.android.material.appbar.MaterialToolbar topBar;
     private List<Picture> pictureList;
     private RecyclerView recyclerView;
+    private ArrayList<Uri> selectedImages;
+
+    // ====== Activity Result Launcher for Photo Picker
+    private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == AppCompatActivity.RESULT_OK && result.getData() != null) {
+                        selectedImages.clear();
+
+                        int count = result.getData().getClipData().getItemCount();
+                        for (int i = 0; i < count; i++) {
+                            Uri imageUri = result.getData().getClipData().getItemAt(i).getUri();
+                            selectedImages.add(imageUri);
+                        }
+
+                        // ====== Open AlbumHandler Dialog after picking images
+                        if (selectedImages.size() > 0) {
+                            Log.d("AlbumViewActivity", "Select images from photo picker");
+                        } else {
+                            Toast.makeText(context, "No images selected", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+            }
+    );
 
     private PictureLoader loader = new PictureLoader(this) {
         @Override
@@ -92,6 +129,34 @@ public class AlbumViewActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         topBar.setNavigationOnClickListener(v -> finish());
+
+        topBar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.add) { // === Add images to this Album
+                Log.d("AlbumViewActivity", "Add images");
+                showPhotoPicker();
+                return true;
+            } else if (item.getItemId() == R.id.edit) { // === Change to selecting mode
+                Log.d("AlbumViewActivity", "Edit");
+                return true;
+            } else if (item.getItemId() == R.id.select_all) { // === Select all images in this Album
+                Log.d("AlbumViewActivity", "Select all");
+                return true;
+            } else if (item.getItemId() == R.id.rename) { // === Rename this Album
+                Log.d("AlbumViewActivity", "Rename");
+                return true;
+            }
+
+            return false;
+        });
     }
+
+    private void showPhotoPicker() {
+        Intent photoPickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
+        photoPickerIntent.setType("image/*");
+        photoPickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        activityResultLauncher.launch(photoPickerIntent);
+    }
+
+
 
 }

@@ -9,12 +9,16 @@
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/empty"
+        android:id="@+id/edit"
         android:title="@string/edit"
         app:showAsAction="never" />
     <item
         android:id="@+id/select_all"
         android:title="@string/select_all"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/rename"
+        android:title="@string/rename"
         app:showAsAction="never" />
 
 </menu>
