@@ -91,6 +91,9 @@
     <string name="x">x</string>
     <string name="add_tag"># Add tag</string>
 
+    <!--  OCR fragment  -->
+    <string name="all_text">All Text</string>
+
     <!--    Recently deleted screen-->
     <string name="trash_description">This feature can get the pictures which is trashed by this app only. Please use the default gallery for access all trash pictures.</string>
     <string name="empty">Empty</string>

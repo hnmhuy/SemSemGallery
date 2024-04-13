@@ -72,6 +72,7 @@ IMGLY.configure() {
 
     dependencies {
 
+        implementation(libs.legacy.support.v4)
         val fragment_version = "1.6.2"
         implementation("androidx.fragment:fragment:$fragment_version")
         implementation ("com.google.android.gms:play-services-auth:21.0.0")

@@ -26,6 +26,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.example.semsemgallery.R
 import com.example.semsemgallery.activities.main.adapter.PictureAdapter
 import com.example.semsemgallery.activities.pictureview.fragment.MetaDataBottomSheet
+import com.example.semsemgallery.activities.pictureview.fragment.OCRTextBottomSheet
 import com.example.semsemgallery.domain.AIHandler
 import com.example.semsemgallery.domain.PhotoActionsHandler
 import com.example.semsemgallery.domain.Picture.PictureLoadMode
@@ -96,7 +97,7 @@ class PictureViewActivity : AppCompatActivity() {
     private lateinit var viewPager: ViewPager2
     private lateinit var favBtn: ImageButton
     private lateinit var ocrBtn: ImageButton
-    private lateinit var linesText: List<String>
+    private var linesText: List<String> = emptyList()
     private val aiHandler: AIHandler = AIHandler.getInstance()
     private val treeSet: TreeSet<Picture> = TreeSet(Comparator.reverseOrder<Picture>())
     private fun createPesdkSettingsList() =
@@ -191,13 +192,12 @@ class PictureViewActivity : AppCompatActivity() {
                 toggleFavorite(selectingPic.isFav)
                 val textRecognitionTask = aiHandler.getTextRecognition(applicationContext, selectingPic.pictureId)
                 textRecognitionTask.addOnSuccessListener { lines ->
-                    // Text recognition succeeded, do something with the lines of text
                     if (lines.isEmpty()) {
                         ocrBtn.visibility = View.INVISIBLE
                         Log.d("TEXT_RECOGNITION", "No text recognized")
                     } else {
                         ocrBtn.visibility = View.VISIBLE
-
+                        linesText = lines
                         for (line in lines) {
                             Log.d("TEXT_RECOGNITION", "Recognized line: $line")
                         }
@@ -206,22 +206,7 @@ class PictureViewActivity : AppCompatActivity() {
                     // Text recognition failed, handle the exception
                     Log.e("TEXT_RECOGNITION", "Text recognition failed", e)
                 }
-                val imageLabelingTask = aiHandler.getImageLabeling(applicationContext, selectingPic.pictureId)
-                imageLabelingTask.addOnSuccessListener { labels ->
-                    // Image labeling succeeded, do something with the labels
-                    if (labels.isEmpty()) {
-                        // Handle the case where no labels were found
-                        Log.d("IMAGE_LABELING", "No labels found")
-                    } else {
-                        // Handle the case where labels were found
-                        for (label in labels) {
-                            Log.d("IMAGE_LABELING", "Label: $label")
-                        }
-                    }
-                }.addOnFailureListener { e ->
-                    // Image labeling failed, handle the exception
-                    Log.e("IMAGE_LABELING", "Image labeling failed", e)
-                }
+
             }
         })
         loader.execute(PictureLoadMode.ALL.toString())
@@ -245,6 +230,11 @@ class PictureViewActivity : AppCompatActivity() {
             var temp = if (selectingPic.dateTaken.time != 0L) selectingPic.dateTaken else selectingPic.dateAdded
             val botSheetFrag = MetaDataBottomSheet(selectingPic.pictureId,selectingPic.path, selectingPic.fileName, temp, selectingPic.fileSize)
             botSheetFrag.show(supportFragmentManager, botSheetFrag.tag)
+        }
+
+        ocrBtn.setOnClickListener{
+            val ocrBottomSheet = OCRTextBottomSheet(linesText);
+            ocrBottomSheet.show(supportFragmentManager, ocrBottomSheet.tag)
         }
 
         // Event share to other apps
