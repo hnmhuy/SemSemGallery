@@ -32,6 +32,7 @@ import com.example.semsemgallery.domain.Album.AlbumHandler;
 import com.example.semsemgallery.domain.Picture.PictureLoadMode;
 import com.example.semsemgallery.domain.Picture.PictureLoader;
 import com.example.semsemgallery.models.Picture;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
@@ -132,17 +133,19 @@ public class AlbumViewActivity extends AppCompatActivity {
 
         topBar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.add) { // === Add images to this Album
-                Log.d("AlbumViewActivity", "Add images");
                 showPhotoPicker();
                 return true;
-            } else if (item.getItemId() == R.id.edit) { // === Change to selecting mode
+            }
+            else if (item.getItemId() == R.id.edit) { // === Change to selecting mode
                 Log.d("AlbumViewActivity", "Edit");
                 return true;
-            } else if (item.getItemId() == R.id.select_all) { // === Select all images in this Album
+            }
+            else if (item.getItemId() == R.id.select_all) { // === Select all images in this Album
                 Log.d("AlbumViewActivity", "Select all");
                 return true;
-            } else if (item.getItemId() == R.id.rename) { // === Rename this Album
-                Log.d("AlbumViewActivity", "Rename");
+            }
+            else if (item.getItemId() == R.id.rename) { // === Rename this Album
+                showRenameDialog();
                 return true;
             }
 
@@ -157,6 +160,36 @@ public class AlbumViewActivity extends AppCompatActivity {
         activityResultLauncher.launch(photoPickerIntent);
     }
 
+    private void showRenameDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.component_input_dialog, null);
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(context).setView(dialogView);
 
+        AlertDialog dialog = dialogBuilder.create();
+        dialog.show();
+
+        TextView titleDialog = dialogView.findViewById(R.id.component_input_dialog_title);
+        EditText inputName = dialogView.findViewById(R.id.component_input_dialog_name);
+        MaterialButton cancelBtn = dialogView.findViewById(R.id.component_input_dialog_cancel);
+        MaterialButton renameBtn = dialogView.findViewById(R.id.component_input_dialog_create);
+
+        titleDialog.setText("Rename album");
+        renameBtn.setText("Rename");
+
+        // ====== Listener for CancelButton in InputDialog clicked
+        cancelBtn.setOnClickListener(v -> {
+            dialog.dismiss();
+        });
+
+        // ====== Listener for CreateButton in InputDialog clicked
+        renameBtn.setOnClickListener(v -> {
+            String newAlbumName = inputName.getText().toString();
+            dialog.dismiss();
+
+            // Log.d("AlbumViewActivity", albumName + " --- " + newAlbumName);
+            if (!AlbumHandler.checkAlbumExists(context, newAlbumName)) {
+                AlbumHandler.renameAlbum(context, albumName, newAlbumName);
+            }
+        });
+    }
 
 }

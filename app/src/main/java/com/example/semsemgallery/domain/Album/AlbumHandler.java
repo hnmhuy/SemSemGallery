@@ -253,14 +253,14 @@
 
         // ====== Rename album (Remembers to check if the album exists before renaming)
         public static void renameAlbum(Context context, String oldAlbumName, String newAlbumName) {
-                File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-                
-                File oldAlbumDirectory = new File(dcimDirectory, oldAlbumName);
-                File newAlbumDirectory = new File(dcimDirectory, newAlbumName);
+            File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
 
-                if (oldAlbumDirectory.exists()) {
-                    oldAlbumDirectory.renameTo(newAlbumDirectory);
-                }
+            File oldAlbumDirectory = new File(dcimDirectory, oldAlbumName);
+            File newAlbumDirectory = new File(dcimDirectory, newAlbumName);
+
+            if (oldAlbumDirectory.exists()) {
+                oldAlbumDirectory.renameTo(newAlbumDirectory);
+            }
         }
 
 
