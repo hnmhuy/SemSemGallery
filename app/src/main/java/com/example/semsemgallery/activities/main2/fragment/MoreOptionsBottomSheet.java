@@ -28,12 +28,13 @@ public class MoreOptionsBottomSheet extends BottomSheetDialogFragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_btn_icon_botsheet, container, false);
 
-
+        MoreOptionsBottomSheet instance = this;
         Button trash = view.findViewById(R.id.trash);
         trash.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(requireContext(), RecentlyDeletedActivity.class);
+                instance.dismiss();
                 startActivity(intent);
             }
         });
@@ -43,6 +44,8 @@ public class MoreOptionsBottomSheet extends BottomSheetDialogFragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(requireContext(), SettingActivity.class);
+                instance.dismiss();
+
                 startActivity(intent);
             }
         });

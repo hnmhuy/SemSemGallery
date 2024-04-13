@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.bumptech.glide.Glide;
 import com.example.semsemgallery.R;
+import com.example.semsemgallery.activities.base.GridMode;
 import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.main2.viewholder.GalleryItem;
 import com.example.semsemgallery.activities.main2.viewholder.GalleryItemViewHolder;
@@ -50,13 +51,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryItemViewHolder> 
         return -1;
     }
 
-    public GalleryAdapter(Context context, ObservableGridMode<GalleryItem> data, ArrayList<Picture> list) {
+    public GalleryAdapter(Context context, ObservableGridMode<GalleryItem> data) {
         this.context = context;
         observableGridMode = data;
-        //dataList = list;
-        //Picture temp = list.get(0);
-        //Log.e("Pictures", "P - " + temp.getPictureId() + " - " + temp.getPath() + " - " + temp.getDateTaken().getTime() + " - " + temp.getDateAdded().getTime() + " - " + temp.getDateInMillis());
-
     }
 
     @NonNull
@@ -98,10 +95,17 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryItemViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull GalleryItemViewHolder holder, int position) {
         GalleryItem item = observableGridMode.getDataAt(position).data;
+        holder.selector.setChecked(observableGridMode.getDataAt(position).isSelected);
+        if (observableGridMode.getCurrentMode() == GridMode.SELECTING) {
+            if (item.getType() == GalleryItem.GROUPDATE)
+                holder.selector.setVisibility(View.INVISIBLE);
+            else holder.selector.setVisibility(View.VISIBLE);
+        }
         if (item.getType() == GalleryItem.GROUPDATE) {
             holder.groupDisplayText.setText(item.getDateFormatted());
         } else {
             Glide.with(context).load(((Picture) item.getData()).getPath()).into(holder.thumnail);
+            holder.isFav.setVisibility(((Picture) item.getData()).isFav() ? View.VISIBLE : View.INVISIBLE);
         }
     }
 

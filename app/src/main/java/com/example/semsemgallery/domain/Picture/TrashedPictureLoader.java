@@ -37,7 +37,8 @@ public abstract class TrashedPictureLoader extends TaskBase<Void, TrashedPicture
     public void preExecute(Void... voids) {
         queryBundle = new Bundle();
         queryBundle.putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE);
-        queryBundle.putString("android:query-arg-sql-selection", MediaStore.MediaColumns.IS_TRASHED + " = 1");
+        queryBundle.putString("android:query-arg-sql-selection", MediaStore.Files.FileColumns.MEDIA_TYPE + "=" + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE +
+                " AND " + MediaStore.MediaColumns.IS_TRASHED + "=1");
         queryBundle.putString("android:query-arg-sql-sort-order", MediaStore.MediaColumns.DATE_MODIFIED + " DESC");
     }
 

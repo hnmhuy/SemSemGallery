@@ -64,7 +64,7 @@ public abstract class SelectableItem<DataType> extends RecyclerView.ViewHolder i
     public void onSelectingAll(GridModeEvent event) {
         this.selector.setVisibility(View.VISIBLE);
         this.selector.setChecked(event.getNewSelectionForAll());
-        this.observedObj.getObservedObjects().get(getAbsoluteAdapterPosition()).isSelected = event.getNewSelectionForAll();
+//        this.observedObj.getObservedObjects().get(getAbsoluteAdapterPosition()).isSelected = event.getNewSelectionForAll();
     }
 
     @Override

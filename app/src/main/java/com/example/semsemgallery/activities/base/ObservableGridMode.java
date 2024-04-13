@@ -29,6 +29,12 @@ public class ObservableGridMode<DataType> {
     private List<DataItem> observedObjects = null;
     private GridMode currentMode;
 
+    public void reset() {
+        observers.clear();
+        observedObjects.clear();
+        observers.add(master);
+    }
+
     public ObservableGridMode(@Nullable List<DataType> data, GridMode initMode) {
         this.currentMode = initMode;
         observedObjects = new ArrayList<>();
@@ -74,11 +80,31 @@ public class ObservableGridMode<DataType> {
         }
     }
 
+    public List<Integer> getSelectedIndex() {
+        List<Integer> res = new ArrayList<>();
+        for (int i = 0; i < observedObjects.size(); i++) {
+            if (observedObjects.get(i).isSelected) {
+                res.add(i);
+            }
+        }
+        return res;
+    }
+
     public List<DataType> getAllSelectedItems() {
         List<DataType> selectedItems = new ArrayList<>();
         for (DataItem item : observedObjects) {
             if (item.isSelected) {
                 selectedItems.add(item.data);
+            }
+        }
+        return selectedItems;
+    }
+
+    public List<DataItem> getSelectedDataItem() {
+        List<DataItem> selectedItems = new ArrayList<>();
+        for (DataItem item : observedObjects) {
+            if (item.isSelected) {
+                selectedItems.add(item);
             }
         }
         return selectedItems;

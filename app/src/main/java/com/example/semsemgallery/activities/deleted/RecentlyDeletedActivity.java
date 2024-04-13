@@ -1,24 +1,19 @@
 package com.example.semsemgallery.activities.deleted;
 
-import android.app.PendingIntent;
-import android.content.ContentUris;
-import android.content.IntentSender;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.window.OnBackInvokedDispatcher;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -32,14 +27,15 @@ import com.example.semsemgallery.activities.base.GridModeEvent;
 import com.example.semsemgallery.activities.base.GridModeListener;
 import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.base.RecylerViewItemDecoration;
+import com.example.semsemgallery.domain.Picture.GarbagePictureCollector;
 import com.example.semsemgallery.domain.Picture.TrashedPictureLoader;
 import com.example.semsemgallery.models.TrashedPicture;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.checkbox.MaterialCheckBox;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class RecentlyDeletedActivity extends AppCompatActivity implements GridModeListener {
     private final List<TrashedPicture> pictureList = new ArrayList<>();
@@ -73,23 +69,6 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
             for (TrashedPicture p : pictureList) {
                 Log.d("TrashedPicture", "TP - " + p.getId() + p.getPath());
             }
-
-//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-//                PendingIntent trashRequest;
-//                List<Uri> uris = new ArrayList<>();
-//                for (int i=0; i < 10; i++) {
-//                    Uri temp = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, observedObj.getDataAt(i).data.getId());
-//                    //Uri temp = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, observedObj.getDataAt(0).data.getPath());
-//                    uris.add(temp);
-//                }
-//                trashRequest = MediaStore.createTrashRequest(getContentResolver(), uris, true);
-//
-//                try {
-//                    startIntentSenderForResult(trashRequest.getIntentSender(), 101, null, 0, 0, 0, null);
-//                } catch (IntentSender.SendIntentException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
         }
     };
 
@@ -118,8 +97,7 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
         selectedCounts = findViewById(R.id.select_items);
         selectAll = findViewById(R.id.select_all);
         bottomAction = findViewById(R.id.bottomActions);
-        //setSupportActionBar(toolbar);
-
+        ActionBarHandlers();
         toolbar.setOnMenuItemClickListener(menuItem -> {
             int id = menuItem.getItemId();
             if (id == R.id.trash_menu_edit) {
@@ -152,13 +130,62 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
         });
     }
 
+    private void ActionBarHandlers() {
+        Button btnRestore = bottomAction.findViewById(R.id.btnRestore);
+        btnRestore.setOnClickListener((v) -> {
+            //=Prepare dialog
+            View dialogView = getLayoutInflater().inflate(R.layout.component_loading_dialog, null);
+            TextView title = dialogView.findViewById(R.id.component_loading_dialog_title);
+            title.setText("Restore the trashed pictures");
+            MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(this).setView(dialogView);
+
+            AlertDialog loadingDialog = dialogBuilder.create();
+            loadingDialog.setCanceledOnTouchOutside(false);
+
+            Button cancelButton = dialogView.findViewById(R.id.component_loading_dialog_cancelButton);
+            cancelButton.setVisibility(View.INVISIBLE);
+            // Prepare data
+
+            List<ObservableGridMode<TrashedPicture>.DataItem> deletedItems = observedObj.getSelectedDataItem();
+            Long[] transferData = new Long[deletedItems.size()];
+            for (int i = 0; i < deletedItems.size(); i++) {
+                transferData[i] = deletedItems.get(i).data.getId();
+            }
+            GarbagePictureCollector.TrashPictureHandler trashPictureHandler = new GarbagePictureCollector.TrashPictureHandler(this, 0) {
+                @Override
+                public void preExecute(Long... longs) {
+                    loadingDialog.show();
+                }
+
+                @Override
+                public void onProcessUpdate(Integer... integers) {
+                    int index = observedObj.getObservedObjects().indexOf(deletedItems.get(integers[0] - 1));
+                    observedObj.getObservedObjects().remove(index);
+                    adapter.notifyItemRemoved(index);
+                    ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
+                    assert progressBar != null;
+                    progressBar.setProgress((integers[0] * 100) / deletedItems.size());
+                }
+
+                @Override
+                public void postExecute(Void res) {
+                    loadingDialog.dismiss();
+                    observedObj.setGridMode(GridMode.NORMAL);
+                    int size = observedObj.getDataSize();
+                    toolbar.setSubtitle(String.valueOf(size) + (size <= 1 ? " picture" : " pictures"));
+                }
+            };
+            trashPictureHandler.execute(transferData);
+        });
+    }
+
     @Override
     public void onModeChange(GridModeEvent event) {
         selectedCounts.setText(R.string.select_items);
         if (event.getGridMode() == GridMode.NORMAL) {
             toolbar.setVisibility(View.VISIBLE);
             selectingToolbar.setVisibility(View.INVISIBLE);
-            bottomAction.setVisibility(View.INVISIBLE);
+            bottomAction.setVisibility(View.GONE);
         } else if (event.getGridMode() == GridMode.SELECTING) {
             toolbar.setVisibility(View.INVISIBLE);
             selectingToolbar.setVisibility(View.VISIBLE);

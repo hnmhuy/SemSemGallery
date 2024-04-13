@@ -1,6 +1,8 @@
 package com.example.semsemgallery.activities.main2;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,13 +11,16 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.semsemgallery.R;
+import com.example.semsemgallery.activities.interfaces.MainCallBack;
 import com.example.semsemgallery.activities.main2.fragment.AlbumsFragment;
 import com.example.semsemgallery.activities.main2.fragment.FavoritesFragment;
 import com.example.semsemgallery.activities.main2.fragment.MoreOptionsBottomSheet;
 import com.example.semsemgallery.activities.main2.fragment.PicturesFragment;
 import com.google.android.material.navigation.NavigationBarView;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.Objects;
+
+public class MainActivity extends AppCompatActivity implements MainCallBack {
 
     private NavigationBarView navbar;
 
@@ -63,5 +68,15 @@ public class MainActivity extends AppCompatActivity {
                 .setReorderingAllowed(true)
                 .replace(R.id.main_content, fragment, null)
                 .commit();
+    }
+
+    @Override
+    public void sendToMain(String terminal, String... data) {
+        Log.d("MainActivity", "Got message from fragment: " + data[0]);
+        if (Objects.equals(data[0], "true")) {
+            navbar.setVisibility(View.GONE);
+        } else if (Objects.equals(data[0], "false")) {
+            navbar.setVisibility(View.VISIBLE);
+        }
     }
 }
