@@ -26,7 +26,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.example.semsemgallery.R
 import com.example.semsemgallery.activities.main.adapter.PictureAdapter
 import com.example.semsemgallery.activities.pictureview.fragment.MetaDataBottomSheet
-import com.example.semsemgallery.activities.pictureview.fragment.OCRTextBottomSheet
+import com.example.semsemgallery.activities.pictureview.fragment.OCRStickyBottomSheet
 import com.example.semsemgallery.domain.AIHandler
 import com.example.semsemgallery.domain.PhotoActionsHandler
 import com.example.semsemgallery.domain.Picture.PictureLoadMode
@@ -233,7 +233,7 @@ class PictureViewActivity : AppCompatActivity() {
         }
 
         ocrBtn.setOnClickListener{
-            val ocrBottomSheet = OCRTextBottomSheet(linesText);
+            val ocrBottomSheet = OCRStickyBottomSheet.newInstance(linesText);
             ocrBottomSheet.show(supportFragmentManager, ocrBottomSheet.tag)
         }
 

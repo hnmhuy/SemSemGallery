@@ -114,8 +114,8 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
     private String[] splitDateTimeFormat(String dateTime) {
         try {
             Log.d("Date", dateTime.toString());
-            SimpleDateFormat inputFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
-            SimpleDateFormat outputFormat = new SimpleDateFormat("MMMM dd yyyy HH:mm");
+            SimpleDateFormat inputFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
+            SimpleDateFormat outputFormat = new SimpleDateFormat("MMMM dd yyyy HH:mm", Locale.ENGLISH);
             Date date = inputFormat.parse(dateTime);
             String formattedDateTime = outputFormat.format(date);
             String[] temp = formattedDateTime.split(" ");
