@@ -31,7 +31,9 @@ public class ObservableGridMode<DataType> {
 
     public void reset() {
         observers.clear();
-        observedObjects.clear();
+        if (observedObjects != null) {
+            observedObjects.clear();
+        }
         observers.add(master);
     }
 

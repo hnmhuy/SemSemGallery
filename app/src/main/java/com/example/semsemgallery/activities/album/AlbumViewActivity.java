@@ -6,7 +6,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,7 +51,6 @@ public class AlbumViewActivity extends AppCompatActivity {
     private String albumName;
     private int albumQuantity;
     private com.google.android.material.appbar.MaterialToolbar topBar;
-    private List<Picture> pictureList;
     private RecyclerView recyclerView;
     private ArrayList<Uri> selectedImages;
 
@@ -70,7 +71,7 @@ public class AlbumViewActivity extends AppCompatActivity {
 
                         // ====== Open AlbumHandler Dialog after picking images
                         if (selectedImages.size() > 0) {
-                            Log.d("AlbumViewActivity", "Select images from photo picker");
+                            showImagesHandlerDialog();
                         } else {
                             Toast.makeText(context, "No images selected", Toast.LENGTH_SHORT).show();
                         }
@@ -91,6 +92,19 @@ public class AlbumViewActivity extends AppCompatActivity {
             observedObj = new ObservableGridMode<>(pictures, GridMode.NORMAL);
             adapter = new GalleryAdapter(context, observedObj);
             recyclerView.setAdapter(adapter);
+
+            albumQuantity = observedObj.getDataSize();
+            topBar.setSubtitle(String.valueOf(albumQuantity) + (albumQuantity == 0 ? " image" : " images"));
+        }
+
+        @Override
+        public void preExecute(String... strings) {
+            super.preExecute(strings);
+
+            if (observedObj != null) {
+                observedObj.reset();
+            }
+            galleryItems.clear();
         }
     };
 
@@ -108,22 +122,18 @@ public class AlbumViewActivity extends AppCompatActivity {
         // ====== Get albumId & albumName from Intent
         albumId = getIntent().getStringExtra("albumId");
         albumName = getIntent().getStringExtra("albumName");
-        albumQuantity = getIntent().getIntExtra("albumQuantity", 0);
 
 
         // Get UI component and set up
         recyclerView = findViewById(R.id.activity_album_view_recycler);
         GridLayoutManager manager = new GridLayoutManager(this, 3);
         recyclerView.setLayoutManager(manager);
-        // ====== Check and load picture from album
-        if (albumId != null) {
-            loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId);
-        }
 
         // ====== Set title of Top bar
         topBar = (com.google.android.material.appbar.MaterialToolbar) findViewById(R.id.activity_album_view_topAppBar);
         topBar.setTitle(albumName);
-        topBar.setSubtitle(String.valueOf(albumQuantity) + (albumQuantity == 0 ? " image" : " images"));
+
+        selectedImages = new ArrayList<>();
     }
 
     @Override
@@ -151,6 +161,11 @@ public class AlbumViewActivity extends AppCompatActivity {
 
             return false;
         });
+
+        // ====== Check and load picture from album
+        if (albumId != null) {
+            loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId);
+        }
     }
 
     private void showPhotoPicker() {
@@ -159,6 +174,111 @@ public class AlbumViewActivity extends AppCompatActivity {
         photoPickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         activityResultLauncher.launch(photoPickerIntent);
     }
+
+    // ====== Show Images Handler Dialog
+    private void showImagesHandlerDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.component_album_handler_dialog, null);
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(context).setView(dialogView);
+
+        AlertDialog dialog = dialogBuilder.create();
+        dialog.show();
+
+        TextView titleDialog = dialogView.findViewById(R.id.component_album_handler_dialog_title);
+        TextView cancelBtn = dialogView.findViewById(R.id.component_album_handler_dialog_cancel);
+        TextView copyBtn = dialogView.findViewById(R.id.component_album_handler_dialog_copy);
+        TextView moveBtn = dialogView.findViewById(R.id.component_album_handler_dialog_move);
+
+        titleDialog.setText("Handle options");
+
+        // ====== Listener for CancelButton in AlbumHandlerDialog clicked
+        cancelBtn.setOnClickListener(v -> {
+            dialog.dismiss();
+        });
+
+        // ====== Listener for CopyButton in AlbumHandlerDialog clicked
+        copyBtn.setOnClickListener(v -> {
+            dialog.dismiss();
+
+            AlertDialog loadingDialog = myLoadingDialog();
+            loadingDialog.show(); // Show Loading Dialog
+            TextView dialogTitle = loadingDialog.findViewById(R.id.component_loading_dialog_title);
+            dialogTitle.setText("Copying items to " + albumName);
+
+            // Create a listener for completion & set progress
+            AlbumHandler.OnLoadingListener loadingListener = new AlbumHandler.OnLoadingListener() {
+                @Override
+                public void onLoadingComplete() {
+                    loadingDialog.dismiss();
+                    // ====== Check and load picture from album
+                    if (albumId != null) {
+                        loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId);
+                    }
+                }
+
+                @Override
+                public void onLoadingProgressUpdate(int progress) {
+                    ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
+                    progressBar.setProgress(progress);
+                }
+            };
+
+            AlbumHandler.copyImagesToAlbumHandler(context, selectedImages, albumName, loadingListener);
+
+
+        });
+
+
+        // ====== Listener for MoveButton in AlbumHandlerDialog clicked
+        moveBtn.setOnClickListener(v -> {
+            dialog.dismiss();
+
+            AlertDialog loadingDialog = myLoadingDialog();
+            loadingDialog.show(); // Show Loading Dialog
+            TextView dialogTitle = loadingDialog.findViewById(R.id.component_loading_dialog_title);
+            dialogTitle.setText("Moving items to " + albumName);
+
+            // Create a listener for completion & set progress
+            AlbumHandler.OnLoadingListener loadingListener = new AlbumHandler.OnLoadingListener() {
+                @Override
+                public void onLoadingComplete() {
+                    loadingDialog.dismiss();
+                    // ====== Check and load picture from album
+                    if (albumId != null) {
+                        loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId);
+                    }
+                }
+
+                @Override
+                public void onLoadingProgressUpdate(int progress) {
+                    ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
+                    progressBar.setProgress(progress);
+                }
+            };
+
+            AlbumHandler.moveImagesToAlbumHandler(context, selectedImages, albumName, loadingListener);
+        });
+    }
+
+
+    // ==== Just only able to init Dialog in Fragment/Activity
+    private AlertDialog myLoadingDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.component_loading_dialog, null);
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(context).setView(dialogView);
+
+        AlertDialog dialog = dialogBuilder.create();
+        dialog.setCanceledOnTouchOutside(false);
+
+        Button cancelButton = dialogView.findViewById(R.id.component_loading_dialog_cancelButton);
+        cancelButton.setOnClickListener(v -> {
+            AlbumHandler.stopHandling();
+        });
+
+        return dialog;
+    }
+
+
+
+
 
     private void showRenameDialog() {
         View dialogView = getLayoutInflater().inflate(R.layout.component_input_dialog, null);
