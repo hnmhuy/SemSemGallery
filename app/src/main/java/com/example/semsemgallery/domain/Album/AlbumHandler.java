@@ -1,5 +1,6 @@
     package com.example.semsemgallery.domain.Album;
 
+    import android.content.ContentResolver;
     import android.content.Context;
     import android.database.Cursor;
     import android.net.Uri;
@@ -216,11 +217,10 @@
                             inputStream.close();
 
                             // Delete the original file
-                            File originalFile = new File(imageUri.getPath());
-                            if (originalFile.delete()) {
-                                Log.d("Deleted", "File " + fileName + " deleted successfully");
+                            if (deleteFileByUri(context, imageUri)) {
+                                Log.d("DeleteImage", "File " + fileName + " deleted successfully");
                             } else {
-                                Log.d("Deleted", "Failed to delete file " + fileName);
+                                Log.d("DeleteImage", "Failed to delete file " + fileName);
                             }
                         }
                     } catch (IOException e) {
@@ -230,6 +230,42 @@
 
                 listener.onLoadingComplete();
             }).start();
+        }
+
+        public static boolean deleteFileByUri(Context context, Uri uri) {
+            // Get the file path from the URI
+            String filePath = getFilePathFromUri(context, uri);
+            if (filePath == null) {
+                return false; // Unable to retrieve file path
+            }
+
+            // Create a File object representing the file
+            File file = new File(filePath);
+
+            // Check if the file exists
+            if (file.exists()) {
+                return file.delete();
+            } else {
+                return false;
+            }
+        }
+
+        private static String getFilePathFromUri(Context context, Uri uri) {
+            String filePath = null;
+            String[] projection = {MediaStore.Images.Media.DATA};
+            ContentResolver contentResolver = context.getContentResolver();
+            try {
+                // Query the media store to get the file path
+                android.database.Cursor cursor = contentResolver.query(uri, projection, null, null, null);
+                if (cursor != null && cursor.moveToFirst()) {
+                    int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                    filePath = cursor.getString(columnIndex);
+                    cursor.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return filePath;
         }
 
         // ====== Delete Album (Remembers to check if the album exists before deleting)
