@@ -11,8 +11,6 @@ import java.util.Date;
 
 public class Picture implements Parcelable, Comparable<Picture> {
 
-    private static Calendar calendar = Calendar.getInstance();
-
     private String url;
     private long pictureId;
     private long dateInMillis;
@@ -90,6 +88,7 @@ public class Picture implements Parcelable, Comparable<Picture> {
         this.albumName = albumName;
         Date temp = dateTaken.getTime() == 0 ? dateAdded : dateTaken;
 //        dateInMillis = Math.round((double) temp / 86400000);
+        Calendar calendar = Calendar.getInstance();
         calendar.setTime(temp);
         calendar.set(Calendar.HOUR_OF_DAY, 23);
         calendar.set(Calendar.MINUTE, 59);
