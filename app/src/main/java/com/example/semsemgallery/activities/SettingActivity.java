@@ -58,6 +58,7 @@ public class SettingActivity extends AppCompatActivity {
                                     // Update UI with user information
                                     syncStatus.setText(currentUser.getEmail());
                                     Toast.makeText(SettingActivity.this, "Signed in successfully!", Toast.LENGTH_SHORT).show();
+                                    recreate();
                                 } else {
                                     // Handle the case where current user is null
                                     Toast.makeText(SettingActivity.this, "Failed to get user information", Toast.LENGTH_SHORT).show();
@@ -90,66 +91,43 @@ public class SettingActivity extends AppCompatActivity {
         materialSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if(isChecked)
-                {
-                    if(auth.getCurrentUser() == null){
+                if (isChecked) {
+                    if (auth.getCurrentUser() == null) {
                         GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                                 .requestIdToken(getString(R.string.client_id))
                                 .requestEmail()
                                 .build();
                         googleSignInClient = GoogleSignIn.getClient(SettingActivity.this, options);
 
-                        auth = FirebaseAuth.getInstance();
-                        Intent intent = googleSignInClient.getSignInIntent();
-                        activityResultLauncher.launch(intent);
+                        Intent signInIntent = googleSignInClient.getSignInIntent();
+                        activityResultLauncher.launch(signInIntent);
                     }
-                }
-                else {
-                    if(auth.getCurrentUser() != null){
-//                        FirebaseAuth.getInstance().signOut();
-//                        syncStatus.setText("Unsigned-in");
-//                        // Clear the sign-in state listener to avoid accessing Firebase after sign-out
-//                        FirebaseAuth.getInstance().removeAuthStateListener(new FirebaseAuth.AuthStateListener() {
-//                            @Override
-//                            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-//                                if (firebaseAuth.getCurrentUser() == null) {
-//                                    // Perform any necessary cleanup or UI updates after sign-out
-//                                    Toast.makeText(SettingActivity.this, "Signed out successfully", Toast.LENGTH_SHORT).show();
-//                                    startActivity(new Intent(SettingActivity.this, SettingActivity.class));
-//                                }
-//                            }
-//                        });
-                        FirebaseAuth.AuthStateListener authStateListener = new FirebaseAuth.AuthStateListener() {
+                } else {
+                    if (auth.getCurrentUser() != null) {
+                        GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                .requestIdToken(getString(R.string.client_id))
+                                .requestEmail()
+                                .build();
+                        googleSignInClient = GoogleSignIn.getClient(SettingActivity.this, options);
+                        googleSignInClient.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
-                            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                                if (firebaseAuth.getCurrentUser() == null) {
-                                    // Remove the listener
-                                    firebaseAuth.removeAuthStateListener(this);
-
-                                    // Perform any necessary cleanup or UI updates after sign-out
-                                    runOnUiThread(() -> {
-                                        Toast.makeText(SettingActivity.this, "Signed out successfully", Toast.LENGTH_SHORT).show();
-                                        syncStatus.setText("Unsigned-in");
-                                    });
-
-                                    // Restart the activity or navigate to another activity
-                                    Intent intent = new Intent(SettingActivity.this, SettingActivity.class);
-                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                    startActivity(intent);
-                                    finish(); // Finish the current activity
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    FirebaseAuth.getInstance().signOut();
+                                    // Update UI
+                                    syncStatus.setText("Unsigned-in");
+                                    Toast.makeText(SettingActivity.this, "Signed out successfully", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(SettingActivity.this, "Sign out failed", Toast.LENGTH_SHORT).show();
                                 }
                             }
-                        };
-
-                        // Add the listener
-                        auth.addAuthStateListener(authStateListener);
-
-                        // Sign out
-                        auth.signOut();
+                        });
                     }
                 }
             }
         });
+
+
         if (auth.getCurrentUser() != null) {
             materialSwitch.setChecked(true);
             syncStatus.setText(auth.getCurrentUser().getEmail());
