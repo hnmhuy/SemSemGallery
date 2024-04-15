@@ -70,7 +70,8 @@ public class AlbumsFragment extends Fragment {
                         // ====== Open AlbumHandler Dialog after picking images
                         if (selectedImages.size() > 0) {
                             showAlbumHandlerDialog();
-                        } else {
+                        }
+                        else {
                             Toast.makeText(applicationContext, "No images selected", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -96,6 +97,21 @@ public class AlbumsFragment extends Fragment {
                 Log.d("AlbumLoader", albums[0].getAlbumId() + " - " + albums[0].getName() + " - " + albums[0].getWallPath());
                 adapter.notifyItemInserted(albumArrayList.size() - 1);
             }
+
+            @Override
+            public void postExecute(Void res) {
+                super.postExecute(res);
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void preExecute(String... strings) {
+                super.preExecute(strings);
+                if (observedObj != null) {
+                    observedObj.reset();
+                }
+                albumArrayList.clear();
+            }
         };
     }
 
@@ -116,7 +132,7 @@ public class AlbumsFragment extends Fragment {
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
 
-        loader.execute();
+        // loader.execute();
 
         // ====== Get TopBar
         topBar = view.findViewById(R.id.fragment_albums_topAppBar);
@@ -140,6 +156,8 @@ public class AlbumsFragment extends Fragment {
             }
             return false;
         });
+
+        loader.execute();
     }
 
     // ====== Show Option Dialog
@@ -235,6 +253,7 @@ public class AlbumsFragment extends Fragment {
                 @Override
                 public void onLoadingComplete() {
                     loadingDialog.dismiss();
+                    loader.execute();
                 }
 
                 @Override
@@ -262,6 +281,7 @@ public class AlbumsFragment extends Fragment {
                 @Override
                 public void onLoadingComplete() {
                     loadingDialog.dismiss();
+                    loader.execute();
                 }
 
                 @Override

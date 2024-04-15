@@ -72,7 +72,8 @@ public class AlbumViewActivity extends AppCompatActivity {
                         // ====== Open AlbumHandler Dialog after picking images
                         if (selectedImages.size() > 0) {
                             showImagesHandlerDialog();
-                        } else {
+                        }
+                        else {
                             Toast.makeText(context, "No images selected", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -122,7 +123,6 @@ public class AlbumViewActivity extends AppCompatActivity {
         // ====== Get albumId & albumName from Intent
         albumId = getIntent().getStringExtra("albumId");
         albumName = getIntent().getStringExtra("albumName");
-
 
         // Get UI component and set up
         recyclerView = findViewById(R.id.activity_album_view_recycler);
@@ -223,8 +223,6 @@ public class AlbumViewActivity extends AppCompatActivity {
             };
 
             AlbumHandler.copyImagesToAlbumHandler(context, selectedImages, albumName, loadingListener);
-
-
         });
 
 
@@ -277,9 +275,6 @@ public class AlbumViewActivity extends AppCompatActivity {
     }
 
 
-
-
-
     private void showRenameDialog() {
         View dialogView = getLayoutInflater().inflate(R.layout.component_input_dialog, null);
         MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(context).setView(dialogView);
@@ -305,10 +300,11 @@ public class AlbumViewActivity extends AppCompatActivity {
             String newAlbumName = inputName.getText().toString();
             dialog.dismiss();
 
-            // Log.d("AlbumViewActivity", albumName + " --- " + newAlbumName);
             if (!AlbumHandler.checkAlbumExists(context, newAlbumName)) {
                 AlbumHandler.renameAlbum(context, albumName, newAlbumName);
             }
+            albumName = newAlbumName;
+            topBar.setTitle(albumName);
         });
     }
 
