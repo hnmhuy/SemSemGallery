@@ -320,27 +320,29 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         for (int i = 0; i < temp.size(); i++) {
             deleteIds[i] = ((Picture) temp.get(i).data.getData()).getPictureId();
         }
-        final boolean[] canExecute = new boolean[1];
+        final boolean[] canExecute = {false};
+        boolean isStorageManager = false;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            isStorageManager = Environment.isExternalStorageManager();
+        }
+
+        if (isStorageManager) {
+            // Your app already has storage management permissions
+            // You can proceed with file operations
+            canExecute[0] = true;
+        } else {
+            // Your app does not have storage management permissions
+            // Guide the user to the system settings page to grant permission
+            Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+
+            startActivity(intent);
+        }
+
         GarbagePictureCollector.TrashPictureHandler collector = new GarbagePictureCollector.TrashPictureHandler(getContext()) {
             @Override
             public void preExecute(Long... longs) {
                 Log.i("TrashImage", "Prepare trash");
-                boolean isStorageManager = false;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                    isStorageManager = Environment.isExternalStorageManager();
-                }
 
-                if (isStorageManager) {
-                    // Your app already has storage management permissions
-                    // You can proceed with file operations
-                    canExecute[0] = true;
-                } else {
-                    // Your app does not have storage management permissions
-                    // Guide the user to the system settings page to grant permission
-                    Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-
-                    startActivity(intent);
-                }
                 loadingDialog.show();
             }
 
@@ -354,7 +356,6 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
                 assert progressBar != null;
                 progressBar.setProgress((integers[0] * 100) / temp.size());
-
             }
 
             @Override

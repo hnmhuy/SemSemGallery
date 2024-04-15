@@ -155,27 +155,26 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
                 transferData[i] = deletedItems.get(i).data.getId();
             }
             final boolean[] canExecute = {false};
+            boolean isStorageManager = false;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                isStorageManager = Environment.isExternalStorageManager();
+            }
+
+            if (isStorageManager) {
+                // Your app already has storage management permissions
+                // You can proceed with file operations
+                canExecute[0] = true;
+            } else {
+                // Your app does not have storage management permissions
+                // Guide the user to the system settings page to grant permission
+                Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+
+                startActivity(intent);
+            }
+
             GarbagePictureCollector.TrashPictureHandler trashPictureHandler = new GarbagePictureCollector.TrashPictureHandler(this, 0) {
                 @Override
                 public void preExecute(Long... longs) {
-                    boolean isStorageManager = false;
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                        isStorageManager = Environment.isExternalStorageManager();
-                    }
-
-                    if (isStorageManager) {
-                        // Your app already has storage management permissions
-                        // You can proceed with file operations
-                        canExecute[0] = true;
-                    } else {
-                        // Your app does not have storage management permissions
-                        // Guide the user to the system settings page to grant permission
-                        Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-
-                        startActivity(intent);
-                    }
-
-
                     loadingDialog.show();
                 }
 
