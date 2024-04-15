@@ -2,15 +2,22 @@ package com.example.semsemgallery.activities.main2.fragment;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -25,6 +32,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
@@ -45,19 +53,25 @@ import com.example.semsemgallery.domain.Picture.PictureLoader;
 import com.example.semsemgallery.models.Picture;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.TreeSet;
 
+
 public class PicturesFragment extends Fragment implements FragmentCallBack, GridModeListener {
     public static String TAG = "PicturesFragment";
+    FirebaseAuth auth = FirebaseAuth.getInstance();
+
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     Uri finalUri;
     private Context context;
@@ -65,6 +79,25 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
     private LinearLayout actionBar;
     private MaterialToolbar selectingTopBar;
     private MaterialToolbar topBar;
+
+    private final ActivityResultLauncher<Intent> activityCameraResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    if (data != null && data.getExtras() != null) {
+                        try {
+                            InputStream inputStream = getActivity().getContentResolver().openInputStream(finalUri);
+                            Bitmap highQualityBitmap = BitmapFactory.decodeStream(inputStream);
+                            createImage(getActivity().getApplicationContext(), highQualityBitmap, finalUri);
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else {
+                    // Image capture failed or was canceled
+                    Toast.makeText(getActivity(), "Image capture failed", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     private OnBackPressedCallback backHandler = new OnBackPressedCallback(true) {
         @Override
@@ -168,6 +201,67 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         SetFunctionForActionBar();
         topBar = view.findViewById(R.id.topAppBar);
         selectingTopBar = view.findViewById(R.id.selecting_top_bar);
+        FloatingActionButton openCamera;
+        openCamera = view.findViewById(R.id.add_fab);
+
+        openCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Uri uri = null;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    uri = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+                } else {
+                    uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                }
+
+                if (uri == null) {
+                    uri = MediaStore.Images.Media.INTERNAL_CONTENT_URI;
+                }
+
+
+                // Create an intent to capture an image
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                String img = String.valueOf(Calendar.getInstance().getTimeInMillis());
+                ContentValues cv = new ContentValues();
+                cv.put(MediaStore.Images.Media.DISPLAY_NAME, img);
+                cv.put(MediaStore.Images.Media.RELATIVE_PATH, "DCIM/" + "Camera");
+                cv.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+                finalUri = context.getContentResolver().insert(uri, cv);
+
+                // Add the URI as an extra to the intent
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, finalUri);
+
+                // If there's a camera activity to handle the intent
+                if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+                    // Launch the camera activity
+                    activityCameraResult.launch(takePictureIntent);
+                } else {
+                    // Handle the case where the device does not have a camera
+                    Toast.makeText(getActivity(), "No camera available", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        if (auth.getCurrentUser() == null) {
+            Menu menu = topBar.getMenu();
+            menu.removeItem(R.id.cloud);
+        }
+
+        topBar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == R.id.edit) {
+                    observableGridMode.setGridMode(GridMode.SELECTING);
+                    return true;
+                } else if (item.getItemId() == R.id.select_all) {
+                    observableGridMode.setGridMode(GridMode.SELECTING);
+                    observableGridMode.fireSelectionChangeForAll(true);
+                    return true;
+                } else return false;
+            }
+        });
+        loader.execute(PictureLoadMode.ALL.toString());
+
         return view;
     }
 
@@ -176,7 +270,6 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         super.onResume();
         Log.i(TAG, "Resuming");
 
-        loader.execute(PictureLoadMode.ALL.toString());
     }
 
     @Override
@@ -226,10 +319,27 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         for (int i = 0; i < temp.size(); i++) {
             deleteIds[i] = ((Picture) temp.get(i).data.getData()).getPictureId();
         }
+        final boolean[] canExecute = new boolean[1];
         GarbagePictureCollector.TrashPictureHandler collector = new GarbagePictureCollector.TrashPictureHandler(getContext()) {
             @Override
             public void preExecute(Long... longs) {
                 Log.i("TrashImage", "Prepare trash");
+                boolean isStorageManager = false;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                    isStorageManager = Environment.isExternalStorageManager();
+                }
+
+                if (isStorageManager) {
+                    // Your app already has storage management permissions
+                    // You can proceed with file operations
+                    canExecute[0] = true;
+                } else {
+                    // Your app does not have storage management permissions
+                    // Guide the user to the system settings page to grant permission
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+
+                    startActivity(intent);
+                }
                 loadingDialog.show();
             }
 
@@ -253,7 +363,8 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 loadingDialog.dismiss();
             }
         };
-        collector.execute(deleteIds);
+        if (canExecute[0]) collector.execute(deleteIds);
+        else Toast.makeText(context, "Don't have permission", Toast.LENGTH_LONG);
     }
 
     private void SetFunctionForActionBar() {
@@ -326,7 +437,11 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
 
     @Override
     public void onSelectingAll(GridModeEvent event) {
-
+        if (event.getNewSelectionForAll()) {
+            selectingTopBar.setTitle(dataList.size() + " selected");
+        } else {
+            selectingTopBar.setTitle(String.valueOf(0) + " selected");
+        }
     }
 
 

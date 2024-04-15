@@ -1,6 +1,9 @@
 package com.example.semsemgallery.activities.deleted;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -151,9 +154,28 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
             for (int i = 0; i < deletedItems.size(); i++) {
                 transferData[i] = deletedItems.get(i).data.getId();
             }
+            final boolean[] canExecute = {false};
             GarbagePictureCollector.TrashPictureHandler trashPictureHandler = new GarbagePictureCollector.TrashPictureHandler(this, 0) {
                 @Override
                 public void preExecute(Long... longs) {
+                    boolean isStorageManager = false;
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                        isStorageManager = Environment.isExternalStorageManager();
+                    }
+
+                    if (isStorageManager) {
+                        // Your app already has storage management permissions
+                        // You can proceed with file operations
+                        canExecute[0] = true;
+                    } else {
+                        // Your app does not have storage management permissions
+                        // Guide the user to the system settings page to grant permission
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+
+                        startActivity(intent);
+                    }
+
+
                     loadingDialog.show();
                 }
 
@@ -175,7 +197,8 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
                     toolbar.setSubtitle(String.valueOf(size) + (size <= 1 ? " picture" : " pictures"));
                 }
             };
-            trashPictureHandler.execute(transferData);
+            if (canExecute[0]) trashPictureHandler.execute(transferData);
+            else Toast.makeText(this, "Don't have permission!", Toast.LENGTH_LONG);
         });
     }
 

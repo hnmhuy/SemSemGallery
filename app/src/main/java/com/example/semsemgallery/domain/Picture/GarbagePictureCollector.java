@@ -16,7 +16,6 @@ public class GarbagePictureCollector {
 
     private GarbagePictureCollector() {
     }
-
     public static GarbagePictureCollector getInstance() {
         if (instance == null) {
             instance = new GarbagePictureCollector();
@@ -28,7 +27,6 @@ public class GarbagePictureCollector {
     public static abstract class TrashPictureHandler extends TaskBase<Long, Integer, Void> {
         private final Context context;
         private int isTrash = 1; // Default value
-
         public TrashPictureHandler(Context context) {
             this.context = context;
         }

@@ -16,7 +16,7 @@
     <item
         android:id="@+id/edit"
         android:title="@string/edit"
-        app:showAsAction="never"></item>
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/select_all"
