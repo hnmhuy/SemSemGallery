@@ -30,6 +30,10 @@
             android:exported="true">
 
        </activity>
+
+        <activity
+            android:name=".activities.pictureview.ChooseAlbumActivity"
+            android:exported="true"/>
         <activity
             android:name=".activities.main2.MainActivity"
             android:exported="true">

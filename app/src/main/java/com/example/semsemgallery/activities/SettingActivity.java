@@ -106,19 +106,46 @@ public class SettingActivity extends AppCompatActivity {
                 }
                 else {
                     if(auth.getCurrentUser() != null){
-                        FirebaseAuth.getInstance().signOut();
-                        syncStatus.setText("Unsigned-in");
-                        // Clear the sign-in state listener to avoid accessing Firebase after sign-out
-                        FirebaseAuth.getInstance().removeAuthStateListener(new FirebaseAuth.AuthStateListener() {
+//                        FirebaseAuth.getInstance().signOut();
+//                        syncStatus.setText("Unsigned-in");
+//                        // Clear the sign-in state listener to avoid accessing Firebase after sign-out
+//                        FirebaseAuth.getInstance().removeAuthStateListener(new FirebaseAuth.AuthStateListener() {
+//                            @Override
+//                            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+//                                if (firebaseAuth.getCurrentUser() == null) {
+//                                    // Perform any necessary cleanup or UI updates after sign-out
+//                                    Toast.makeText(SettingActivity.this, "Signed out successfully", Toast.LENGTH_SHORT).show();
+//                                    startActivity(new Intent(SettingActivity.this, SettingActivity.class));
+//                                }
+//                            }
+//                        });
+                        FirebaseAuth.AuthStateListener authStateListener = new FirebaseAuth.AuthStateListener() {
                             @Override
                             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                                 if (firebaseAuth.getCurrentUser() == null) {
+                                    // Remove the listener
+                                    firebaseAuth.removeAuthStateListener(this);
+
                                     // Perform any necessary cleanup or UI updates after sign-out
-                                    Toast.makeText(SettingActivity.this, "Signed out successfully", Toast.LENGTH_SHORT).show();
-                                    startActivity(new Intent(SettingActivity.this, SettingActivity.class));
+                                    runOnUiThread(() -> {
+                                        Toast.makeText(SettingActivity.this, "Signed out successfully", Toast.LENGTH_SHORT).show();
+                                        syncStatus.setText("Unsigned-in");
+                                    });
+
+                                    // Restart the activity or navigate to another activity
+                                    Intent intent = new Intent(SettingActivity.this, SettingActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    startActivity(intent);
+                                    finish(); // Finish the current activity
                                 }
                             }
-                        });
+                        };
+
+                        // Add the listener
+                        auth.addAuthStateListener(authStateListener);
+
+                        // Sign out
+                        auth.signOut();
                     }
                 }
             }
