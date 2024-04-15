@@ -163,8 +163,12 @@
                         inputStream.close(); // Close the InputStream
 
                         // Delete the original file
-                        deleteImage(context, imageUri);
-                        Log.d("Deleted", "File " + fileName);
+                        File originalFile = new File(imageUri.getPath());
+                        if (originalFile.delete()) {
+                            Log.d("Deleted", "File " + fileName + " deleted successfully");
+                        } else {
+                            Log.d("Deleted", "Failed to delete file " + fileName);
+                        }
                     } else {
                         Log.d("Error", "Failed to open InputStream for " + fileName);
                     }
@@ -220,36 +224,7 @@
                 listener.onLoadingComplete();
             }).start();
         }
-
-        // ====== Delete Album (Remembers to check if the album exists before deleting)
-        public static void deleteAlbumHandler(Context context, String albumName, OnLoadingListener listener) {
-            new Thread(() -> {
-                isHandling = true;
-
-                File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-                File albumDirectory = new File(dcimDirectory, albumName);
-
-                if (albumDirectory.exists()) {
-                    File[] files = albumDirectory.listFiles();
-                    int totalFiles = files != null ? files.length : 0;
-                    int deletedFiles = 0;
-
-                    if (files != null) {
-                        for (File file : files) {
-                            if (!isHandling) break;
-                            file.delete();
-                            deletedFiles++;
-
-                            int progress = (int) (((float) deletedFiles / totalFiles) * 100);
-                            listener.onLoadingProgressUpdate(progress);
-                        }
-                    }
-                    albumDirectory.delete();
-                }
-
-                listener.onLoadingComplete();
-            }).start();
-        }
+        
 
         // ====== Rename album (Remembers to check if the album exists before renaming)
         public static void renameAlbum(Context context, String oldAlbumName, String newAlbumName) {
