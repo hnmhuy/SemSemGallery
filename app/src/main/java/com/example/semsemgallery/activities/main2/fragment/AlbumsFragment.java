@@ -83,19 +83,14 @@ public class AlbumsFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         Log.i("AlbumFragment", "On attach");
+        adapter = new AlbumRecyclerAdapter(context, observedObj);
 
-        if (adapter == null) {
-            observedObj.getObservedObjects().clear();
-            albumArrayList.clear();
-            adapter = new AlbumRecyclerAdapter(context, observedObj);
-        }
         loader = new AlbumLoader(context) {
             @Override
             public void onProcessUpdate(Album... albums) {
                 albumArrayList.add(albums[0]);
                 observedObj.addData(albums[0]);
                 Log.d("AlbumLoader", albums[0].getAlbumId() + " - " + albums[0].getName() + " - " + albums[0].getWallPath());
-                adapter.notifyItemInserted(albumArrayList.size() - 1);
             }
 
             @Override
@@ -108,7 +103,7 @@ public class AlbumsFragment extends Fragment {
             public void preExecute(String... strings) {
                 super.preExecute(strings);
                 if (observedObj != null) {
-                    observedObj.reset();
+                    observedObj.getObservedObjects().clear();
                 }
                 albumArrayList.clear();
             }

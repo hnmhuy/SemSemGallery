@@ -173,7 +173,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                     observableGridMode.addData(i);
                 }
                 adapter.notifyDataSetChanged();
-                recyclerView.setAdapter(adapter);
+
             }
         };
 
@@ -201,6 +201,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         SetFunctionForActionBar();
         topBar = view.findViewById(R.id.topAppBar);
         selectingTopBar = view.findViewById(R.id.selecting_top_bar);
+        recyclerView.setAdapter(adapter);
         FloatingActionButton openCamera;
         openCamera = view.findViewById(R.id.add_fab);
 
