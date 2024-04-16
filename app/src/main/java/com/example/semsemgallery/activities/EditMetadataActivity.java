@@ -1,9 +1,14 @@
     package com.example.semsemgallery.activities;
 
+    import android.content.ContentResolver;
+    import android.content.ContentUris;
+    import android.content.ContentValues;
     import android.content.Context;
     import android.content.Intent;
+    import android.net.Uri;
     import android.os.Bundle;
     import android.os.Environment;
+    import android.provider.MediaStore;
     import android.provider.Settings;
     import android.util.Log;
     import android.view.View;
@@ -51,7 +56,7 @@
         private EditText imageName;
         private ImageButton addLocationBtn, removeLocationBtn, backBtn;
         private Button saveBtn, cancelBtn;
-        private String path;
+        private long pictureId;
         @Override
         protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -62,9 +67,7 @@
             String formatIntent = nameFormatIntent.split("\\.")[1];
             String dateIntent = getIntent().getStringExtra("date");
             String timeIntent = getIntent().getStringExtra("time");
-            path = getIntent().getStringExtra("filePath");
-            Log.d("PATH INTENT", path);
-
+            pictureId = getIntent().getLongExtra("pictureId", 0);
 
             context = getApplicationContext();
             datetimeContainerClick = (LinearLayout) findViewById(R.id.datetime_action_container);
@@ -85,8 +88,6 @@
             imageName.setText(nameIntent);
             imageFormat.setText(formatIntent);
 
-
-
             initDateTimePicker();
 
             datetimeContainerClick.setOnClickListener(onDateTimeClickListener);
@@ -103,12 +104,6 @@
 
         }
 
-        @Override
-        protected void onStart() {
-            super.onStart();
-            Toast.makeText(this, "onStart", Toast.LENGTH_SHORT ).show();
-
-        }
 
         private void initDateTimePicker()
         {
@@ -193,79 +188,34 @@
                     // Your app does not have storage management permissions
                     // Guide the user to the system settings page to grant permission
                     Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-
                     startActivity(intent);
                 }
-//                UpdateDateByExif(path);
 
                 String newFileName = imageName.getText().toString() + "." + imageFormat.getText().toString();
-                Log.d("NEW FILE NAME", newFileName);
-                renameFile(path, newFileName);
-                Toast.makeText(context, "Data Saved", Toast.LENGTH_SHORT).show();
+                renameFile(getContentResolver(),pictureId, newFileName);
 
+                // Send back the updated name to the MetaDataBottomSheet fragment
+                Intent intent = new Intent();
+                intent.putExtra("updatedName", newFileName);
+                setResult(RESULT_OK, intent);
+                finish();
 
             }
         };
 
-        public void UpdateDateByExif(String imagePath) {
-            ExifInterface exif = null;
-            try {
-                Log.d("RUN", "Run in exiff");
-                exif = new ExifInterface(imagePath);
-                Log.d("EXIF DATA:", exif.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL));
-                exif.setAttribute(ExifInterface.TAG_DATETIME_ORIGINAL, "2024:04:02 14:37:52");
-                Log.d("RUN2", "Run in exiff setAttributr");
+        public void renameFile(ContentResolver contentResolver, long pictureId, String newFileName) {
 
-                exif.saveAttributes();
-                Log.d("RUN3", "Run in exiff save");
-
-            } catch (IOException e) {
-                e.printStackTrace();
+            Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, pictureId);
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DISPLAY_NAME, newFileName);
+//            contentResolver.update(uri, values, null, null);
+            int rowsUpdated = contentResolver.update(uri, values, null, null);
+            if (rowsUpdated > 0) {
+                Log.d("UPDATE SUCCESS", "Image date updated successfully");
+            } else {
+                Log.e("UPDATE FAILED", "Image date update failed");
             }
-        }
 
-        public void renameFile(String oldFilePath, String newFileName) {
-
-            Path oldFile = Paths.get(oldFilePath);
-            try {
-                Files.move(oldFile, oldFile.resolveSibling(newFileName));
-                Log.d("renameFile", "File renamed successfully");
-            } catch (IOException e) {
-                Log.e("ERROR", e.getMessage());
-            }
-//            File oldFile = new File(oldFilePath);
-//
-//            // Ensure the old file exists
-//            if (!oldFile.exists()) {
-//                return; // File does not exist
-//            }
-//
-//            // Construct the new file path
-//            String parentDirectory = oldFile.getParent();
-//
-//            String newFilePath = parentDirectory + File.separator + newFileName + "." + imageFormat.getText().toString();
-//            Log.d("NEW FILE PATH", newFilePath);
-//
-//            File newFile = new File(newFilePath);
-//
-//            if (newFile.exists()) {
-//                Log.e("renameFile", "File already exists: " + newFilePath);
-//            } else {
-//                if (oldFile.renameTo(newFile)) {
-//                    // File renamed successfully
-//                    Log.d("renameFile", "File renamed successfully to: " + newFilePath);
-//                    // If you want to update metadata, do it here
-//                } else {
-//                    // Failed to rename file
-//                    Log.e("renameFile", "Failed to rename file: " + oldFilePath);
-//                    Log.e("renameFile", "Failed to rename new file: " + newFilePath);
-//                }
-//            }
-        }
-
-        private boolean isExternalStorageReadable() {
-            String state = Environment.getExternalStorageState();
-            return Environment.MEDIA_MOUNTED.equals(state) || Environment.MEDIA_MOUNTED_READ_ONLY.equals(state);
         }
 
         private View.OnClickListener onCancelEdit = new View.OnClickListener() {
@@ -275,8 +225,6 @@
                 finish();
             }
         };
-
-
         public static String[] splitDateTime(String formattedDate) {
             // Split the formatted date string into date and time components
             String[] parts = formattedDate.split(" ");
@@ -287,7 +235,6 @@
 
             return new String[]{date, time};
         }
-
         public String convertDatetime(String datetime)
         {
             DateFormat inputFormat = new SimpleDateFormat("MMMM dd, yyyy HH:mm", Locale.getDefault());
@@ -314,7 +261,5 @@
                 dateTimeFragment.show(getSupportFragmentManager(), TAG_DATETIME_FRAGMENT);
             }
         };
-
-
 
     }

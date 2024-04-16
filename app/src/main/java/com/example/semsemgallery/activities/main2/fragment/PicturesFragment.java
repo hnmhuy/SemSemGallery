@@ -356,6 +356,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
                 assert progressBar != null;
                 progressBar.setProgress((integers[0] * 100) / temp.size());
+
             }
 
             @Override

@@ -2,6 +2,7 @@ package com.example.semsemgallery.activities.pictureview.fragment;
 
 import static android.content.ContentUris.appendId;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.media.Image;
 import android.os.Bundle;
@@ -13,6 +14,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
 
@@ -51,6 +54,19 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
         super.onCreate(savedInstanceState);
     }
 
+    private ActivityResultLauncher<Intent> editMetadataLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    if (data != null) {
+                        String updatedName = data.getStringExtra("updatedName");
+                        name.setText(updatedName);
+                    }
+                }
+            }
+    );
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState)
     {
@@ -80,9 +96,8 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
                 intent.putExtra("name", fileName);
                 intent.putExtra("date", date.getText());
                 intent.putExtra("time", time.getText());
-                intent.putExtra("filePath", path);
-                intent.putExtra("id", id);
-                startActivity(intent);
+                intent.putExtra("pictureId", id);
+                editMetadataLauncher.launch(intent);
             }
         });
 
