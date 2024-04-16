@@ -17,6 +17,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.semsemgallery.R;
+import com.example.semsemgallery.activities.base.GridMode;
 import com.example.semsemgallery.activities.interfaces.MainCallBack;
 import com.example.semsemgallery.activities.main2.fragment.AlbumsFragment;
 import com.example.semsemgallery.activities.main2.fragment.FavoritesFragment;
@@ -107,9 +108,9 @@ public class MainActivity extends AppCompatActivity implements MainCallBack {
     @Override
     public void sendToMain(String terminal, String... data) {
         Log.d("MainActivity", "Got message from fragment: " + data[0]);
-        if (Objects.equals(data[0], "true")) {
+        if (Objects.equals(data[0], GridMode.SELECTING.toString())) {
             navbar.setVisibility(View.GONE);
-        } else if (Objects.equals(data[0], "false")) {
+        } else if (Objects.equals(data[0], GridMode.NORMAL.toString())) {
             navbar.setVisibility(View.VISIBLE);
         }
     }
