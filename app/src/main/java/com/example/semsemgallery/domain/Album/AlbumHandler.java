@@ -1,6 +1,7 @@
     package com.example.semsemgallery.domain.Album;
 
     import android.content.ContentResolver;
+    import android.content.ContentUris;
     import android.content.Context;
     import android.database.Cursor;
     import android.net.Uri;
@@ -165,10 +166,12 @@
 
                         // Delete the original file
                         File originalFile = new File(imageUri.getPath());
-                        if (originalFile.delete()) {
-                            Log.d("Deleted", "File " + fileName + " deleted successfully");
+                        String fileId = originalFile.getName();
+                        imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, Long.valueOf(fileId));
+                        if (deleteFileByUri(context, imageUri)) {
+                            Log.d("DeleteImage", "File " + fileName + " deleted successfully");
                         } else {
-                            Log.d("Deleted", "Failed to delete file " + fileName);
+                            Log.d("DeleteImage", "Failed to delete file " + fileName);
                         }
                     } else {
                         Log.d("Error", "Failed to open InputStream for " + fileName);
@@ -217,6 +220,9 @@
                             inputStream.close();
 
                             // Delete the original file
+                            File originalFile = new File(imageUri.getPath());
+                            String fileId = originalFile.getName();
+                            imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, Long.valueOf(fileId));
                             if (deleteFileByUri(context, imageUri)) {
                                 Log.d("DeleteImage", "File " + fileName + " deleted successfully");
                             } else {
