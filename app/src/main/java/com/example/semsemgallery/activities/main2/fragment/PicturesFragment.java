@@ -42,11 +42,13 @@ import com.example.semsemgallery.activities.base.GridMode;
 import com.example.semsemgallery.activities.base.GridModeEvent;
 import com.example.semsemgallery.activities.base.GridModeListener;
 import com.example.semsemgallery.activities.base.ObservableGridMode;
+import com.example.semsemgallery.activities.cloudbackup.CloudActivity;
 import com.example.semsemgallery.activities.interfaces.FragmentCallBack;
 import com.example.semsemgallery.activities.main2.MainActivity;
 import com.example.semsemgallery.activities.main2.adapter.GalleryAdapter;
 import com.example.semsemgallery.activities.main2.viewholder.DateHeaderItem;
 import com.example.semsemgallery.activities.main2.viewholder.GalleryItem;
+import com.example.semsemgallery.activities.search.SearchViewActivity;
 import com.example.semsemgallery.domain.Picture.GarbagePictureCollector;
 import com.example.semsemgallery.domain.Picture.PictureLoadMode;
 import com.example.semsemgallery.domain.Picture.PictureLoader;
@@ -71,7 +73,6 @@ import java.util.TreeSet;
 public class PicturesFragment extends Fragment implements FragmentCallBack, GridModeListener {
     public static String TAG = "PicturesFragment";
     FirebaseAuth auth = FirebaseAuth.getInstance();
-
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     Uri finalUri;
     private Context context;
@@ -79,22 +80,33 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
     private LinearLayout actionBar;
     private MaterialToolbar selectingTopBar;
     private MaterialToolbar topBar;
+    private final TreeSet<GalleryItem> galleryItems = new TreeSet<>(Comparator.reverseOrder());
+    private final TreeSet<Long> header = new TreeSet<>(Comparator.reverseOrder());
+    private List<GalleryItem> dataList = null;
+    private final ObservableGridMode<GalleryItem> observableGridMode = new ObservableGridMode<>(null, GridMode.NORMAL);
+    ;
+    private GalleryAdapter adapter = null;
+    private PictureLoader loader;
+    private RecyclerView recyclerView;
 
     private final ActivityResultLauncher<Intent> activityCameraResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
-                    Intent data = result.getData();
-                    if (data != null && data.getExtras() != null) {
-                        try {
-                            InputStream inputStream = getActivity().getContentResolver().openInputStream(finalUri);
-                            Bitmap highQualityBitmap = BitmapFactory.decodeStream(inputStream);
-                            createImage(getActivity().getApplicationContext(), highQualityBitmap, finalUri);
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                    loader.execute(PictureLoadMode.ALL.toString());
+//
+//                    Intent data = result.getData();
+//                    if (data != null && data.getExtras() != null) {
+//                        try {
+//                            InputStream inputStream = getActivity().getContentResolver().openInputStream(finalUri);
+//                            Bitmap highQualityBitmap = BitmapFactory.decodeStream(inputStream);
+//                            createImage(getActivity().getApplicationContext(), highQualityBitmap, finalUri);
+//                        } catch (FileNotFoundException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
                 } else {
                     // Image capture failed or was canceled
+                    PicturesFragment.this.context.getContentResolver().delete(finalUri, null, null);
                     Toast.makeText(getActivity(), "Image capture failed", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -112,33 +124,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
             }
         }
     };
-    private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK) {
-                    Intent data = result.getData();
-                    if (data != null && data.getExtras() != null) {
-                        try {
-                            InputStream inputStream = getActivity().getContentResolver().openInputStream(finalUri);
-                            Bitmap highQualityBitmap = BitmapFactory.decodeStream(inputStream);
-                            createImage(getActivity().getApplicationContext(), highQualityBitmap, finalUri);
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                } else {
-                    Toast.makeText(getActivity(), "Image capture failed", Toast.LENGTH_SHORT).show();
-                }
-            });
 
-
-    private final TreeSet<GalleryItem> galleryItems = new TreeSet<>(Comparator.reverseOrder());
-    private final TreeSet<Long> header = new TreeSet<>(Comparator.reverseOrder());
-    private List<GalleryItem> dataList = null;
-    private final ObservableGridMode<GalleryItem> observableGridMode = new ObservableGridMode<>(null, GridMode.NORMAL);
-    ;
-    private GalleryAdapter adapter = null;
-    private PictureLoader loader;
-    private RecyclerView recyclerView;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -156,7 +142,6 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
             @Override
             public void onProcessUpdate(Picture... pictures) {
                 galleryItems.add(new GalleryItem(pictures[0]));
-
                 header.add(pictures[0].getDateInMillis());
             }
 
@@ -169,11 +154,10 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                     galleryItems.add(new GalleryItem(i));
                 }
                 dataList = new ArrayList<>(galleryItems);
-                for (GalleryItem i : dataList) {
-                    observableGridMode.addData(i);
+                for (int i = 0; i < dataList.size(); i++) {
+                    observableGridMode.addData(dataList.get(i));
                 }
                 adapter.notifyDataSetChanged();
-
             }
         };
 
@@ -251,6 +235,14 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         topBar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == R.id.search) {
+                    startActivity(new Intent(getActivity().getApplicationContext(), SearchViewActivity.class));
+                    return true;
+                } else if (item.getItemId() == R.id.cloud) {
+                    startActivity(new Intent(getActivity().getApplicationContext(), CloudActivity.class));
+                    return true;
+                } else
+
                 if (item.getItemId() == R.id.edit) {
                     observableGridMode.setGridMode(GridMode.SELECTING);
                     return true;
@@ -342,7 +334,6 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
             @Override
             public void preExecute(Long... longs) {
                 Log.i("TrashImage", "Prepare trash");
-
                 loadingDialog.show();
             }
 
