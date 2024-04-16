@@ -15,6 +15,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -27,9 +28,13 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.load.resource.gif.GifDrawableResource;
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.base.GridMode;
+import com.example.semsemgallery.activities.base.GridModeEvent;
+import com.example.semsemgallery.activities.base.GridModeListener;
 import com.example.semsemgallery.activities.base.ObservableGridMode;
+import com.example.semsemgallery.activities.main2.MainActivity;
 import com.example.semsemgallery.activities.main2.adapter.AlbumRecyclerAdapter;
 import com.example.semsemgallery.domain.Album.AlbumHandler;
 import com.example.semsemgallery.domain.Album.AlbumLoader;
@@ -41,8 +46,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AlbumsFragment extends Fragment {
+public class AlbumsFragment extends Fragment implements GridModeListener {
 
+    private MainActivity mainActivity;
+    private boolean isSelectingAll;
     private ArrayList<Uri> selectedImages;
     private String newAlbumName;
     private AlbumLoader loader = null;
@@ -50,6 +57,8 @@ public class AlbumsFragment extends Fragment {
     private final ObservableGridMode<Album> observedObj = new ObservableGridMode<>(null, GridMode.NORMAL);
     private AlbumRecyclerAdapter adapter = null;
     private MaterialToolbar topBar;
+    private MaterialToolbar selectingTopBar;
+    private LinearLayout bottomAction;
     private Context applicationContext;
 
     // ====== Activity Result Launcher for Photo Picker
@@ -83,6 +92,8 @@ public class AlbumsFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         Log.i("AlbumFragment", "On attach");
+        observedObj.setMaster(this);
+        observedObj.addObserver(this);
         adapter = new AlbumRecyclerAdapter(context, observedObj);
 
         loader = new AlbumLoader(context) {
@@ -110,6 +121,29 @@ public class AlbumsFragment extends Fragment {
         };
     }
 
+    private OnBackPressedCallback backHandler = new OnBackPressedCallback(true) {
+        @Override
+        public void handleOnBackPressed() {
+            Log.d("BackPressed", observedObj.getCurrentMode().toString());
+            if (observedObj.getCurrentMode() == GridMode.SELECTING) {
+                observedObj.fireSelectionChangeForAll(false);
+                observedObj.setGridMode(GridMode.NORMAL);
+                isSelectingAll = false;
+            } else {
+                // If not in selecting mode, finish the activity
+                mainActivity.finish();
+            }
+        }
+    };
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        this.mainActivity = (MainActivity) getActivity();
+        mainActivity.getOnBackPressedDispatcher().addCallback(backHandler);
+
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -126,11 +160,12 @@ public class AlbumsFragment extends Fragment {
         GridLayoutManager manager = new GridLayoutManager(getActivity(), 3);
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
-
-        // loader.execute();
-
         // ====== Get TopBar
         topBar = view.findViewById(R.id.fragment_albums_topAppBar);
+        selectingTopBar = view.findViewById(R.id.fragment_albums_topAppBarSelecting);
+        bottomAction = view.findViewById(R.id.bottomActions);
+        SetActionBottomFunctions();
+
         selectedImages = new ArrayList<>();
         applicationContext = requireContext();
 
@@ -306,5 +341,41 @@ public class AlbumsFragment extends Fragment {
 
         return dialog;
     }
+
+    @Override
+    public void onModeChange(GridModeEvent event) {
+        //== Send the signal to main activity
+        mainActivity.sendToMain("AlbumsFragment", event.getGridMode().toString());
+        topBar.setVisibility(GridMode.SELECTING == event.getGridMode() ? View.INVISIBLE : View.VISIBLE);
+        selectingTopBar.setVisibility(GridMode.SELECTING == event.getGridMode() ? View.VISIBLE : View.INVISIBLE);
+        bottomAction.setVisibility(GridMode.SELECTING == event.getGridMode() ? View.VISIBLE : View.GONE);
+    }
+
+    @Override
+    public void onSelectionChange(GridModeEvent event) {
+        long value = observedObj.getNumberOfSelected();
+        selectingTopBar.setTitle(value == 0 ? getResources().getString(R.string.select_items) : String.valueOf(value) + " selected");
+    }
+
+    @Override
+    public void onSelectingAll(GridModeEvent event) {
+        selectingTopBar.setTitle(event.getNewSelectionForAll() ? String.valueOf(observedObj.getDataSize()) + " selected" : getString(R.string.select_items));
+    }
+
+    private void SetActionBottomFunctions() {
+        Button btnDelete = bottomAction.findViewById(R.id.btnDelete);
+        Button btnAll = bottomAction.findViewById(R.id.btnAll);
+
+        btnAll.setOnClickListener((v) -> {
+            observedObj.fireSelectionChangeForAll(!isSelectingAll);
+            isSelectingAll = !isSelectingAll;
+            btnAll.setText(isSelectingAll ? "Unselect All" : "Select All");
+        });
+
+        btnDelete.setOnClickListener((v) -> {
+            Toast.makeText(getContext(), "Set event for this button", Toast.LENGTH_LONG).show();
+        });
+    }
+
 
 }

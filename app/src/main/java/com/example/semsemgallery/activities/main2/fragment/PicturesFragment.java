@@ -419,13 +419,12 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
 
     @Override
     public void onModeChange(GridModeEvent event) {
+        mainActivity.sendToMain(TAG, event.getGridMode().toString());
         if (event.getGridMode() == GridMode.NORMAL) {
-            mainActivity.sendToMain(TAG, "false");
             actionBar.setVisibility(View.GONE);
             topBar.setVisibility(View.VISIBLE);
             selectingTopBar.setVisibility(View.INVISIBLE);
         } else if (event.getGridMode() == GridMode.SELECTING) {
-            mainActivity.sendToMain(TAG, "true");
             actionBar.setVisibility(View.VISIBLE);
             topBar.setVisibility(View.INVISIBLE);
             selectingTopBar.setVisibility(View.VISIBLE);
