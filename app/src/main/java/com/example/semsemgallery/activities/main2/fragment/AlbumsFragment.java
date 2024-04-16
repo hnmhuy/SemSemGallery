@@ -1,9 +1,13 @@
 package com.example.semsemgallery.activities.main2.fragment;
 
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,7 +43,10 @@ import com.example.semsemgallery.activities.main2.adapter.AlbumRecyclerAdapter;
 import com.example.semsemgallery.domain.Album.AlbumHandler;
 import com.example.semsemgallery.domain.Album.AlbumLoader;
 import com.example.semsemgallery.domain.MediaRetriever;
+import com.example.semsemgallery.domain.Picture.PictureLoadMode;
+import com.example.semsemgallery.domain.Picture.PictureLoader;
 import com.example.semsemgallery.models.Album;
+import com.example.semsemgallery.models.Picture;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -346,7 +353,11 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
         });
 
         btnDelete.setOnClickListener((v) -> {
-            showDeleteConfirmDialog();
+            if (observedObj.getNumberOfSelected() < 1) {
+                Toast.makeText(applicationContext, "No albums selected", Toast.LENGTH_SHORT).show();
+            } else {
+                showDeleteConfirmDialog();
+            }
         });
     }
 
@@ -370,19 +381,58 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
             description.setText("Confirm move selected album to the Trash?");
         }
 
-        // ====== Listener for CancelButton in AlbumHandlerDialog clicked
+        // ====== Listener for CancelButton in Delete Confirm Dialog clicked
         cancelBtn.setOnClickListener(v -> {
             dialog.dismiss();
         });
 
-        // ====== Listener for CopyButton in AlbumHandlerDialog clicked
+        // ====== Listener for DeleteButton in Delete Confirm Dialog clicked
         deleteBtn.setOnClickListener(v -> {
-            for (Album album: observedObj.getAllSelectedItems()) {
-                Log.d("SelectedAlbum", album.getName());
+            dialog.dismiss();
+
+            // ======== Show Loading Dialog
+            AlertDialog loadingDialog = myLoadingDialog();
+            loadingDialog.show(); // Show Loading Dialog
+            TextView dialogTitle = loadingDialog.findViewById(R.id.component_loading_dialog_title);
+            dialogTitle.setText("Moving to Trash...");
+
+            final int[] totalDeleteImages = {0};
+            final int[] deletedImages = {0};
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.IS_TRASHED, 1);
+            ContentResolver resolver = applicationContext.getContentResolver();
+
+            PictureLoader imageHandlerLoader = new PictureLoader(applicationContext) {
+                @Override
+                public void onProcessUpdate(Picture... pictures) {
+                    Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, pictures[0].getPictureId());
+                    resolver.update(uri, values, null, null);
+                    deletedImages[0] += 1;
+                    int progress = (int) ((deletedImages[0] / (float) totalDeleteImages[0]) * 100);
+                    ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
+                    progressBar.setProgress(progress);
+
+                    if (deletedImages[0] == totalDeleteImages[0]) {
+                        loadingDialog.dismiss();
+                        loader.execute();
+                    }
+                }
+
+                @Override
+                public void postExecute(Boolean res) {
+                }
+            };
+
+            // Get total of delete images
+            for (Album album : observedObj.getAllSelectedItems()) {
+                Log.d("SelectedAlbum", "Album name : " + album.getName());
+                totalDeleteImages[0] += album.getCount();
             }
-            
+
+            // Get image then delete it
+            for (Album album : observedObj.getAllSelectedItems()) {
+                imageHandlerLoader.execute(PictureLoadMode.BY_ALBUM.toString(), album.getAlbumId());
+            }
         });
-
     }
-
-}
+};
