@@ -43,6 +43,7 @@
         android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:weightSum="2"
+        android:background="@color/setting_toggle_background"
         android:layout_height="wrap_content">
 
         <Button

@@ -15,43 +15,13 @@
         android:textSize="22dp"
         android:textStyle="bold" />
 
-    <ProgressBar
+    <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/component_loading_dialog_progressBar"
-        style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="match_parent"
         android:layout_height="10dp"
         android:layout_marginTop="14dp"
         android:paddingHorizontal="12dp"
-        android:progress="40"
-        android:progressTint="@color/material_dynamic_neutral70"
-        android:progressBackgroundTint="@color/material_dynamic_neutral30"
-        />
-
-<!--    <RelativeLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginTop="14dp"-->
-<!--        android:paddingHorizontal="12dp">-->
-
-<!--        <TextView-->
-<!--            android:id="@+id/component_loading_dialog_items"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="123"-->
-<!--            android:textColor="@color/track_off"-->
-<!--            android:textSize="16dp"-->
-<!--            android:textStyle="normal" />-->
-
-<!--        <TextView-->
-<!--            android:id="@+id/component_loading_dialog_percentage"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_alignParentRight="true"-->
-<!--            android:text="123"-->
-<!--            android:textColor="@color/track_off"-->
-<!--            android:textSize="16dp"-->
-<!--            android:textStyle="normal" />-->
-<!--    </RelativeLayout>-->
+        android:progress="40" />
 
     <Button
         android:id="@+id/component_loading_dialog_cancelButton"
@@ -61,8 +31,7 @@
         android:layout_marginTop="20dp"
         android:paddingVertical="10dp"
         android:text="Cancel"
-        android:textColor="@color/material_dynamic_neutral80"
-        android:backgroundTint="@color/material_dynamic_neutral30"
+        style="?attr/materialIconButtonStyle"
         android:textSize="18dp" />
 
 </LinearLayout>

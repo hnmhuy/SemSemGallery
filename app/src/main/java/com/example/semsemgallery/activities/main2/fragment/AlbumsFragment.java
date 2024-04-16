@@ -181,40 +181,13 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
         // ====== Listener for AddIcon in TopBar clicked
         topBar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.add) {
-                showOptionDialog();
+                showInputDialog();
                 return true;
             }
             return false;
         });
 
         loader.execute();
-    }
-
-    // ====== Show Option Dialog
-    private void showOptionDialog() {
-        // Inflate the custom dialog layout
-        View dialogView = getLayoutInflater().inflate(R.layout.component_option_dialog, null);
-
-        // Create a MaterialAlertDialogBuilder with the dialog view
-        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(requireContext())
-                .setView(dialogView);
-
-        // Show the dialog
-        AlertDialog dialog = dialogBuilder.create();
-        dialog.show();
-
-        // ====== Listener for AlbumOption in OptionDialog clicked
-        LinearLayout albumOption = dialogView.findViewById(R.id.component_option_dialog_album);
-        albumOption.setOnClickListener(v -> {
-            dialog.dismiss();
-            showInputDialog();
-        });
-
-        // ====== Listener for AutoUpdatingOption in OptionDialog clicked
-        LinearLayout autoUpdatingOption = dialogView.findViewById(R.id.component_option_dialog_auto_updating);
-        autoUpdatingOption.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Auto-Updating Album", Toast.LENGTH_SHORT).show();
-        });
     }
 
     // ====== Show Input Dialog
@@ -373,9 +346,43 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
         });
 
         btnDelete.setOnClickListener((v) -> {
-            Toast.makeText(getContext(), "Set event for this button", Toast.LENGTH_LONG).show();
+            showDeleteConfirmDialog();
         });
     }
 
+    // ====== Show Delete Confirm Dialog
+    private void showDeleteConfirmDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.component_confirm_dialog, null);
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(applicationContext).setView(dialogView);
+        AlertDialog dialog = dialogBuilder.create();
+        dialog.show();
+
+        TextView cancelBtn = dialogView.findViewById(R.id.component_confirm_dialog_cancel);
+        TextView deleteBtn = dialogView.findViewById(R.id.component_confirm_dialog_confirm);
+        TextView title = dialogView.findViewById(R.id.component_confirm_dialog_title);
+        TextView description = dialogView.findViewById(R.id.component_confirm_dialog_description);
+        long numberOfSelectedAlbums = observedObj.getNumberOfSelected();
+        if (numberOfSelectedAlbums > 1) {
+            title.setText("Move " + numberOfSelectedAlbums + " albums to Trash");
+            description.setText("Confirm move selected albums to the Trash?");
+        } else if (numberOfSelectedAlbums == 1) {
+            title.setText("Move " + numberOfSelectedAlbums + " album to Trash");
+            description.setText("Confirm move selected album to the Trash?");
+        }
+
+        // ====== Listener for CancelButton in AlbumHandlerDialog clicked
+        cancelBtn.setOnClickListener(v -> {
+            dialog.dismiss();
+        });
+
+        // ====== Listener for CopyButton in AlbumHandlerDialog clicked
+        deleteBtn.setOnClickListener(v -> {
+            for (Album album: observedObj.getAllSelectedItems()) {
+                Log.d("SelectedAlbum", album.getName());
+            }
+            
+        });
+
+    }
 
 }
