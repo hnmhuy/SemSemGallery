@@ -36,8 +36,6 @@ public class PictureViewFragment extends Fragment {
 
             // Use the retrieved data as needed
             PhotoView ptv = view.findViewById(R.id.iv_image);
-//            ptv.setImageURI(Uri.fromFile(new File(picture.getPath())));
-
             Glide.with(this).load(picture.getPath()).into(ptv);
         }
         return view;

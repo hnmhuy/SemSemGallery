@@ -37,6 +37,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import ly.img.android.pesdk.PhotoEditorSettingsList
 import ly.img.android.pesdk.assets.filter.basic.FilterPackBasic
@@ -128,22 +129,6 @@ class PictureViewActivity : AppCompatActivity() {
     //    private var pictureTree : TreeSet<Picture> = TreeSet(Comparator.reverseOrder<Picture>())
     private var pictureList: ArrayList<Picture> = ArrayList()
     private lateinit var adapter: PictureAdapter
-    fun findIndexOf(pic: Picture, list: ArrayList<Picture>): Int {
-        var low = 0
-        var high = list.size - 1
-        while (low <= high) {
-            val mid = (low + high) / 2
-            val dataMid = list[mid]
-            if (dataMid.pictureId == pic.pictureId) {
-                return mid
-            } else if (dataMid.compareTo(pic) < 0) {
-                high = mid - 1
-            } else {
-                low = mid + 1
-            }
-        }
-        return -1
-    }
 
     private var loader = object : PictureLoader(this) {
         override fun onProcessUpdate(vararg processes: Picture) {
@@ -171,6 +156,11 @@ class PictureViewActivity : AppCompatActivity() {
 
     }
 
+    private fun updateOCRBtn(isDisplay: Boolean) {
+        if (isDisplay) ocrBtn.visibility = View.VISIBLE
+        else ocrBtn.visibility = View.INVISIBLE
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_picture_view)
@@ -184,31 +174,39 @@ class PictureViewActivity : AppCompatActivity() {
         pictureList.add(selectingPic)
         adapter = PictureAdapter(this, pictureList, 0)
         viewPager.adapter = adapter
+        viewPager.offsetLeftAndRight(2);
         viewPager.setCurrentItem(0, false);
+        var isDisplayOCR = false;
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(pos: Int) {
                 super.onPageSelected(pos)
                 selectingPic = pictureList[pos];
                 toggleFavorite(selectingPic.isFav)
-                val textRecognitionTask = aiHandler.getTextRecognition(applicationContext, selectingPic.pictureId)
-                textRecognitionTask.addOnSuccessListener { lines ->
-                    if (lines.isEmpty()) {
-                        ocrBtn.visibility = View.INVISIBLE
-                        Log.d("TEXT_RECOGNITION", "No text recognized")
-                    } else {
-                        ocrBtn.visibility = View.VISIBLE
-                        linesText = lines
-                        for (line in lines) {
-                            Log.d("TEXT_RECOGNITION", "Recognized line: $line")
-                        }
-                    }
-                }.addOnFailureListener { e ->
-                    // Text recognition failed, handle the exception
-                    Log.e("TEXT_RECOGNITION", "Text recognition failed", e)
-                }
+            }
 
+            override fun onPageScrollStateChanged(state: Int) {
+                super.onPageScrollStateChanged(state)
+                if (state == ViewPager2.SCROLL_STATE_IDLE) {
+                    Log.d("Pager", "Scroll idle")
+                    val textRecognitionTask =
+                        aiHandler.getTextRecognition(applicationContext, selectingPic.pictureId)
+                    textRecognitionTask.addOnSuccessListener { lines ->
+                        if (lines.isEmpty()) {
+                            ocrBtn.visibility = View.INVISIBLE
+                            Log.d("TEXT_RECOGNITION", "No text recognized")
+                        } else {
+                            ocrBtn.visibility = View.VISIBLE
+                            linesText = lines
+                        }
+                    }.addOnFailureListener { e ->
+                        Log.e("TEXT_RECOGNITION", "Text recognition failed", e)
+                    }
+                }
             }
         })
+
+
+
         loader.execute(PictureLoadMode.ALL.toString())
 
 
@@ -294,7 +292,7 @@ class PictureViewActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        topBar.setNavigationOnClickListener { v: View? -> finish() }
+        topBar.setNavigationOnClickListener { _: View? -> finish() }
     }
 
     private fun toggleFavorite(isFavorite: Boolean) {

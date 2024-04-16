@@ -1,5 +1,6 @@
 package com.example.semsemgallery.activities.deleted;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
@@ -32,6 +33,7 @@ import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.base.RecylerViewItemDecoration;
 import com.example.semsemgallery.domain.Picture.GarbagePictureCollector;
 import com.example.semsemgallery.domain.Picture.TrashedPictureLoader;
+import com.example.semsemgallery.models.Picture;
 import com.example.semsemgallery.models.TrashedPicture;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.checkbox.MaterialCheckBox;
@@ -96,6 +98,9 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
         recyclerView.addItemDecoration(new RecylerViewItemDecoration(spacing));
         loader.execute();
         toolbar = findViewById(R.id.topAppBarNormal);
+        toolbar.setNavigationOnClickListener((v) -> {
+            finish();
+        });
         selectingToolbar = findViewById(R.id.topAppBar_SelectingMode);
         selectedCounts = findViewById(R.id.select_items);
         selectAll = findViewById(R.id.select_all);
@@ -133,45 +138,88 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
         });
     }
 
+    private AlertDialog createDialog(String titleText, boolean isCancel, View.OnClickListener cancelCallback) {
+        //=Prepare dialog
+        View dialogView = getLayoutInflater().inflate(R.layout.component_loading_dialog, null);
+        TextView title = dialogView.findViewById(R.id.component_loading_dialog_title);
+        title.setText(titleText);
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(this).setView(dialogView);
+
+        AlertDialog loadingDialog = dialogBuilder.create();
+        loadingDialog.setCanceledOnTouchOutside(false);
+
+        Button cancelButton = dialogView.findViewById(R.id.component_loading_dialog_cancelButton);
+        cancelButton.setVisibility(isCancel ? View.VISIBLE : View.INVISIBLE);
+        if (cancelCallback != null) {
+            cancelButton.setOnClickListener(cancelCallback);
+        }
+        return loadingDialog;
+    }
+
+    ;
+
+    private void DeleteImage() {
+        AlertDialog loadingDialog = createDialog("Deleting image", false, null);
+        long numberOfDeleted = observedObj.getNumberOfSelected();
+        List<TrashedPicture> deletePictures = observedObj.getAllSelectedItems();
+        List<ObservableGridMode<TrashedPicture>.DataItem> dataItems = observedObj.getSelectedDataItem();
+        GarbagePictureCollector.DeletePicture deleter = new GarbagePictureCollector.DeletePicture(this) {
+            @Override
+            public void preExecute(List<TrashedPicture>... lists) {
+                loadingDialog.show();
+            }
+
+            @Override
+            public void onProcessUpdate(Long... longs) {
+                ProgressBar bar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
+                bar.setProgress((int) ((longs[0] * 100) / numberOfDeleted));
+            }
+
+            @Override
+            public void postExecute(Void res) {
+                loadingDialog.dismiss();
+                for (TrashedPicture tp : deletePictures) {
+                    int indexTP = deletePictures.indexOf(tp);
+                    int index = observedObj.getObservedObjects().indexOf(dataItems.get(indexTP));
+                    observedObj.getObservedObjects().remove(index);
+                    adapter.notifyItemRemoved(index);
+                }
+                observedObj.setGridMode(GridMode.NORMAL);
+            }
+        };
+        deleter.execute(deletePictures);
+    }
+
+    private boolean requireAllFileAccess() {
+        boolean isStorageManager = false;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            isStorageManager = Environment.isExternalStorageManager();
+        }
+
+        if (isStorageManager) {
+            // Your app already has storage management permissions
+            // You can proceed with file operations
+            return isStorageManager;
+        } else {
+            // Your app does not have storage management permissions
+            // Guide the user to the system settings page to grant permission
+            Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+            startActivity(intent);
+        }
+        return false;
+    }
+
     private void ActionBarHandlers() {
         Button btnRestore = bottomAction.findViewById(R.id.btnRestore);
         btnRestore.setOnClickListener((v) -> {
             //=Prepare dialog
-            View dialogView = getLayoutInflater().inflate(R.layout.component_loading_dialog, null);
-            TextView title = dialogView.findViewById(R.id.component_loading_dialog_title);
-            title.setText("Restore the trashed pictures");
-            MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(this).setView(dialogView);
-
-            AlertDialog loadingDialog = dialogBuilder.create();
-            loadingDialog.setCanceledOnTouchOutside(false);
-
-            Button cancelButton = dialogView.findViewById(R.id.component_loading_dialog_cancelButton);
-            cancelButton.setVisibility(View.INVISIBLE);
-            // Prepare data
-
+            AlertDialog loadingDialog = createDialog("Restoring image", false, null);
             List<ObservableGridMode<TrashedPicture>.DataItem> deletedItems = observedObj.getSelectedDataItem();
             Long[] transferData = new Long[deletedItems.size()];
             for (int i = 0; i < deletedItems.size(); i++) {
                 transferData[i] = deletedItems.get(i).data.getId();
             }
-            final boolean[] canExecute = {false};
-            boolean isStorageManager = false;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                isStorageManager = Environment.isExternalStorageManager();
-            }
-
-            if (isStorageManager) {
-                // Your app already has storage management permissions
-                // You can proceed with file operations
-                canExecute[0] = true;
-            } else {
-                // Your app does not have storage management permissions
-                // Guide the user to the system settings page to grant permission
-                Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-
-                startActivity(intent);
-            }
-
+            final boolean[] canExecute = {requireAllFileAccess()};
             GarbagePictureCollector.TrashPictureHandler trashPictureHandler = new GarbagePictureCollector.TrashPictureHandler(this, 0) {
                 @Override
                 public void preExecute(Long... longs) {
@@ -197,8 +245,23 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
                 }
             };
             if (canExecute[0]) trashPictureHandler.execute(transferData);
-            else Toast.makeText(this, "Don't have permission!", Toast.LENGTH_LONG);
+            else Toast.makeText(this, "Don't have permission!", Toast.LENGTH_LONG).show();
         });
+
+        Button btnDelete = bottomAction.findViewById(R.id.btnDelete);
+        btnDelete.setOnClickListener((v) -> {
+            long numberOfDeleted = observedObj.getNumberOfSelected();
+
+            MaterialAlertDialogBuilder confirmDialog = new MaterialAlertDialogBuilder(this)
+                    .setTitle("Delete " + String.valueOf(numberOfDeleted) + (numberOfDeleted > 1 ? " pictures " : " picture ") + "permanently?")
+                    .setNegativeButton("Cancel", (dialog, which) -> {
+                    })
+                    .setPositiveButton("Move to Trash", (dialog, which) -> {
+                        DeleteImage();
+                    });
+            confirmDialog.show();
+        });
+
     }
 
     @Override
@@ -228,16 +291,8 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
     }
     @Override
     public void onSelectingAll(GridModeEvent event) {
-
         selectAll.setChecked(event.getNewSelectionForAll());
+        bottomAction.setVisibility(event.getNewSelectionForAll() ? View.VISIBLE : View.GONE);
         selectedCounts.setText(String.valueOf(observedObj.getNumberOfSelected()) + " selected");
     }
-//    @Override
-//    public void onBackPressed() {
-//        if (observedObj.getCurrentMode() == GridMode.NORMAL)
-//            super.onBackPressed();
-//        else {
-//            observedObj.setGridMode(GridMode.NORMAL);
-//        }
-//    }
 }

@@ -8,7 +8,11 @@ import android.net.Uri;
 import android.provider.MediaStore;
 
 import com.example.semsemgallery.domain.TaskBase;
+import com.example.semsemgallery.models.Picture;
 import com.example.semsemgallery.models.TrashedPicture;
+
+import java.io.File;
+import java.util.List;
 
 public class GarbagePictureCollector {
 
@@ -55,6 +59,33 @@ public class GarbagePictureCollector {
                 mHandler.post(() -> onProcessUpdate(finalComplete));
             }
 
+            return null;
+        }
+    }
+
+    public static abstract class DeletePicture extends TaskBase<List<TrashedPicture>, Long, Void> {
+        private Context context;
+
+        public DeletePicture(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        public Void doInBackground(List<TrashedPicture>... lists) {
+            long success = 0;
+            for (int index = 0; index < lists[0].size(); index++) {
+                TrashedPicture p = lists[0].get(index);
+                File file = new File(p.getPath());
+                boolean flag = false;
+                if (file.exists()) {
+                    flag = file.delete();
+                }
+                if (flag) {
+                    success++;
+                    Long finalSuccess = success;
+                    mHandler.post(() -> onProcessUpdate(finalSuccess));
+                }
+            }
             return null;
         }
     }

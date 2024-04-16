@@ -271,6 +271,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         Log.i(TAG, "Paused");
     }
 
+
     private final View.OnClickListener TrashPicture = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -294,18 +295,29 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         }
     };
 
-    private void ProcessTrashPicture() {
+    private AlertDialog createDialog(String titleText, boolean isCancel, View.OnClickListener cancelCallback) {
+        //=Prepare dialog
         View dialogView = getLayoutInflater().inflate(R.layout.component_loading_dialog, null);
         TextView title = dialogView.findViewById(R.id.component_loading_dialog_title);
-        title.setText("Trashing selected pictures");
+        title.setText(titleText);
         MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(context).setView(dialogView);
 
         AlertDialog loadingDialog = dialogBuilder.create();
         loadingDialog.setCanceledOnTouchOutside(false);
 
         Button cancelButton = dialogView.findViewById(R.id.component_loading_dialog_cancelButton);
-        cancelButton.setVisibility(View.INVISIBLE);
+        cancelButton.setVisibility(isCancel ? View.VISIBLE : View.INVISIBLE);
+        if (cancelCallback != null) {
+            cancelButton.setOnClickListener(cancelCallback);
+        }
+        return loadingDialog;
+    }
 
+    ;
+
+
+    private void ProcessTrashPicture() {
+        AlertDialog loadingDialog = createDialog("Moving images to Trash", false, null);
         //== Prepare data and handler
         List<ObservableGridMode<GalleryItem>.DataItem> temp = observableGridMode.getSelectedDataItem();
         Long[] deleteIds = new Long[temp.size()];
