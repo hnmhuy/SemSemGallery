@@ -156,9 +156,23 @@ class PictureViewActivity : AppCompatActivity() {
 
     }
 
-    private fun updateOCRBtn(isDisplay: Boolean) {
-        if (isDisplay) ocrBtn.visibility = View.VISIBLE
-        else ocrBtn.visibility = View.INVISIBLE
+    private fun processOCR(state: Int) {
+        if (state == ViewPager2.SCROLL_STATE_IDLE || state == ViewPager2.SCROLL_STATE_SETTLING) {
+            Log.d("Pager", "Scroll idle")
+            val textRecognitionTask =
+                aiHandler.getTextRecognition(applicationContext, selectingPic.pictureId)
+            textRecognitionTask.addOnSuccessListener { lines ->
+                if (lines.isEmpty()) {
+                    ocrBtn.visibility = View.INVISIBLE
+                    Log.d("TEXT_RECOGNITION", "No text recognized")
+                } else {
+                    ocrBtn.visibility = View.VISIBLE
+                    linesText = lines
+                }
+            }.addOnFailureListener { e ->
+                Log.e("TEXT_RECOGNITION", "Text recognition failed", e)
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -173,10 +187,10 @@ class PictureViewActivity : AppCompatActivity() {
         Log.d("Pictures", "Got Id: " + selectingPic.pictureId)
         pictureList.add(selectingPic)
         adapter = PictureAdapter(this, pictureList, 0)
+        processOCR(0)
         viewPager.adapter = adapter
         viewPager.offsetLeftAndRight(2);
         viewPager.setCurrentItem(0, false);
-        var isDisplayOCR = false;
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(pos: Int) {
                 super.onPageSelected(pos)
@@ -186,22 +200,7 @@ class PictureViewActivity : AppCompatActivity() {
 
             override fun onPageScrollStateChanged(state: Int) {
                 super.onPageScrollStateChanged(state)
-                if (state == ViewPager2.SCROLL_STATE_IDLE) {
-                    Log.d("Pager", "Scroll idle")
-                    val textRecognitionTask =
-                        aiHandler.getTextRecognition(applicationContext, selectingPic.pictureId)
-                    textRecognitionTask.addOnSuccessListener { lines ->
-                        if (lines.isEmpty()) {
-                            ocrBtn.visibility = View.INVISIBLE
-                            Log.d("TEXT_RECOGNITION", "No text recognized")
-                        } else {
-                            ocrBtn.visibility = View.VISIBLE
-                            linesText = lines
-                        }
-                    }.addOnFailureListener { e ->
-                        Log.e("TEXT_RECOGNITION", "Text recognition failed", e)
-                    }
-                }
+                processOCR(state)
             }
         })
 

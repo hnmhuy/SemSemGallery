@@ -43,6 +43,7 @@ import com.example.semsemgallery.activities.main2.adapter.AlbumRecyclerAdapter;
 import com.example.semsemgallery.domain.Album.AlbumHandler;
 import com.example.semsemgallery.domain.Album.AlbumLoader;
 import com.example.semsemgallery.domain.MediaRetriever;
+import com.example.semsemgallery.domain.Picture.GarbagePictureCollector;
 import com.example.semsemgallery.domain.Picture.PictureLoadMode;
 import com.example.semsemgallery.domain.Picture.PictureLoader;
 import com.example.semsemgallery.models.Album;
@@ -406,8 +407,9 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
                 @Override
                 public void onProcessUpdate(Picture... pictures) {
                     Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, pictures[0].getPictureId());
-                    resolver.update(uri, values, null, null);
-                    deletedImages[0] += 1;
+                    if (GarbagePictureCollector.trashPicture(resolver, uri)) {
+                        deletedImages[0]++;
+                    }
                     int progress = (int) ((deletedImages[0] / (float) totalDeleteImages[0]) * 100);
                     ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
                     progressBar.setProgress(progress);

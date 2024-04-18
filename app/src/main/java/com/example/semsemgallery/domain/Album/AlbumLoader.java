@@ -50,7 +50,7 @@ public abstract class AlbumLoader extends TaskBase<String, Album, Void> {
                 while (cursor.moveToNext()) {
                     String bucketId = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_ID));
                     // Found new bucket
-                    if (!currId.equals(bucketId)) {
+                    if (!currId.equals(bucketId) || cursor.isLast()) {
                         if (currAlbum != null) {
                             Album transferAlbum = currAlbum;
                             mHandler.post(() -> onProcessUpdate(transferAlbum));

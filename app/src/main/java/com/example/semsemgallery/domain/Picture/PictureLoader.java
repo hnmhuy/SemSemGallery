@@ -3,6 +3,7 @@ package com.example.semsemgallery.domain.Picture;
 import android.content.Context;
 import android.database.Cursor;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import com.example.semsemgallery.domain.TaskBase;
 import com.example.semsemgallery.models.Picture;

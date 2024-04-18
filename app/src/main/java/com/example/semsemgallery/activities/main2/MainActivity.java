@@ -6,6 +6,9 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -30,7 +33,11 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements MainCallBack {
 
-    private NavigationBarView navbar;
+    private LinearLayout navbar;
+    private LinearLayout highlightings;
+    private View line1;
+    private View line2;
+    private View line3;
     private final ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permission -> {
         boolean allGranted = true;
         for (Boolean isGranted : permission.values()) {
@@ -77,25 +84,46 @@ public class MainActivity extends AppCompatActivity implements MainCallBack {
                     .commit();
         }
         navbar = findViewById(R.id.navigation_bar);
-        navbar.setOnItemSelectedListener(
-                item -> {
-                    int id = item.getItemId();
-                    if (id == R.id.pictures_page) {
-                        NavigateTo(PicturesFragment.class);
-                        return true;
-                    } else if (id == R.id.albums_page) {
-                        NavigateTo(AlbumsFragment.class);
-                        return true;
-                    } else if (id == R.id.favorite_page) {
-                        NavigateTo(FavoritesFragment.class);
-                        return true;
-                    } else if (id == R.id.more_option) {
-                        MoreOptionsBottomSheet botSheetFrag = new MoreOptionsBottomSheet();
-                        botSheetFrag.show(getSupportFragmentManager(), botSheetFrag.getTag());
-                        return false;
-                    } else return false;
-                }
-        );
+        highlightings = findViewById(R.id.highlighting);
+        setUpNavigationBar();
+    }
+
+    private void selectNavButton(Button button) {
+        line1.setVisibility(View.INVISIBLE);
+        line2.setVisibility(View.INVISIBLE);
+        line3.setVisibility(View.INVISIBLE);
+
+        if (button.getId() == R.id.btnPictures) {
+            line1.setVisibility(View.VISIBLE);
+            NavigateTo(PicturesFragment.class);
+        } else if (button.getId() == R.id.btnAlbums) {
+            line2.setVisibility(View.VISIBLE);
+            NavigateTo(AlbumsFragment.class);
+        } else if (button.getId() == R.id.btnFavorite) {
+            line3.setVisibility(View.VISIBLE);
+            NavigateTo(FavoritesFragment.class);
+        }
+
+
+    }
+
+    private void setUpNavigationBar() {
+        Button btnPictures = navbar.findViewById(R.id.btnPictures);
+        Button btnAlbums = navbar.findViewById(R.id.btnAlbums);
+        Button btnFavorite = navbar.findViewById(R.id.btnFavorite);
+        ImageButton btnMore = navbar.findViewById(R.id.btnMore);
+
+        line1 = highlightings.findViewById(R.id.line1);
+        line2 = highlightings.findViewById(R.id.line2);
+        line3 = highlightings.findViewById(R.id.line3);
+
+        btnPictures.setOnClickListener((v) -> selectNavButton(btnPictures));
+        btnAlbums.setOnClickListener((v) -> selectNavButton(btnAlbums));
+        btnFavorite.setOnClickListener((v) -> selectNavButton(btnFavorite));
+        btnMore.setOnClickListener((v) -> {
+            MoreOptionsBottomSheet botSheetFrag = new MoreOptionsBottomSheet();
+            botSheetFrag.show(getSupportFragmentManager(), botSheetFrag.getTag());
+        });
     }
 
     private void NavigateTo(Class fragment) {
@@ -110,8 +138,10 @@ public class MainActivity extends AppCompatActivity implements MainCallBack {
         Log.d("MainActivity", "Got message from fragment: " + data[0]);
         if (Objects.equals(data[0], GridMode.SELECTING.toString())) {
             navbar.setVisibility(View.GONE);
+            highlightings.setVisibility(View.GONE);
         } else if (Objects.equals(data[0], GridMode.NORMAL.toString())) {
             navbar.setVisibility(View.VISIBLE);
+            highlightings.setVisibility(View.VISIBLE);
         }
     }
 }

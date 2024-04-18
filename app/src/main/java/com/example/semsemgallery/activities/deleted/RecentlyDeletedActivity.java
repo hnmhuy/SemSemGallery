@@ -1,9 +1,13 @@
 package com.example.semsemgallery.activities.deleted;
 
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
@@ -71,8 +75,14 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
             String postFix = size == 1 ? " picture" : " pictures";
             toolbar.setSubtitle(size + postFix);
 
+            //==Restore the pending file to original file
+            Log.d("PendingHandler", "Start restore");
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.IS_PENDING, 0);
             for (TrashedPicture p : pictureList) {
                 Log.d("TrashedPicture", "TP - " + p.getId() + p.getPath());
+                Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, p.getId());
+                //getApplicationContext().getContentResolver().update(imageUri, values, null, null);
             }
         }
     };
@@ -185,6 +195,7 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
                     adapter.notifyItemRemoved(index);
                 }
                 observedObj.setGridMode(GridMode.NORMAL);
+                toolbar.setSubtitle(String.valueOf(observedObj.getDataSize()));
             }
         };
         deleter.execute(deletePictures);
@@ -256,7 +267,7 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
                     .setTitle("Delete " + String.valueOf(numberOfDeleted) + (numberOfDeleted > 1 ? " pictures " : " picture ") + "permanently?")
                     .setNegativeButton("Cancel", (dialog, which) -> {
                     })
-                    .setPositiveButton("Move to Trash", (dialog, which) -> {
+                    .setPositiveButton("Delete", (dialog, which) -> {
                         DeleteImage();
                     });
             confirmDialog.show();

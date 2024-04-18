@@ -6,12 +6,15 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import com.example.semsemgallery.domain.TaskBase;
 import com.example.semsemgallery.models.Picture;
 import com.example.semsemgallery.models.TrashedPicture;
 
 import java.io.File;
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 
 public class GarbagePictureCollector {
@@ -25,6 +28,21 @@ public class GarbagePictureCollector {
             instance = new GarbagePictureCollector();
         }
         return instance;
+    }
+
+    private static final ContentValues trashValue = new ContentValues();
+    private static final ContentValues pendingValue = new ContentValues();
+
+
+    public static boolean trashPicture(ContentResolver resolver, Uri imageUri) {
+        //== Init Content values if it's empty
+        if (trashValue.size() == 0) trashValue.put(MediaStore.Images.Media.IS_TRASHED, 1);
+        if (pendingValue.size() == 0) trashValue.put(MediaStore.Images.Media.IS_PENDING, 0);
+        int res = resolver.update(imageUri, trashValue, null, null);
+        if (res > 0) {
+            resolver.update(imageUri, pendingValue, null, null);
+            return true;
+        } else return false;
     }
 
     //== Trash function in another thread
@@ -48,15 +66,18 @@ public class GarbagePictureCollector {
         @Override
         public Void doInBackground(Long... pictures) {
             int complete = 0;
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.Images.Media.IS_TRASHED, isTrash);
+            ContentValues trashValue = new ContentValues();
+            trashValue.put(MediaStore.Images.Media.IS_TRASHED, isTrash);
+            ContentValues pendingValue = new ContentValues();
+            pendingValue.put(MediaStore.Images.Media.IS_PENDING, 0);
             ContentResolver resolver = context.getContentResolver();
             for (Long p : pictures) {
                 Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, p);
-                resolver.update(uri, values, null, null);
-                complete++;
-                int finalComplete = complete;
-                mHandler.post(() -> onProcessUpdate(finalComplete));
+                if (GarbagePictureCollector.trashPicture(resolver, uri)) {
+                    complete++;
+                    int finalComplete = complete;
+                    mHandler.post(() -> onProcessUpdate(finalComplete));
+                }
             }
 
             return null;

@@ -4,8 +4,11 @@
     import android.content.ContentUris;
     import android.content.Context;
     import android.database.Cursor;
+    import android.media.MediaScannerConnection;
     import android.net.Uri;
     import android.os.Environment;
+    import android.os.Handler;
+    import android.os.Looper;
     import android.provider.MediaStore;
     import android.util.Log;
     import android.widget.ProgressBar;
@@ -92,6 +95,7 @@
 
         // Copy Images to Album - but split Thread for show Loading Dialog
         public static void copyImagesToAlbumHandler(Context context, ArrayList<Uri> imageUris, String albumName, OnLoadingListener listener) {
+            Handler handler = new Handler(Looper.getMainLooper());
             new Thread(() -> {
                 int totalImages = imageUris.size();
                 isHandling = true;
@@ -128,7 +132,8 @@
                         e.printStackTrace();
                     }
                 }
-
+                // Scan the directory
+                AlbumHandler.scanAlbumForMediaStoreRegister(context, albumDirectory.getAbsolutePath(), handler);
                 listener.onLoadingComplete();
             }).start();
         }
@@ -182,11 +187,13 @@
                 }
             }
 
+
             Toast.makeText(context, "Move successfully to " + albumName, Toast.LENGTH_SHORT).show();
         }
 
         // Move Images to Album - but split Thread for show Loading Dialog
         public static void moveImagesToAlbumHandler(Context context, ArrayList<Uri> imageUris, String albumName, OnLoadingListener listener) {
+            Handler handler = new Handler(Looper.getMainLooper());
             new Thread(() -> {
                 int totalImages = imageUris.size();
                 isHandling = true;
@@ -233,6 +240,7 @@
                         e.printStackTrace();
                     }
                 }
+                AlbumHandler.scanAlbumForMediaStoreRegister(context, albumDirectory.getAbsolutePath(), handler);
 
                 listener.onLoadingComplete();
             }).start();
@@ -356,5 +364,20 @@
             }
         }
 
+        private static void scanAlbumForMediaStoreRegister(Context context, String folderPath, Handler handler) {
+            MediaScannerConnection.scanFile(
+                    context,
+                    new String[]{folderPath},
+                    null,
+                    new MediaScannerConnection.OnScanCompletedListener() {
+                        @Override
+                        public void onScanCompleted(String path, Uri uri) {
+                            handler.post(() -> {
+                                Log.d("ScannerMediaStore", "Scanned " + path);
+                            });
+                        }
+                    }
+            );
+        }
 
     }
