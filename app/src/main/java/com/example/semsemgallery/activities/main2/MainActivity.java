@@ -2,6 +2,7 @@ package com.example.semsemgallery.activities.main2;
 
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
@@ -10,11 +11,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -33,13 +34,15 @@ import com.google.android.material.navigation.NavigationBarView;
 
 import java.util.Objects;
 
+@RequiresApi(api = Build.VERSION_CODES.R)
 public class MainActivity extends AppCompatActivity implements MainCallBack {
 
     private LinearLayout navbar;
-    private LinearLayout highlightings;
+    private LinearLayout highlighting;
     private View line1;
     private View line2;
     private View line3;
+    private Class currentFragment;
     private final ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permission -> {
         boolean allGranted = true;
         for (Boolean isGranted : permission.values()) {
@@ -53,18 +56,10 @@ public class MainActivity extends AppCompatActivity implements MainCallBack {
             isStorageManager = Environment.isExternalStorageManager();
         }
 
-        if (isStorageManager) {
-            // Your app already has storage management permissions
-            // You can proceed with file operations
-        } else {
-            // Your app does not have storage management permissions
-            // Guide the user to the system settings page to grant permission
+        if (!isStorageManager) {
             Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-
             startActivity(intent);
         }
-
-
     });
 
     @Override
@@ -84,9 +79,11 @@ public class MainActivity extends AppCompatActivity implements MainCallBack {
                     .setReorderingAllowed(true)
                     .add(R.id.main_content, PicturesFragment.class, null)
                     .commit();
+
+            currentFragment = PicturesFragment.class;
         }
         navbar = findViewById(R.id.navigation_bar);
-        highlightings = findViewById(R.id.highlighting);
+        highlighting = findViewById(R.id.highlighting);
         setUpNavigationBar();
     }
 
@@ -106,7 +103,6 @@ public class MainActivity extends AppCompatActivity implements MainCallBack {
             NavigateTo(FavoritesFragment.class);
         }
 
-
     }
 
     private void setUpNavigationBar() {
@@ -115,9 +111,9 @@ public class MainActivity extends AppCompatActivity implements MainCallBack {
         Button btnFavorite = navbar.findViewById(R.id.btnFavorite);
         ImageButton btnMore = navbar.findViewById(R.id.btnMore);
 
-        line1 = highlightings.findViewById(R.id.line1);
-        line2 = highlightings.findViewById(R.id.line2);
-        line3 = highlightings.findViewById(R.id.line3);
+        line1 = highlighting.findViewById(R.id.line1);
+        line2 = highlighting.findViewById(R.id.line2);
+        line3 = highlighting.findViewById(R.id.line3);
 
         btnPictures.setOnClickListener((v) -> selectNavButton(btnPictures));
         btnAlbums.setOnClickListener((v) -> selectNavButton(btnAlbums));
@@ -129,10 +125,13 @@ public class MainActivity extends AppCompatActivity implements MainCallBack {
     }
 
     private void NavigateTo(Class fragment) {
+        if (fragment == currentFragment) return;
         getSupportFragmentManager().beginTransaction()
                 .setReorderingAllowed(true)
                 .replace(R.id.main_content, fragment, null)
                 .commit();
+
+        currentFragment = fragment;
     }
 
     @Override
@@ -140,10 +139,10 @@ public class MainActivity extends AppCompatActivity implements MainCallBack {
         Log.d("MainActivity", "Got message from fragment: " + data[0]);
         if (Objects.equals(data[0], GridMode.SELECTING.toString())) {
             navbar.setVisibility(View.GONE);
-            highlightings.setVisibility(View.GONE);
+            highlighting.setVisibility(View.GONE);
         } else if (Objects.equals(data[0], GridMode.NORMAL.toString())) {
             navbar.setVisibility(View.VISIBLE);
-            highlightings.setVisibility(View.VISIBLE);
+            highlighting.setVisibility(View.VISIBLE);
         }
     }
 }

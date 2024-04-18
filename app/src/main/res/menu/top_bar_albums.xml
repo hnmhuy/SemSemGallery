@@ -23,10 +23,4 @@
         android:title="@string/select_all"
         app:showAsAction="never" />
 
-    <item
-        android:id="@+id/hide_album"
-        android:title="@string/hide_albums"
-        app:showAsAction="never" />
-
-
 </menu>

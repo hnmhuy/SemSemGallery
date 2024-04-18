@@ -50,4 +50,16 @@ public abstract class GalleryItemViewHolder extends SelectableItem<GalleryItem> 
             }
         } else if (event.getGridMode() == GridMode.NORMAL) selector.setVisibility(View.INVISIBLE);
     }
+
+    @Override
+    public void onSelectingAll(GridModeEvent event) {
+        super.onSelectingAll(event);
+        if (event.getGridMode() == SELECTING) {
+            if (type == GalleryItem.GROUPDATE) {
+                selector.setVisibility(View.INVISIBLE);
+            } else if (type == GalleryItem.THUMBNAIL) {
+                selector.setVisibility(View.VISIBLE);
+            }
+        } else if (event.getGridMode() == GridMode.NORMAL) selector.setVisibility(View.INVISIBLE);
+    }
 }

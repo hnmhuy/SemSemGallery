@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +33,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
@@ -58,8 +59,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -75,6 +76,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
     FirebaseAuth auth = FirebaseAuth.getInstance();
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     Uri finalUri;
+    private boolean isSelectingAll = false;
     private Context context;
     private MainActivity mainActivity;
     private LinearLayout actionBar;
@@ -84,33 +86,19 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
     private final TreeSet<Long> header = new TreeSet<>(Comparator.reverseOrder());
     private List<GalleryItem> dataList = null;
     private final ObservableGridMode<GalleryItem> observableGridMode = new ObservableGridMode<>(null, GridMode.NORMAL);
-    ;
     private GalleryAdapter adapter = null;
     private PictureLoader loader;
     private RecyclerView recyclerView;
-
     private final ActivityResultLauncher<Intent> activityCameraResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     loader.execute(PictureLoadMode.ALL.toString());
-//
-//                    Intent data = result.getData();
-//                    if (data != null && data.getExtras() != null) {
-//                        try {
-//                            InputStream inputStream = getActivity().getContentResolver().openInputStream(finalUri);
-//                            Bitmap highQualityBitmap = BitmapFactory.decodeStream(inputStream);
-//                            createImage(getActivity().getApplicationContext(), highQualityBitmap, finalUri);
-//                        } catch (FileNotFoundException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
                 } else {
                     // Image capture failed or was canceled
                     PicturesFragment.this.context.getContentResolver().delete(finalUri, null, null);
                     Toast.makeText(getActivity(), "Image capture failed", Toast.LENGTH_SHORT).show();
                 }
             });
-
     private OnBackPressedCallback backHandler = new OnBackPressedCallback(true) {
         @Override
         public void handleOnBackPressed() {
@@ -118,14 +106,13 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
             if (observableGridMode.getCurrentMode() == GridMode.SELECTING) {
                 observableGridMode.fireSelectionChangeForAll(false);
                 observableGridMode.setGridMode(GridMode.NORMAL);
+                isSelectingAll = false;
             } else {
                 // If not in selecting mode, finish the activity
                 mainActivity.finish();
             }
         }
     };
-
-
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -202,8 +189,6 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 if (uri == null) {
                     uri = MediaStore.Images.Media.INTERNAL_CONTENT_URI;
                 }
-
-
                 // Create an intent to capture an image
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 String img = String.valueOf(Calendar.getInstance().getTimeInMillis());
@@ -249,6 +234,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 } else if (item.getItemId() == R.id.select_all) {
                     observableGridMode.setGridMode(GridMode.SELECTING);
                     observableGridMode.fireSelectionChangeForAll(true);
+                    isSelectingAll = false;
                     return true;
                 } else return false;
             }
@@ -258,21 +244,25 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         return view;
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        Log.i(TAG, "Resuming");
+    private AlertDialog createDialog(String titleText, boolean isCancel, View.OnClickListener cancelCallback) {
+        //=Prepare dialog
+        View dialogView = getLayoutInflater().inflate(R.layout.component_loading_dialog, null);
+        TextView title = dialogView.findViewById(R.id.component_loading_dialog_title);
+        title.setText(titleText);
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(context).setView(dialogView);
 
+        AlertDialog loadingDialog = dialogBuilder.create();
+        loadingDialog.setCanceledOnTouchOutside(false);
+
+        Button cancelButton = dialogView.findViewById(R.id.component_loading_dialog_cancelButton);
+        cancelButton.setVisibility(isCancel ? View.VISIBLE : View.INVISIBLE);
+        if (cancelCallback != null) {
+            cancelButton.setOnClickListener(cancelCallback);
+        }
+        return loadingDialog;
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        Log.i(TAG, "Paused");
-    }
-
-
-    private final View.OnClickListener TrashPicture = new View.OnClickListener() {
+    private final View.OnClickListener trashPicture = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             if (observableGridMode.getNumberOfSelected() == 0) return;
@@ -294,28 +284,6 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
             confirmDialog.show();
         }
     };
-
-    private AlertDialog createDialog(String titleText, boolean isCancel, View.OnClickListener cancelCallback) {
-        //=Prepare dialog
-        View dialogView = getLayoutInflater().inflate(R.layout.component_loading_dialog, null);
-        TextView title = dialogView.findViewById(R.id.component_loading_dialog_title);
-        title.setText(titleText);
-        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(context).setView(dialogView);
-
-        AlertDialog loadingDialog = dialogBuilder.create();
-        loadingDialog.setCanceledOnTouchOutside(false);
-
-        Button cancelButton = dialogView.findViewById(R.id.component_loading_dialog_cancelButton);
-        cancelButton.setVisibility(isCancel ? View.VISIBLE : View.INVISIBLE);
-        if (cancelCallback != null) {
-            cancelButton.setOnClickListener(cancelCallback);
-        }
-        return loadingDialog;
-    }
-
-    ;
-
-
     private void ProcessTrashPicture() {
         AlertDialog loadingDialog = createDialog("Moving images to Trash", false, null);
         //== Prepare data and handler
@@ -366,6 +334,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
             public void postExecute(Void res) {
                 Log.i("TrashImage", "Completely trashed");
                 observableGridMode.setGridMode(GridMode.NORMAL);
+                isSelectingAll = false;
                 loadingDialog.dismiss();
             }
         };
@@ -373,18 +342,60 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         else Toast.makeText(context, "Don't have permission", Toast.LENGTH_LONG);
     }
 
+    private void renderMoreMenu(View v, int res) {
+        PopupMenu popupMenu = new PopupMenu(context, v);
+        popupMenu.inflate(res);
+        MenuItem btnSelectAll = popupMenu.getMenu().findItem(R.id.btnSelectAll);
+        if (isSelectingAll) btnSelectAll.setTitle(getString(R.string.unselect_all));
+        else btnSelectAll.setTitle(R.string.select_all);
+        popupMenu.setOnMenuItemClickListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.btnMoveToAlbum) {
+                //#TODO
+                return true;
+            } else if (id == R.id.btnCopyToAlbum) {
+                //#TODO
+                return true;
+            } else if (id == R.id.btnSelectAll) {
+                isSelectingAll = !isSelectingAll;
+                observableGridMode.fireSelectionChangeForAll(isSelectingAll);
+                return true;
+            } else return false;
+        });
+        popupMenu.show();
+    }
     private void SetFunctionForActionBar() {
         Button btnDelete = actionBar.findViewById(R.id.btnDelete);
         Button btnShare = actionBar.findViewById(R.id.btnShare);
         Button btnAddTag = actionBar.findViewById(R.id.btnAddTag);
         Button btnMore = actionBar.findViewById(R.id.btnMore);
-        btnDelete.setOnClickListener(this.TrashPicture);
-        btnShare.setOnClickListener(new View.OnClickListener() {
+        btnDelete.setOnClickListener(this.trashPicture);
+        btnShare.setOnClickListener(v -> {
+            if (observableGridMode.getNumberOfSelected() == 0) return;
 
-            @Override
-            public void onClick(View v) {
-
+            //== Retrieve the data for sharing
+            List<GalleryItem> pictures = observableGridMode.getSelectedItems();
+            ArrayList<Uri> shareFiles = new ArrayList<>();
+            for (GalleryItem item : pictures) {
+                Object data = item.getData();
+                if (data instanceof Picture) {
+                    File shareFile = new File(((Picture) data).getPath());
+                    Uri shareUri = FileProvider.getUriForFile(
+                            context.getApplicationContext(),
+                            context.getApplicationContext().getPackageName() + ".provider",
+                            shareFile
+                    );
+                    shareFiles.add(shareUri);
+                }
             }
+
+            //==Start the new activity
+            Intent shareIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+            shareIntent.setType("image/*");
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, shareFiles);
+            startActivity(Intent.createChooser(shareIntent, "Share images via..."));
+
         });
 
         btnAddTag.setOnClickListener(new View.OnClickListener() {
@@ -394,11 +405,8 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
             }
         });
 
-        btnMore.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
+        btnMore.setOnClickListener((v) -> {
+            renderMoreMenu(v, R.menu.pictures_fragment_selecting_mode);
         });
     }
 
