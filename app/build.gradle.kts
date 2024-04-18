@@ -4,7 +4,24 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
     id("com.google.gms.google-services")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
+
+secrets {
+    // Optionally specify a different file name containing your secrets.
+    // The plugin defaults to "local.properties"
+    propertiesFileName = "secrets.properties"
+
+    // A properties file containing default secret values. This file can be
+    // checked in version control.
+    defaultPropertiesFileName = "local.defaults.properties"
+
+    // Configure which keys should be ignored by the plugin by providing regular expressions.
+    // "sdk.dir" is ignored by default.
+    ignoreList.add("keyToIgnore") // Ignore the key "keyToIgnore"
+    ignoreList.add("sdk.*")       // Ignore all keys matching the regexp "sdk.*"
+}
+
 
 IMGLY.configure() {
     pesdk {
@@ -66,6 +83,7 @@ IMGLY.configure() {
         }
         buildFeatures {
             viewBinding = true
+            buildConfig = true
         }
 
     }
@@ -84,6 +102,7 @@ IMGLY.configure() {
         implementation("com.google.mlkit:text-recognition:16.0.0");         // To recognize Latin script
         implementation("com.google.mlkit:language-id:17.0.5");
         implementation("com.google.mlkit:image-labeling:17.0.8");
+        implementation("com.google.android.gms:play-services-maps:18.2.0");  // Maps SDK for Android
         implementation(libs.appcompat)
         implementation(libs.material)
         implementation(libs.activity)

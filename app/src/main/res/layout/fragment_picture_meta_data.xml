@@ -179,6 +179,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:layout_marginBottom="20dp"
         android:orientation="horizontal"
         android:id="@+id/view_metadata_info_row2"
         android:layout_width="match_parent"
@@ -268,6 +269,30 @@
             android:text="@string/datetime_default"/>
 
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/meta_data_map_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <fragment
+            android:id="@+id/meta_data_mapFragment"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            app:uiZoomControls="false"
+            app:uiZoomGestures="false" />
+
+        <TextView
+            android:id="@+id/address_textView"
+            android:textSize="12sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/location_default"/>
+
+    </LinearLayout>
+
 
     <Button
         android:id="@+id/view_metadata_add_tag_btn"

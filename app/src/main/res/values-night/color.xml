@@ -3,4 +3,7 @@
     <color name="setting_toggle_background">#1a1a1a</color>
     <color name="text_color_black">#FFFFFFFF</color>
     <color name="picture_view_bottom_bar_bg">#36000000</color>
+    <color name="navbar_map_background">#000000</color>
+    <color name="text_map">#e5bad2</color>
+
 </resources>

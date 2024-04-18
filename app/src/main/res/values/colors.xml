@@ -17,5 +17,7 @@
     <color name="picture_view_bottom_bar_bg">#E6FFFFFF</color>
     <color name="ocr">#ebd058</color>
     <color name="ocr_background">#989a97</color>
+    <color name="navbar_map_background">#f5eff3</color>
+    <color name="text_map">#702e55</color>
 
 </resources>

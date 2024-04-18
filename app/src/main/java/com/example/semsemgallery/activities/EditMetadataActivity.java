@@ -19,24 +19,20 @@
     import android.widget.TextView;
     import android.widget.Toast;
 
+    import androidx.activity.result.ActivityResultLauncher;
+    import androidx.activity.result.contract.ActivityResultContracts;
     import androidx.appcompat.app.AppCompatActivity;
-    import androidx.exifinterface.media.ExifInterface;
 
     import com.example.semsemgallery.R;
+    import com.google.android.gms.maps.model.LatLng;
     import com.kunzisoft.switchdatetime.SwitchDateTimeDialogFragment;
 
-    import java.io.File;
-    import java.io.IOException;
-    import java.nio.file.Files;
-    import java.nio.file.Path;
-    import java.nio.file.Paths;
     import java.text.DateFormat;
     import java.text.SimpleDateFormat;
     import java.util.Calendar;
     import java.util.Date;
     import java.util.GregorianCalendar;
     import java.util.Locale;
-    import java.util.Objects;
     import java.util.TimeZone;
 
 
@@ -57,6 +53,12 @@
         private ImageButton addLocationBtn, removeLocationBtn, backBtn;
         private Button saveBtn, cancelBtn;
         private long pictureId;
+        private static final int MAP_ACTIVITY_REQUEST_CODE = 897;
+        private ActivityResultLauncher<Intent> mapLauncher;
+        private ActivityResultLauncher<Intent> editMetadataLauncher;
+        private double latitude = 0;
+        private double longitude = 0;
+
         @Override
         protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -98,6 +100,32 @@
                 @Override
                 public void onClick(View view) {
                     finish();
+                }
+            });
+
+            mapLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == RESULT_OK) {
+                            Intent data = result.getData();
+                            if (data != null) {
+                                String address = data.getStringExtra("address");
+                                location.setText(address);
+                                latitude = data.getDoubleExtra("latitude", 0.0);
+                                longitude = data.getDoubleExtra("longitude", 0.0);
+                                // Change the button to remove button
+                                addLocationBtn.setVisibility(View.INVISIBLE);
+                                removeLocationBtn.setVisibility(View.VISIBLE);
+                            }
+                        }
+                    });
+
+
+
+            addLocationBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new  Intent(getApplicationContext(), MapActivity.class);
+                    mapLauncher.launch(intent);
                 }
             });
 
@@ -167,38 +195,33 @@
             public void onClick(View view) {
                 location.setText(R.string.location_default);
                 addLocationBtn.setVisibility(View.VISIBLE);
-                removeLocationBtn.setVisibility(View.GONE);
+                removeLocationBtn.setVisibility(View.INVISIBLE);
             }
         };
 
         private View.OnClickListener onSaveEdit = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-
                 boolean isStorageManager = false;
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
                     isStorageManager = Environment.isExternalStorageManager();
                 }
 
                 if (isStorageManager) {
-                    // Your app already has storage management permissions
-                    // You can proceed with file operations
+                    // Handle saving metadata when storage access is granted
+                    // Construct the intent to send data back to MetadataBottomSheet
+                    Intent intent = new Intent();
+                    intent.putExtra("updatedName", imageName.getText().toString());
+                    intent.putExtra("address", location.getText().toString());
+                    intent.putExtra("latitude", latitude);
+                    intent.putExtra("longitude", longitude);
+                    setResult(RESULT_OK, intent);
+                    finish();
                 } else {
-                    // Your app does not have storage management permissions
-                    // Guide the user to the system settings page to grant permission
+                    // Request storage access if not granted
                     Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
                     startActivity(intent);
                 }
-
-                String newFileName = imageName.getText().toString() + "." + imageFormat.getText().toString();
-                renameFile(getContentResolver(),pictureId, newFileName);
-
-                // Send back the updated name to the MetaDataBottomSheet fragment
-                Intent intent = new Intent();
-                intent.putExtra("updatedName", newFileName);
-                setResult(RESULT_OK, intent);
-                finish();
 
             }
         };

@@ -3,7 +3,13 @@ package com.example.semsemgallery.activities.pictureview.fragment;
 import static android.content.ContentUris.appendId;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.location.Address;
+import android.location.Geocoder;
 import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,21 +24,34 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.EditMetadataActivity;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.type.DateTime;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
 public class MetaDataBottomSheet extends BottomSheetDialogFragment {
-    private TextView date, time, name, filePath, device, size, height, width, megaPixels, iso, focalLength, ev, fNumber, exTime;
-    private LinearLayout row1, row2;
+    private TextView date, time, name, filePath, device, size, height, width, megaPixels, iso, focalLength, ev, fNumber, exTime, locationTextView;
+    private LinearLayout row1, row2, mapContainer;
     private MetaDataBottomSheet()
     {}
     private String path;
@@ -40,6 +59,7 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
     private Long id;
     private Long fileSize;
     private Date datetime;
+    private LatLng point;
     public MetaDataBottomSheet(Long id, String path, String fileName, Date datetime, Long fileSize)
     {
         this.id = id;
@@ -61,6 +81,11 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
                     Intent data = result.getData();
                     if (data != null) {
                         String updatedName = data.getStringExtra("updatedName");
+                        double latitude = data.getDoubleExtra("latitude", 0.0);
+                        double longitude = data.getDoubleExtra("longitude", 0.0);
+                        point = new LatLng(latitude, longitude);
+                        Log.d("Map", point.toString());
+
                         name.setText(updatedName);
                     }
                 }
@@ -88,6 +113,8 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
         ev = view.findViewById(R.id.view_metadata_ev);
         fNumber = view.findViewById(R.id.view_metadata_fnumber);
         exTime = view.findViewById(R.id.view_metadata_ex_time);
+        mapContainer = view.findViewById(R.id.meta_data_map_container);
+        locationTextView = view.findViewById(R.id.address_textView);
         initMetaDate();
         editBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,6 +144,7 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
             processFileSize(fileSize);
             processImageDimensions(exifInterface);
             processImageInfoCamera(exifInterface);
+            handleLocationMetadata(exifInterface);
 
         }catch (Exception e)
         {
@@ -226,6 +254,69 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
             setImageInfoCameraViews(isoContent, focal, evContentFormat, fNumberContent, exTimeContent);
         }
     }
+
+    private void handleLocationMetadata(ExifInterface exifInterface) {
+        String gpsLatitudeRational = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
+        String gpsLongitudeRational = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
+        if (gpsLatitudeRational != null && gpsLongitudeRational != null) {
+            Double gpsLatitude = convertRationalToDecimal(gpsLatitudeRational);
+            Double gpsLongitude = convertRationalToDecimal(gpsLongitudeRational);
+            showLocationMetadata(gpsLatitude, gpsLongitude);
+        } else {
+            hideLocationMetadata();
+        }
+    }
+
+    private void showLocationMetadata(Double gpsLatitude, Double gpsLongitude) {
+        mapContainer.setVisibility(View.VISIBLE);
+        LatLng curPoint = new LatLng(gpsLatitude, gpsLongitude);
+        String address = getAddressFromLatLng(curPoint);
+        locationTextView.setText(address);
+
+        displayMapWithMarker(gpsLatitude, gpsLongitude);
+    }
+
+    private String getAddressFromLatLng(LatLng point) {
+        Geocoder geocoder = new Geocoder(requireContext());
+        String curAddress = "";
+        try {
+            List<Address> addresses = geocoder.getFromLocation(point.latitude, point.longitude, 1);
+            Log.d("Map Address",addresses.get(0).getAddressLine(0));
+            if (!addresses.isEmpty()) {
+                Address address = addresses.get(0);
+                curAddress = address.getAddressLine(0);
+                Log.d("Map Address", curAddress);
+                return curAddress;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return curAddress;
+    }
+
+    private void hideLocationMetadata() {
+        mapContainer.setVisibility(View.GONE);
+    }
+
+    private void displayMapWithMarker(Double gpsLatitude, Double gpsLongitude) {
+        FragmentManager fm = getChildFragmentManager();
+        SupportMapFragment mapFragment = (SupportMapFragment) fm.findFragmentById(R.id.meta_data_mapFragment);
+        if (mapFragment == null) {
+            mapFragment = SupportMapFragment.newInstance();
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.replace(R.id.mapFragment, mapFragment).commit();
+            fm.executePendingTransactions();
+        }
+        mapFragment.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                LatLng pictureLocation = new LatLng(gpsLatitude, gpsLongitude);
+                BitmapDescriptor customMarker = createCustomMarker(requireContext(), pathToBitmap(path, 180));
+                googleMap.addMarker(new MarkerOptions().position(pictureLocation).title("Picture Location").icon(customMarker));
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pictureLocation, 15));
+            }
+        });
+    }
     private void setImageInfoCameraViews(String isoContent, String focal, String evContentFormat, String fNumberContent, String exTimeContent) {
         iso.setText(String.format("ISO %s", isoContent));
         focalLength.setText(String.format("%smm", focal));
@@ -269,6 +360,95 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
 
         return numerator + "/" + denominator;
     }
+
+    private double convertRationalToDecimal(String rationalString) {
+        // Split the rational string into parts based on the comma separator
+        String[] parts = rationalString.split(",");
+
+        if (parts.length != 3) {
+            // Invalid format, return 0
+            return 0.0;
+        }
+
+        // Split each part into numerator and denominator based on the slash separator
+        String[] degreesParts = parts[0].split("/");
+        String[] minutesParts = parts[1].split("/");
+        String[] secondsParts = parts[2].split("/");
+
+        // Parse numerator and denominator strings into integers
+        int degreesNumerator = Integer.parseInt(degreesParts[0]);
+        int degreesDenominator = Integer.parseInt(degreesParts[1]);
+        int minutesNumerator = Integer.parseInt(minutesParts[0]);
+        int minutesDenominator = Integer.parseInt(minutesParts[1]);
+        int secondsNumerator = Integer.parseInt(secondsParts[0]);
+        int secondsDenominator = Integer.parseInt(secondsParts[1]);
+
+        // Calculate the decimal value of degrees, minutes, and seconds
+        double degrees = (double) degreesNumerator / degreesDenominator;
+        double minutes = (double) minutesNumerator / minutesDenominator;
+        double seconds = (double) secondsNumerator / secondsDenominator;
+
+        // Combine the decimal values of degrees, minutes, and seconds to get the final latitude value
+        double latitude = degrees + (minutes / 60) + (seconds / 3600);
+
+        return latitude;
+    }
+
+    private BitmapDescriptor createCustomMarker(Context context, Bitmap bitmap) {
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
+    private Bitmap pathToBitmap(String path, int size) {
+        File imgFile = new File(path);
+        if (imgFile.exists()) {
+            Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+
+            try {
+                ExifInterface exifInterface = new ExifInterface(path);
+                int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+                int rotationAngle = 0;
+                switch (orientation) {
+                    case ExifInterface.ORIENTATION_ROTATE_90:
+                        rotationAngle = 90;
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_180:
+                        rotationAngle = 180;
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_270:
+                        rotationAngle = 270;
+                        break;
+                }
+
+                Matrix matrix = new Matrix();
+                matrix.postRotate(rotationAngle);
+
+                // Rotate the bitmap if necessary
+                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+
+                // Crop the bitmap into a square with width = height
+                int width = bitmap.getWidth();
+                int height = bitmap.getHeight();
+                int cropSize = Math.min(width, height);
+                int startX = (width - cropSize) / 2;
+                int startY = (height - cropSize) / 2;
+                bitmap = Bitmap.createBitmap(bitmap, startX, startY, cropSize, cropSize);
+
+                // Resize the cropped bitmap to the desired size
+                bitmap = Bitmap.createScaledBitmap(bitmap, size, size, false);
+
+                return bitmap;
+            } catch (IOException e) {
+                e.printStackTrace();
+                // Handle the error if ExifInterface fails to read the file
+                return null;
+            }
+        } else {
+            // If the file doesn't exist, return null or handle the error
+            return null;
+        }
+    }
+
 
     // Method to find the greatest common divisor (gcd) of two integers
     public static int gcd(int a, int b) {
