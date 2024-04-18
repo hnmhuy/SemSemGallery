@@ -94,7 +94,7 @@ public class AlbumViewActivity extends AppCompatActivity {
         public void postExecute(Boolean res) {
             List<GalleryItem> pictures = new ArrayList<>(galleryItems);
             observedObj = new ObservableGridMode<>(pictures, GridMode.NORMAL);
-            adapter = new GalleryAdapter(context, observedObj);
+            adapter = new GalleryAdapter(context, observedObj, albumId);
             recyclerView.setAdapter(adapter);
 
             albumQuantity = observedObj.getDataSize();

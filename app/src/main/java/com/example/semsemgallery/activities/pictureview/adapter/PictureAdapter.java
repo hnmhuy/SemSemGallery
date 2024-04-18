@@ -1,4 +1,4 @@
-package com.example.semsemgallery.activities.main.adapter;
+package com.example.semsemgallery.activities.pictureview.adapter;
 
 import android.os.Bundle;
 

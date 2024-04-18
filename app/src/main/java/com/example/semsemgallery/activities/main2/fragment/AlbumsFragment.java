@@ -314,7 +314,7 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
     @Override
     public void onModeChange(GridModeEvent event) {
         //== Send the signal to main activity
-        mainActivity.sendToMain("AlbumsFragment", event.getGridMode().toString());
+        mainActivity.sendMsgToMain("AlbumsFragment", event.getGridMode().toString());
         topBar.setVisibility(GridMode.SELECTING == event.getGridMode() ? View.INVISIBLE : View.VISIBLE);
         selectingTopBar.setVisibility(GridMode.SELECTING == event.getGridMode() ? View.VISIBLE : View.INVISIBLE);
         bottomAction.setVisibility(GridMode.SELECTING == event.getGridMode() ? View.VISIBLE : View.GONE);

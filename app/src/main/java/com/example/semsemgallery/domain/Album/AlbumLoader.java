@@ -50,7 +50,7 @@ public abstract class AlbumLoader extends TaskBase<String, Album, Void> {
                 while (cursor.moveToNext()) {
                     String bucketId = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_ID));
                     // Found new bucket
-                    if (!currId.equals(bucketId) || cursor.isLast()) {
+                    if (!currId.equals(bucketId)) {
                         if (currAlbum != null) {
                             Album transferAlbum = currAlbum;
                             mHandler.post(() -> onProcessUpdate(transferAlbum));
@@ -66,6 +66,8 @@ public abstract class AlbumLoader extends TaskBase<String, Album, Void> {
                         if (currAlbum != null) currAlbum.setCount(currAlbum.getCount() + 1);
                     }
                 }
+                Album transferAlbum = currAlbum;
+                mHandler.post(() -> onProcessUpdate(transferAlbum));
             } finally {
                 cursor.close();
             }

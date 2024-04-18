@@ -37,7 +37,6 @@ public abstract class GalleryItemViewHolder extends SelectableItem<GalleryItem> 
     @Override
     public void clickOnSelectingMode(View v) {
         super.clickOnSelectingMode(v);
-
     }
 
     @Override

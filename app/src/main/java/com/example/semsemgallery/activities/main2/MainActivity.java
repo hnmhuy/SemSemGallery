@@ -34,7 +34,6 @@ import com.google.android.material.navigation.NavigationBarView;
 
 import java.util.Objects;
 
-@RequiresApi(api = Build.VERSION_CODES.R)
 public class MainActivity extends AppCompatActivity implements MainCallBack {
 
     private LinearLayout navbar;
@@ -135,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements MainCallBack {
     }
 
     @Override
-    public void sendToMain(String terminal, String... data) {
+    public void sendMsgToMain(String terminal, String... data) {
         Log.d("MainActivity", "Got message from fragment: " + data[0]);
         if (Objects.equals(data[0], GridMode.SELECTING.toString())) {
             navbar.setVisibility(View.GONE);

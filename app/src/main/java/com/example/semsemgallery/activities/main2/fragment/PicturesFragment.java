@@ -117,7 +117,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         this.context = context;
-        adapter = new GalleryAdapter(context, observableGridMode);
+        adapter = new GalleryAdapter(context, observableGridMode, null);
         loader = new PictureLoader(context) {
             @Override
             public void preExecute(String... strings) {
@@ -226,9 +226,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 } else if (item.getItemId() == R.id.cloud) {
                     startActivity(new Intent(getActivity().getApplicationContext(), CloudActivity.class));
                     return true;
-                } else
-
-                if (item.getItemId() == R.id.edit) {
+                } else if (item.getItemId() == R.id.edit) {
                     observableGridMode.setGridMode(GridMode.SELECTING);
                     return true;
                 } else if (item.getItemId() == R.id.select_all) {
@@ -401,7 +399,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         btnAddTag.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                observableGridMode.setGridMode(GridMode.NORMAL);
             }
         });
 
@@ -410,19 +408,6 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         });
     }
 
-    public static void createImage(Context context, Bitmap bitmap, Uri finalUri) {
-        OutputStream outputStream;
-        ContentResolver contentResolver = context.getContentResolver();
-        try {
-            outputStream = contentResolver.openOutputStream(Objects.requireNonNull(finalUri));
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-            Objects.requireNonNull(outputStream);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-
     @Override
     public void sendToFragment(String... data) {
 
@@ -430,7 +415,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
 
     @Override
     public void onModeChange(GridModeEvent event) {
-        mainActivity.sendToMain(TAG, event.getGridMode().toString());
+        mainActivity.sendMsgToMain(TAG, event.getGridMode().toString());
         if (event.getGridMode() == GridMode.NORMAL) {
             actionBar.setVisibility(View.GONE);
             topBar.setVisibility(View.VISIBLE);
