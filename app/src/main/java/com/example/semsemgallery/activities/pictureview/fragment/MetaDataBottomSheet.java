@@ -2,9 +2,14 @@ package com.example.semsemgallery.activities.pictureview.fragment;
 
 import static android.content.ContentUris.appendId;
 
+import static ly.img.android.pesdk.backend.decoder.ImageSource.getResources;
+
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -19,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -26,9 +32,16 @@ import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.EditMetadataActivity;
+import com.example.semsemgallery.activities.pictureview.TagsAdapter;
+import com.example.semsemgallery.domain.TagUtils;
+import com.example.semsemgallery.models.Tag;
+import com.google.android.flexbox.FlexDirection;
+import com.google.android.flexbox.FlexWrap;
+import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -38,18 +51,20 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.button.MaterialButton;
 import com.google.type.DateTime;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public class MetaDataBottomSheet extends BottomSheetDialogFragment {
+public class MetaDataBottomSheet extends BottomSheetDialogFragment implements TagsAdapter.TagClickListener{
     private TextView date, time, name, filePath, device, size, height, width, megaPixels, iso, focalLength, ev, fNumber, exTime, locationTextView;
     private LinearLayout row1, row2, mapContainer;
     private MetaDataBottomSheet()
@@ -60,6 +75,9 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
     private Long fileSize;
     private Date datetime;
     private LatLng point;
+    private MaterialButton addTagBtn; // add tag
+    private RecyclerView tagsRv;
+    private ArrayList<Tag>[] tags;
     public MetaDataBottomSheet(Long id, String path, String fileName, Date datetime, Long fileSize)
     {
         this.id = id;
@@ -115,17 +133,42 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
         exTime = view.findViewById(R.id.view_metadata_ex_time);
         mapContainer = view.findViewById(R.id.meta_data_map_container);
         locationTextView = view.findViewById(R.id.address_textView);
+        addTagBtn = view.findViewById(R.id.view_metadata_add_tag_btn);
+        tagsRv = view.findViewById(R.id.tags_rv);
+        TagUtils tagUtils = new TagUtils(getContext());
+        SQLiteDatabase db = tagUtils.myGetDatabase(requireContext());
+        tags = new ArrayList[]{tagUtils.getTagsByPictureId(db, id.toString())};
+
         initMetaDate();
-        editBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(requireContext(), EditMetadataActivity.class);
-                intent.putExtra("name", fileName);
-                intent.putExtra("date", date.getText());
-                intent.putExtra("time", time.getText());
-                intent.putExtra("pictureId", id);
-                editMetadataLauncher.launch(intent);
-            }
+        editBtn.setOnClickListener(view12 -> {
+            Intent intent = new Intent(requireContext(), EditMetadataActivity.class);
+            intent.putExtra("name", fileName);
+            intent.putExtra("date", date.getText());
+            intent.putExtra("time", time.getText());
+            intent.putExtra("pictureId", id);
+            editMetadataLauncher.launch(intent);
+        });
+
+        if(!tags[0].isEmpty()) {
+            TagsAdapter adapter = new TagsAdapter(getContext(), tags[0]);
+            tagsRv.setVisibility(View.VISIBLE);
+            FlexboxLayoutManager  flexboxLayout = new FlexboxLayoutManager(getContext());
+            @SuppressLint("UseCompatLoadingForColorStateLists") ColorStateList colorStateList = getResources().getColorStateList(R.color.tag_bg);
+            addTagBtn.setBackgroundTintList(colorStateList);
+            flexboxLayout.setFlexDirection(FlexDirection.ROW);
+            flexboxLayout.setFlexWrap(FlexWrap.WRAP);
+            tagsRv.setLayoutManager(flexboxLayout);
+            adapter.setOnItemListener(this);
+            tagsRv.setAdapter(adapter);
+        }
+
+
+        addTagBtn.setOnClickListener(view1 -> {
+            ArrayList<Long> pictureId = new ArrayList<>();
+            pictureId.add(id);
+            AddTagBottomSheet addTagBottomSheet = new AddTagBottomSheet(tags[0], pictureId);
+            addTagBottomSheet.show(requireActivity().getSupportFragmentManager(), addTagBottomSheet.getTag());
+            addTagBottomSheet.setOnTagAddedListener(tag -> {dismiss();});
         });
 
         return view;
@@ -453,5 +496,10 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
     // Method to find the greatest common divisor (gcd) of two integers
     public static int gcd(int a, int b) {
         return b == 0 ? a : gcd(b, a % b);
+    }
+
+    @Override
+    public void onTagClick(View view, int position) {
+        Toast.makeText(getContext(), "Search by " + tags[0].get(position).getName(), Toast.LENGTH_SHORT).show();
     }
 }

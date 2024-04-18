@@ -301,7 +301,7 @@ class PictureViewActivity : AppCompatActivity() {
             favBtn.setColorFilter(color)
         } else {
             favBtn.setImageResource(R.drawable.ic_heart)
-            val color = ContextCompat.getColor(applicationContext, R.color.picture_view_bottom_bar_bg)
+            val color = ContextCompat.getColor(applicationContext, R.color.text_color_black)
             favBtn.setColorFilter(color)
         }
     }

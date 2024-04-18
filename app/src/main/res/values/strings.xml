@@ -89,7 +89,7 @@
 
     <!--  View Meta Data fragment  -->
     <string name="x">x</string>
-    <string name="add_tag"># Add tag</string>
+    <string name="add_tag">Add tag</string>
 
     <!--  OCR fragment  -->
     <string name="all_text">All Text</string>

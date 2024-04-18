@@ -201,9 +201,9 @@ public class TagUtils extends SQLiteOpenHelper {
                 do {
                     @SuppressLint("Range") int tagId = cursor.getInt(cursor.getColumnIndex(COLUMN_TAGID));
                     @SuppressLint("Range") String tagName = cursor.getString(cursor.getColumnIndex(COLUMN_TAGNAME));
-                    Log.d("Tag", String.valueOf(tagId));
-                    Log.d("Tag", tagName);
-                    data.add(new Tag(tagId, tagName));
+                    Tag tag = new Tag(tagId, tagName);
+                    tag.setType(3);
+                    data.add(tag);
                 } while(cursor.moveToNext());
             }
         }
@@ -222,6 +222,53 @@ public class TagUtils extends SQLiteOpenHelper {
                     @SuppressLint("Range") String pictureId = cursor.getString(cursor.getColumnIndex(COLUMN_PICTUREID));
                     Log.d("Tag", pictureId);
                     data.add(pictureId);
+                } while(cursor.moveToNext());
+            }
+        }
+        return data;
+    }
+
+    public void removePictureTag(SQLiteDatabase db, String tagName, String pictureId) {
+        int tagId = getTagId(db, tagName);
+        String query = "DELETE FROM " + TABLE_PICTURETAG +
+                " WHERE " + COLUMN_TAGID_PICTURETAG + " = " + tagId  +
+                " AND " + COLUMN_PICTUREID + " = \"" + pictureId  + "\"";
+
+        // Execute the query
+        try {
+            db.execSQL(query);
+            Log.d("Remove", "Successfully");
+            String queryCheck = "SELECT * FROM " + TABLE_PICTURETAG +
+                    " WHERE " + COLUMN_TAGID_PICTURETAG + " = ?";
+
+            Cursor cursor = db.rawQuery(queryCheck, new String[]{String.valueOf(tagId)});
+            if (cursor.getCount() == 0) {
+                String deleteQuery = "DELETE FROM " + TABLE_TAG +
+                        " WHERE " + COLUMN_TAGNAME + " = \"" + tagName  + "\"";
+                db.execSQL(deleteQuery);
+                showToast("Delete from table tag");
+            }
+            cursor.close();
+
+            showToast("Remove " + tagName);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ArrayList<Tag> getRecentTags(SQLiteDatabase db) {
+        ArrayList<Tag> data = new ArrayList<>();
+        String query = "SELECT " + COLUMN_TAGID + ", " + COLUMN_TAGNAME +
+                " FROM " + TABLE_TAG +
+                " ORDER BY " + COLUMN_TAGID +  " DESC";
+        try(Cursor cursor = db.rawQuery(query, null)) {
+            if(cursor != null && cursor.moveToFirst()) {
+                do {
+                    @SuppressLint("Range") int tagId = cursor.getInt(cursor.getColumnIndex(COLUMN_TAGID));
+                    @SuppressLint("Range") String tagName = cursor.getString(cursor.getColumnIndex(COLUMN_TAGNAME));
+                    Tag tag = new Tag(tagId, tagName);
+                    tag.setType(2);
+                    data.add(tag);
                 } while(cursor.moveToNext());
             }
         }

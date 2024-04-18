@@ -48,11 +48,13 @@ import com.example.semsemgallery.activities.main2.MainActivity;
 import com.example.semsemgallery.activities.main2.adapter.GalleryAdapter;
 import com.example.semsemgallery.activities.main2.viewholder.DateHeaderItem;
 import com.example.semsemgallery.activities.main2.viewholder.GalleryItem;
+import com.example.semsemgallery.activities.pictureview.fragment.AddTagBottomSheet;
 import com.example.semsemgallery.activities.search.SearchViewActivity;
 import com.example.semsemgallery.domain.Picture.GarbagePictureCollector;
 import com.example.semsemgallery.domain.Picture.PictureLoadMode;
 import com.example.semsemgallery.domain.Picture.PictureLoader;
 import com.example.semsemgallery.models.Picture;
+import com.example.semsemgallery.models.Tag;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -70,7 +72,7 @@ import java.util.Objects;
 import java.util.TreeSet;
 
 
-public class PicturesFragment extends Fragment implements FragmentCallBack, GridModeListener {
+public class PicturesFragment extends Fragment implements FragmentCallBack, GridModeListener{
     public static String TAG = "PicturesFragment";
     FirebaseAuth auth = FirebaseAuth.getInstance();
     private static final int REQUEST_IMAGE_CAPTURE = 1;
@@ -390,7 +392,15 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         btnAddTag.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                List<ObservableGridMode<GalleryItem>.DataItem> temp = observableGridMode.getSelectedDataItem();
+                ArrayList<Long> pictureIds = new ArrayList<>();
+                for (int i = 0; i < temp.size(); i++) {
+                    pictureIds.add((((Picture) temp.get(i).data.getData()).getPictureId()));
+                }
 
+                AddTagBottomSheet addTagBottomSheet = new AddTagBottomSheet(new ArrayList<>() ,pictureIds);
+                addTagBottomSheet.setOnTagAddedListener(tags -> observableGridMode.setGridMode(GridMode.NORMAL));
+                addTagBottomSheet.show(requireActivity().getSupportFragmentManager(), addTagBottomSheet.getTag());
             }
         });
 
@@ -448,7 +458,6 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
             selectingTopBar.setTitle(String.valueOf(0) + " selected");
         }
     }
-
 
 }
 

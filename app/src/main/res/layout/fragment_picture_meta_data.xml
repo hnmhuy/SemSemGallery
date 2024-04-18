@@ -293,17 +293,22 @@
 
     </LinearLayout>
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/tags_rv"
+        android:layout_marginTop="24dp"
+        android:visibility="invisible"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/view_metadata_add_tag_btn"
         style="?attr/materialButtonOutlinedStyle"
-        android:layout_width="80dp"
-        android:layout_height="38dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="220dp"
-        android:padding="0dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:iconTint="@color/text_color_black"
+        app:icon="@drawable/ic_hash_tag"
         android:text="@string/add_tag"
         android:textColor="@color/text_color_black"
-        android:textSize="12sp" />
+        />
 
 </LinearLayout>
