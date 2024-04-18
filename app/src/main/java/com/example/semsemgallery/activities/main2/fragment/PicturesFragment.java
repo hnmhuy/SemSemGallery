@@ -49,6 +49,7 @@ import com.example.semsemgallery.activities.main2.MainActivity;
 import com.example.semsemgallery.activities.main2.adapter.GalleryAdapter;
 import com.example.semsemgallery.activities.main2.viewholder.DateHeaderItem;
 import com.example.semsemgallery.activities.main2.viewholder.GalleryItem;
+import com.example.semsemgallery.activities.pictureview.fragment.AddTagBottomSheet;
 import com.example.semsemgallery.activities.search.SearchViewActivity;
 import com.example.semsemgallery.domain.Picture.GarbagePictureCollector;
 import com.example.semsemgallery.domain.Picture.PictureLoadMode;

@@ -137,7 +137,6 @@ public class AddTagBottomSheet extends BottomSheetDialogFragment implements Tags
                     }
                     if (tag.getType() == -1) {
                         tagUtils.removePictureTag(db, tag.getName(), picId.toString());
-                        tags.remove(tag);
                     }
                 }
             }
