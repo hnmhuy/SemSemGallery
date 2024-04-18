@@ -78,7 +78,7 @@
 
         <View
             android:id="@+id/line1"
-            android:visibility="invisible"
+            android:visibility="visible"
             android:layout_width="0dp"
             android:layout_height="2dp"
             android:layout_weight="1"
@@ -96,7 +96,7 @@
 
         <View
             android:id="@+id/line3"
-            android:visibility="visible"
+            android:visibility="invisible"
             android:layout_width="0dp"
             android:layout_height="2dp"
             android:layout_weight="1"

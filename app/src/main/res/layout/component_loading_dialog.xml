@@ -15,16 +15,24 @@
         android:textSize="22dp"
         android:textStyle="bold" />
 
-    <ProgressBar
+    <!--    <ProgressBar-->
+    <!--        android:id="@+id/component_loading_dialog_progressBar"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        style="@android:style/Widget.ProgressBar.Horizontal"-->
+    <!--        android:layout_height="10dp"-->
+    <!--        android:layout_marginTop="14dp"-->
+    <!--        android:paddingHorizontal="12dp"-->
+    <!--        android:progressTint="@color/material_dynamic_neutral70"-->
+    <!--        android:progressBackgroundTint="@color/material_dynamic_neutral30"-->
+    <!--        android:progress="40" />-->
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/component_loading_dialog_progressBar"
         android:layout_width="match_parent"
-        style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_height="10dp"
         android:layout_marginTop="14dp"
         android:paddingHorizontal="12dp"
-        android:progressTint="@color/material_dynamic_neutral70"
-        android:progressBackgroundTint="@color/material_dynamic_neutral30"
-        android:progress="40" />
+        android:progress="0" />
 
     <Button
         android:id="@+id/component_loading_dialog_cancelButton"

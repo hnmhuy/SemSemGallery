@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -51,11 +52,12 @@ import com.example.semsemgallery.models.Picture;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import org.checkerframework.checker.units.qual.C;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class AlbumsFragment extends Fragment implements GridModeListener {
-
     private MainActivity mainActivity;
     private boolean isSelectingAll;
     private ArrayList<Uri> selectedImages;
@@ -395,46 +397,109 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
             AlertDialog loadingDialog = myLoadingDialog();
             loadingDialog.show(); // Show Loading Dialog
             TextView dialogTitle = loadingDialog.findViewById(R.id.component_loading_dialog_title);
-            dialogTitle.setText("Moving to Trash...");
-
-            final int[] totalDeleteImages = {0};
-            final int[] deletedImages = {0};
+            dialogTitle.setText("Retrieving data");
+            final ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
+            final ContentResolver resolver = applicationContext.getContentResolver();
             ContentValues values = new ContentValues();
             values.put(MediaStore.Images.Media.IS_TRASHED, 1);
-            ContentResolver resolver = applicationContext.getContentResolver();
+//            int totalDeleteImages = 0;
+//            final int[] deletedImages = {0};
+//            final boolean[] isWaiting = {false};
+//            final int[] completedThread = {0};
+//            final int[] threadCount = {0};
+//            ContentResolver resolver = applicationContext.getContentResolver();
 
-            PictureLoader imageHandlerLoader = new PictureLoader(applicationContext) {
+//            int finalTotalDeleteImages = totalDeleteImages;
+//            PictureLoader imageHandlerLoader = new PictureLoader(applicationContext) {
+//                @Override
+//                public void preExecute(String... strings) {
+//                    super.preExecute(strings);
+//                    isWaiting[0] = true;
+//                }
+//
+//                @Override
+//                public void onProcessUpdate(Picture... pictures) {
+//                    Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, pictures[0].getPictureId());
+//                    if (GarbagePictureCollector.trashPicture(resolver, uri)) {
+//                        deletedImages[0]++;
+//                    }
+//                    if (finalTotalDeleteImages == 0) {
+//                        progressBar.setProgress(0);
+//                    } else {
+//                        progressBar.setProgress((int) (deletedImages[0] / finalTotalDeleteImages) * 100);
+//                    }
+//                }
+//
+//                @Override
+//                public void postExecute(Boolean res) {
+//                    completedThread[0]++;
+//                    isWaiting[0] = false;
+//                    if (completedThread[0] == threadCount[0]) {
+//                        loadingDialog.dismiss();
+//                        loader.execute();
+//                    }
+//                }
+//            };
+//
+//            // Get total of delete images
+//            for (Album album : observedObj.getAllSelectedItems()) {
+//                Log.d("SelectedAlbum", "Album name : " + album.getName());
+//                threadCount[0]++;
+//                totalDeleteImages += album.getCount();
+//            }
+//
+//            // Get image then delete it
+//            for (int i=0; i < threadCount[0];) {
+//                if (!isWaiting[0]) {
+//                    i = completedThread[0];
+//                    Log.d("AlbumsFragment", "Call loader for album " + i);
+//                    imageHandlerLoader.execute(PictureLoadMode.BY_ALBUM.toString(), observedObj.getAllSelectedItems().get(completedThread[0]).getAlbumId());
+//                }
+//            }
+
+            List<Picture> deleteData = new ArrayList<>();
+            List<Album> albumList = observedObj.getAllSelectedItems();
+            PictureLoader pictureLoader = new PictureLoader(applicationContext) {
                 @Override
                 public void onProcessUpdate(Picture... pictures) {
-                    Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, pictures[0].getPictureId());
-                    if (GarbagePictureCollector.trashPicture(resolver, uri)) {
-                        deletedImages[0]++;
-                    }
-                    int progress = (int) ((deletedImages[0] / (float) totalDeleteImages[0]) * 100);
-                    ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
-                    progressBar.setProgress(progress);
-
-                    if (deletedImages[0] == totalDeleteImages[0]) {
-                        loadingDialog.dismiss();
-                        loader.execute();
-                    }
+                    deleteData.add(pictures[0]);
                 }
 
                 @Override
                 public void postExecute(Boolean res) {
+                    int current = progressBar.getProgress();
+                    current += (int) (100 / albumList.size());
+                    progressBar.setProgress(current);
+                    if (current >= 100) {
+                        // Loading complete
+                        dialogTitle.setText("Trashing pictures....");
+                        progressBar.setProgress(0);
+                        new Thread(() -> {
+                            for (Picture p : deleteData) {
+                                Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, p.getPictureId());
+                                if (GarbagePictureCollector.trashPicture(resolver, uri, values)) {
+                                    mHandler.post(() -> {
+                                        progressBar.setProgress((int) (progressBar.getProgress() + (100 / deleteData.size())));
+                                    });
+                                }
+                            }
+
+                            mHandler.post(() -> {
+                                observedObj.setGridMode(GridMode.NORMAL);
+                                loadingDialog.dismiss();
+                                loader.execute();
+                            });
+
+                        }).start();
+                    }
                 }
             };
 
-            // Get total of delete images
-            for (Album album : observedObj.getAllSelectedItems()) {
-                Log.d("SelectedAlbum", "Album name : " + album.getName());
-                totalDeleteImages[0] += album.getCount();
+            for (Album album : albumList) {
+                pictureLoader.execute(PictureLoadMode.BY_ALBUM.toString(), album.getAlbumId());
             }
 
-            // Get image then delete it
-            for (Album album : observedObj.getAllSelectedItems()) {
-                imageHandlerLoader.execute(PictureLoadMode.BY_ALBUM.toString(), album.getAlbumId());
-            }
         });
     }
+
 };

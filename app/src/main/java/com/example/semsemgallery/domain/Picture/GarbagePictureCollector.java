@@ -29,16 +29,13 @@ public class GarbagePictureCollector {
         }
         return instance;
     }
-
-    private static final ContentValues trashValue = new ContentValues();
     private static final ContentValues pendingValue = new ContentValues();
 
 
-    public static boolean trashPicture(ContentResolver resolver, Uri imageUri) {
+    public static boolean trashPicture(ContentResolver resolver, Uri imageUri, ContentValues values) {
         //== Init Content values if it's empty
-        if (trashValue.size() == 0) trashValue.put(MediaStore.Images.Media.IS_TRASHED, 1);
-        if (pendingValue.size() == 0) trashValue.put(MediaStore.Images.Media.IS_PENDING, 0);
-        int res = resolver.update(imageUri, trashValue, null, null);
+        if (pendingValue.size() == 0) pendingValue.put(MediaStore.Images.Media.IS_PENDING, 0);
+        int res = resolver.update(imageUri, values, null, null);
         if (res > 0) {
             resolver.update(imageUri, pendingValue, null, null);
             return true;
@@ -68,12 +65,10 @@ public class GarbagePictureCollector {
             int complete = 0;
             ContentValues trashValue = new ContentValues();
             trashValue.put(MediaStore.Images.Media.IS_TRASHED, isTrash);
-            ContentValues pendingValue = new ContentValues();
-            pendingValue.put(MediaStore.Images.Media.IS_PENDING, 0);
             ContentResolver resolver = context.getContentResolver();
             for (Long p : pictures) {
                 Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, p);
-                if (GarbagePictureCollector.trashPicture(resolver, uri)) {
+                if (GarbagePictureCollector.trashPicture(resolver, uri, trashValue)) {
                     complete++;
                     int finalComplete = complete;
                     mHandler.post(() -> onProcessUpdate(finalComplete));
