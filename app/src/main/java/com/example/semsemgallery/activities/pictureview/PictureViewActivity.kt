@@ -157,7 +157,7 @@ class PictureViewActivity : AppCompatActivity() {
     }
 
     private fun processOCR(state: Int) {
-        if (state == ViewPager2.SCROLL_STATE_IDLE || state == ViewPager2.SCROLL_STATE_SETTLING) {
+        if (state == ViewPager2.SCROLL_STATE_IDLE) {
             Log.d("Pager", "Scroll idle")
             val textRecognitionTask =
                 aiHandler.getTextRecognition(applicationContext, selectingPic.pictureId)

@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -59,6 +60,7 @@ import java.util.List;
 
 public class AlbumsFragment extends Fragment implements GridModeListener {
     private MainActivity mainActivity;
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
     private boolean isSelectingAll;
     private ArrayList<Uri> selectedImages;
     private String newAlbumName;
@@ -272,7 +274,9 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
                 @Override
                 public void onLoadingProgressUpdate(int progress) {
                     ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
-                    progressBar.setProgress(progress);
+                    mHandler.post(() -> {
+                        progressBar.setProgress(progress);
+                    });
                 }
             };
 
@@ -300,7 +304,9 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
                 @Override
                 public void onLoadingProgressUpdate(int progress) {
                     ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
-                    progressBar.setProgress(progress);
+                    mHandler.post(() -> {
+                        progressBar.setProgress(progress);
+                    });
                 }
             };
 
@@ -485,8 +491,8 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
                             }
 
                             mHandler.post(() -> {
-                                observedObj.setGridMode(GridMode.NORMAL);
                                 loadingDialog.dismiss();
+                                observedObj.setGridMode(GridMode.NORMAL);
                                 loader.execute();
                             });
 

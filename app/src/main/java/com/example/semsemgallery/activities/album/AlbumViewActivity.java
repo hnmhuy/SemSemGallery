@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -44,6 +46,7 @@ import java.util.TreeSet;
 
 public class AlbumViewActivity extends AppCompatActivity {
     private final Context context = this;
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
     private ObservableGridMode<GalleryItem> observedObj = null;
     private TreeSet<GalleryItem> galleryItems = new TreeSet<>(Comparator.reverseOrder());
     private GalleryAdapter adapter = null;
@@ -218,7 +221,9 @@ public class AlbumViewActivity extends AppCompatActivity {
                 @Override
                 public void onLoadingProgressUpdate(int progress) {
                     ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
-                    progressBar.setProgress(progress);
+                    mHandler.post(() -> {
+                        progressBar.setProgress(progress);
+                    });
                 }
             };
 
@@ -249,7 +254,9 @@ public class AlbumViewActivity extends AppCompatActivity {
                 @Override
                 public void onLoadingProgressUpdate(int progress) {
                     ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
-                    progressBar.setProgress(progress);
+                    mHandler.post(() -> {
+                        progressBar.setProgress(progress);
+                    });
                 }
             };
 
