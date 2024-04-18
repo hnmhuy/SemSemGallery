@@ -1,22 +1,9 @@
 package com.example.semsemgallery.activities.cloudbackup;
 
-import android.app.PendingIntent;
-import android.content.ContentResolver;
-import android.content.ContentUris;
-import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.util.Log;
-import android.util.Size;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -31,7 +18,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -44,11 +30,7 @@ import com.example.semsemgallery.activities.base.GridModeEvent;
 import com.example.semsemgallery.activities.base.GridModeListener;
 import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.base.RecylerViewItemDecoration;
-import com.example.semsemgallery.domain.Picture.PictureLoadMode;
-import com.example.semsemgallery.domain.Picture.PictureLoader;
-import com.example.semsemgallery.domain.Picture.TrashedPictureLoader;
 import com.example.semsemgallery.models.Picture;
-import com.example.semsemgallery.models.TrashedPicture;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -65,19 +47,12 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class CloudActivity extends AppCompatActivity implements GridModeListener {
@@ -196,7 +171,7 @@ public class CloudActivity extends AppCompatActivity implements GridModeListener
         download.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                List<Picture> pictures = observedObj.getAllSelectedItems();
+                List<Picture> pictures = observedObj.getSelectedItems();
 
                 for (Picture p: pictures
                      ) {
@@ -210,7 +185,7 @@ public class CloudActivity extends AppCompatActivity implements GridModeListener
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                List<Picture> pictures = observedObj.getAllSelectedItems();
+                List<Picture> pictures = observedObj.getSelectedItems();
                 for (Picture p :
                         pictures) {
                     StorageReference reference = ref.child("images/" + auth.getCurrentUser().getUid() + "/" + p.getFileName());

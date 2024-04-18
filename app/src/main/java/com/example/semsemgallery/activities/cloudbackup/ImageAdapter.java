@@ -1,4 +1,4 @@
-package com.example.semsemgallery.activities.main.adapter;
+package com.example.semsemgallery.activities.cloudbackup;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

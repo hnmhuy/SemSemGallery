@@ -2,7 +2,6 @@ package com.example.semsemgallery.activities.deleted;
 
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -37,7 +36,6 @@ import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.base.RecylerViewItemDecoration;
 import com.example.semsemgallery.domain.Picture.GarbagePictureCollector;
 import com.example.semsemgallery.domain.Picture.TrashedPictureLoader;
-import com.example.semsemgallery.models.Picture;
 import com.example.semsemgallery.models.TrashedPicture;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.checkbox.MaterialCheckBox;
@@ -123,7 +121,16 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
                 observedObj.fireSelectionChangeForAll(false);
                 return true;
             } else if (id == R.id.trash_menu_empty) {
-                Toast.makeText(this, "Empty clicked", Toast.LENGTH_LONG).show();
+                observedObj.fireSelectionChangeForAll(true);
+                long numberOfDeleted = observedObj.getNumberOfSelected();
+                MaterialAlertDialogBuilder confirmDialog = new MaterialAlertDialogBuilder(this)
+                        .setTitle("Delete " + String.valueOf(numberOfDeleted) + (numberOfDeleted > 1 ? " pictures " : " picture ") + "permanently?")
+                        .setNegativeButton("Cancel", (dialog, which) -> {
+                        })
+                        .setPositiveButton("Delete", (dialog, which) -> {
+                            DeleteImage();
+                        });
+                confirmDialog.show();
                 return true;
             } else return false;
         });
@@ -171,7 +178,7 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
     private void DeleteImage() {
         AlertDialog loadingDialog = createDialog("Deleting image", false, null);
         long numberOfDeleted = observedObj.getNumberOfSelected();
-        List<TrashedPicture> deletePictures = observedObj.getAllSelectedItems();
+        List<TrashedPicture> deletePictures = observedObj.getSelectedItems();
         List<ObservableGridMode<TrashedPicture>.DataItem> dataItems = observedObj.getSelectedDataItem();
         GarbagePictureCollector.DeletePicture deleter = new GarbagePictureCollector.DeletePicture(this) {
             @Override

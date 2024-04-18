@@ -1,4 +1,4 @@
-package com.example.semsemgallery.activities.pictureview;
+package com.example.semsemgallery.activities.pictureview.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;

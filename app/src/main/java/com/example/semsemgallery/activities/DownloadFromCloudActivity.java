@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.semsemgallery.R;
-import com.example.semsemgallery.activities.main.adapter.ImageAdapter;
+import com.example.semsemgallery.activities.cloudbackup.ImageAdapter;
 import com.example.semsemgallery.models.ImageFromCloud;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -28,11 +28,9 @@ import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.ListResult;
-import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 public class DownloadFromCloudActivity extends AppCompatActivity {

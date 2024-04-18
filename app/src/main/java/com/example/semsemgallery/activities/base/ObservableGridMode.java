@@ -2,8 +2,6 @@ package com.example.semsemgallery.activities.base;
 
 import android.util.Log;
 
-import com.example.semsemgallery.models.Picture;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,7 +90,7 @@ public class ObservableGridMode<DataType> {
         return res;
     }
 
-    public List<DataType> getAllSelectedItems() {
+    public List<DataType> getSelectedItems() {
         List<DataType> selectedItems = new ArrayList<>();
         for (DataItem item : observedObjects) {
             if (item.isSelected) {

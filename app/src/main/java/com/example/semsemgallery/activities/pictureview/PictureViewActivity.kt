@@ -1,6 +1,5 @@
 package com.example.semsemgallery.activities.pictureview
 
-import android.R.attr
 import android.app.Activity
 import android.content.ContentResolver
 import android.content.ContentValues
@@ -24,7 +23,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.viewpager2.widget.ViewPager2
 import com.example.semsemgallery.R
-import com.example.semsemgallery.activities.main.adapter.PictureAdapter
+import com.example.semsemgallery.activities.pictureview.adapter.PictureAdapter
 import com.example.semsemgallery.activities.pictureview.fragment.MetaDataBottomSheet
 import com.example.semsemgallery.activities.pictureview.fragment.OCRStickyBottomSheet
 import com.example.semsemgallery.domain.AIHandler
@@ -37,7 +36,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import ly.img.android.pesdk.PhotoEditorSettingsList
 import ly.img.android.pesdk.assets.filter.basic.FilterPackBasic
@@ -89,7 +87,7 @@ class PictureViewActivity : AppCompatActivity() {
             }
         }
     }
-
+    private var albumId: String? = null
     private lateinit var fragmentActivity: PictureViewActivity
     private lateinit var topBar: MaterialToolbar
     private lateinit var actions: MaterialToolbar
@@ -150,8 +148,6 @@ class PictureViewActivity : AppCompatActivity() {
             if (treeSet.contains(selectingPic)) {
                 viewPager.setCurrentItem(treeSet.headSet(selectingPic).size, false)
             }
-//            Log.d("Pictures", "Pos: " + findIndexOf(selectingPic, pictureList))
-//            viewPager.setCurrentItem(findIndexOf(selectingPic, pictureList), false)
         }
 
     }
@@ -184,9 +180,15 @@ class PictureViewActivity : AppCompatActivity() {
         // Load data
         viewPager = findViewById(R.id.vp_image)
         selectingPic = intent.getParcelableExtra<Picture>("selectingPic")!!
-        Log.d("Pictures", "Got Id: " + selectingPic.pictureId)
+        albumId = intent.getStringExtra("albumId")
+        Log.d("PictureViewActivity", "AlbumID = " + albumId)
         pictureList.add(selectingPic)
-        adapter = PictureAdapter(this, pictureList, 0)
+        adapter =
+            PictureAdapter(
+                this,
+                pictureList,
+                0
+            )
         processOCR(0)
         viewPager.adapter = adapter
         viewPager.offsetLeftAndRight(2);
@@ -206,7 +208,11 @@ class PictureViewActivity : AppCompatActivity() {
 
 
 
-        loader.execute(PictureLoadMode.ALL.toString())
+        if (albumId == null) {
+            loader.execute(PictureLoadMode.ALL.toString())
+        } else {
+            loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId);
+        }
 
 
 
