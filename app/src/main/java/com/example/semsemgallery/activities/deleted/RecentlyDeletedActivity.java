@@ -121,7 +121,16 @@ public class RecentlyDeletedActivity extends AppCompatActivity implements GridMo
                 observedObj.fireSelectionChangeForAll(false);
                 return true;
             } else if (id == R.id.trash_menu_empty) {
-                Toast.makeText(this, "Empty clicked", Toast.LENGTH_LONG).show();
+                observedObj.fireSelectionChangeForAll(true);
+                long numberOfDeleted = observedObj.getNumberOfSelected();
+                MaterialAlertDialogBuilder confirmDialog = new MaterialAlertDialogBuilder(this)
+                        .setTitle("Delete " + String.valueOf(numberOfDeleted) + (numberOfDeleted > 1 ? " pictures " : " picture ") + "permanently?")
+                        .setNegativeButton("Cancel", (dialog, which) -> {
+                        })
+                        .setPositiveButton("Delete", (dialog, which) -> {
+                            DeleteImage();
+                        });
+                confirmDialog.show();
                 return true;
             } else return false;
         });
