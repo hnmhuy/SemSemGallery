@@ -1,6 +1,7 @@
 package com.example.semsemgallery.activities.main2;
 
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
@@ -27,6 +28,7 @@ import com.example.semsemgallery.activities.main2.fragment.FavoritesFragment;
 import com.example.semsemgallery.activities.main2.fragment.MoreOptionsBottomSheet;
 import com.example.semsemgallery.activities.main2.fragment.PicturesFragment;
 import com.example.semsemgallery.domain.PermissionHandler;
+import com.example.semsemgallery.domain.TagUtils;
 import com.google.android.material.navigation.NavigationBarView;
 
 import java.util.Objects;

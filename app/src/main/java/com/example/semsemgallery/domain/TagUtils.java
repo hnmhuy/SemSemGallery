@@ -101,7 +101,7 @@ public class TagUtils extends SQLiteOpenHelper {
             insertTag(db, tagName);
         }
         try {
-            String tagId = getTagInfo(db, tagName, false);
+            int tagId = getTagId(db, tagName);
             ContentValues values = new ContentValues();
             values.put(COLUMN_TAGID_PICTURETAG, tagId);
             values.put(COLUMN_PICTUREID, pictureId);
@@ -124,6 +124,8 @@ public class TagUtils extends SQLiteOpenHelper {
                 @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex(COLUMN_TAGID));
                 @SuppressLint("Range") String tagName = cursor.getString(cursor.getColumnIndex(COLUMN_TAGNAME));
                 Tag tag = new Tag(id, tagName);
+                Log.d("Tag", String.valueOf(id));
+                Log.d("Tag", tagName);
                 tags.add(tag);
             } while (cursor.moveToNext());
         }
@@ -171,14 +173,14 @@ public class TagUtils extends SQLiteOpenHelper {
      * if isTagId == false, value == tagName => getTagId by TagName
      * */
     @SuppressLint("Range")
-    private String getTagInfo(SQLiteDatabase db, String value, boolean isTagId) {
-        String info = "";
-        String columnName = isTagId ? COLUMN_TAGID : COLUMN_TAGNAME;
-        String query = "SELECT " + columnName + " FROM " + TABLE_TAG + " WHERE " + (isTagId ? COLUMN_TAGNAME + " = ?" : COLUMN_TAGID + " = ?");
+    private int getTagId(SQLiteDatabase db, String value) {
+        int info = 0;
+        String columnName = COLUMN_TAGID;
+        String query = "SELECT " + columnName + " FROM " + TABLE_TAG + " WHERE " +  COLUMN_TAGNAME + " = ?";
 
         try (Cursor cursor = db.rawQuery(query, new String[]{value})) {
             if (cursor != null && cursor.moveToFirst()) {
-                info = cursor.getString(cursor.getColumnIndex(columnName));
+                info = cursor.getInt(cursor.getColumnIndex(columnName));
             }
         } catch (Exception e) {
             Log.e("TagUtils", Objects.requireNonNull(e.getMessage()));
@@ -190,15 +192,17 @@ public class TagUtils extends SQLiteOpenHelper {
     public ArrayList<Tag> getTagsByPictureId(SQLiteDatabase db, String pictureId) {
         ArrayList<Tag> data = new ArrayList<>();
         String query = "SELECT DISTINCT " + TABLE_TAG + "." + COLUMN_TAGID + ", " + TABLE_TAG + "." + COLUMN_TAGNAME +
-                " FROM " + TABLE_TAG +
-                " LEFT JOIN " + TABLE_PICTURETAG +
-                " ON " + COLUMN_PICTUREID + " = " + "'" + pictureId + "'";
+                " FROM " + TABLE_TAG + ", " + TABLE_PICTURETAG +
+                " WHERE " + COLUMN_PICTUREID + " = " + "\"" + pictureId + "\"" +
+                " AND " + TABLE_TAG + "." + COLUMN_TAGID + " = " + TABLE_PICTURETAG + "." + COLUMN_TAGID_PICTURETAG;
 
         try(Cursor cursor = db.rawQuery(query, null)) {
             if(cursor != null && cursor.moveToFirst()) {
                 do {
                     @SuppressLint("Range") int tagId = cursor.getInt(cursor.getColumnIndex(COLUMN_TAGID));
                     @SuppressLint("Range") String tagName = cursor.getString(cursor.getColumnIndex(COLUMN_TAGNAME));
+                    Log.d("Tag", String.valueOf(tagId));
+                    Log.d("Tag", tagName);
                     data.add(new Tag(tagId, tagName));
                 } while(cursor.moveToNext());
             }
@@ -209,13 +213,14 @@ public class TagUtils extends SQLiteOpenHelper {
     public ArrayList<String> getPictureIdsByTagName(SQLiteDatabase db, String tagName) {
         ArrayList<String> data = new ArrayList<>();
         String query = "SELECT DISTINCT " + TABLE_PICTURETAG + "." + COLUMN_PICTUREID  +
-                " FROM " + TABLE_TAG +
-                " INNER JOIN " + TABLE_PICTURETAG +
-                " ON " + TABLE_TAG + "." + COLUMN_TAGNAME + " = " + "\"" + tagName + "\"";
+                " FROM " + TABLE_TAG + ", " + TABLE_PICTURETAG +
+                " WHERE " + TABLE_TAG + "." + COLUMN_TAGNAME + " = " + "\"" + tagName + "\"" +
+                " AND " + TABLE_TAG + "." + COLUMN_TAGID + " = " + TABLE_PICTURETAG + "." + COLUMN_TAGID_PICTURETAG;
         try(Cursor cursor = db.rawQuery(query, null)) {
             if(cursor != null && cursor.moveToFirst()) {
                 do {
                     @SuppressLint("Range") String pictureId = cursor.getString(cursor.getColumnIndex(COLUMN_PICTUREID));
+                    Log.d("Tag", pictureId);
                     data.add(pictureId);
                 } while(cursor.moveToNext());
             }
