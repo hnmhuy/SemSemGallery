@@ -34,12 +34,22 @@
             android:textStyle="bold" />
     </RelativeLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:layout_width="match_parent"
-        android:id="@+id/tags_recycler_view"
-        android:layoutDirection="ltr"
-        android:layout_marginStart="16dp"
-        android:layout_height="wrap_content"/>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:id="@+id/tags_recycler_view"
+            android:layoutDirection="ltr"
+            android:layout_marginStart="16dp"
+            android:layout_height="wrap_content"/>
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:id="@+id/progressBar"
+            android:layout_centerInParent="true"
+            android:layout_height="wrap_content"/>
+    </RelativeLayout>
+
 
 
     <LinearLayout

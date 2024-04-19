@@ -1,9 +1,5 @@
 package com.example.semsemgallery.activities.pictureview.fragment;
 
-import static android.content.ContentUris.appendId;
-
-import static ly.img.android.pesdk.backend.decoder.ImageSource.getResources;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -15,7 +11,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.location.Address;
 import android.location.Geocoder;
-import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,9 +46,11 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.android.material.button.MaterialButton;
-import com.google.type.DateTime;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,21 +60,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
+import java.util.concurrent.Callable;
 
 public class MetaDataBottomSheet extends BottomSheetDialogFragment implements TagsAdapter.TagClickListener{
     private TextView date, time, name, filePath, device, size, height, width, megaPixels, iso, focalLength, ev, fNumber, exTime, locationTextView;
-    private LinearLayout row1, row2, mapContainer;
-    private MetaDataBottomSheet()
-    {}
-    private String path;
-    private String fileName;
-    private Long id;
-    private Long fileSize;
-    private Date datetime;
-    private LatLng point;
-    private Button addTagBtn; // add tag
-    private RecyclerView tagsRv;
+    private LinearLayout row2, mapContainer;
+    private final String path;
+    private final String fileName;
+    private final Long id;
+    private final Long fileSize;
+    private final Date datetime;
+    private ProgressBar progressBar;
     private ArrayList<Tag>[] tags;
     public MetaDataBottomSheet(Long id, String path, String fileName, Date datetime, Long fileSize)
     {
@@ -92,7 +86,7 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
         super.onCreate(savedInstanceState);
     }
 
-    private ActivityResultLauncher<Intent> editMetadataLauncher = registerForActivityResult(
+    private final ActivityResultLauncher<Intent> editMetadataLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
@@ -142,10 +136,13 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
         exTime = view.findViewById(R.id.view_metadata_ex_time);
         mapContainer = view.findViewById(R.id.meta_data_map_container);
         locationTextView = view.findViewById(R.id.address_textView);
-        addTagBtn = view.findViewById(R.id.view_metadata_add_tag_btn);
-        tagsRv = view.findViewById(R.id.tags_rv);
+        // add tag
+        Button addTagBtn = view.findViewById(R.id.view_metadata_add_tag_btn);
+        RecyclerView tagsRv = view.findViewById(R.id.tags_rv);
         TagUtils tagUtils = new TagUtils(getContext());
         SQLiteDatabase db = tagUtils.myGetDatabase(requireContext());
+        progressBar = view.findViewById(R.id.progressBar);
+
         tags = new ArrayList[]{tagUtils.getTagsByPictureId(db, id.toString())};
 
         initMetaDate();
@@ -168,6 +165,7 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
 
         if(!tags[0].isEmpty()) {
             TagsAdapter adapter = new TagsAdapter(getContext(), tags[0]);
+            adapter.setAddTag(false);
             tagsRv.setVisibility(View.VISIBLE);
             FlexboxLayoutManager  flexboxLayout = new FlexboxLayoutManager(getContext());
             @SuppressLint("UseCompatLoadingForColorStateLists") ColorStateList colorStateList = getResources().getColorStateList(R.color.tag_bg);
@@ -204,14 +202,39 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
             processFileSize(fileSize);
             processImageDimensions(exifInterface);
             processImageInfoCamera(exifInterface);
-            handleLocationMetadata(exifInterface);
-
+//            handleLocationMetadata(exifInterface);
+            handleLocationMetadataAsync(exifInterface)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            // Handle success
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(Exception e) {
+                            // Handle failure
+                            System.out.println("Failed to handle location metadata: " + e.getMessage());
+                        }
+                    });
         }catch (Exception e)
         {
             Log.e("ERROR IN META DATA:", e.getMessage());
         }
     }
 
+    private Task<Void> handleLocationMetadataAsync(final ExifInterface exifInterface) {
+        Callable<Void> callable = new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                handleLocationMetadata(exifInterface);
+                return null; // Since the function doesn't return anything, return null
+            }
+        };
+
+        return Tasks.call(callable);
+    }
     private void updateMapAndAddress(double latitude, double longitude) {
         if (mapContainer.getVisibility() != View.VISIBLE) {
             mapContainer.setVisibility(View.VISIBLE);

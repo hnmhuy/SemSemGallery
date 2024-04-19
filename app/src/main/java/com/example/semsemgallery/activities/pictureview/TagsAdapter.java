@@ -18,20 +18,32 @@ import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 
-public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder>{
+public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder> {
     private final Context context;
     private final ArrayList<Tag> tags;
+    private boolean isAddTag;
     private TagClickListener tagClickListener;
     private TagLongLickListener tagLongClickListener;
+
     public TagsAdapter(Context context, ArrayList<Tag> tags) {
         this.context = context;
         this.tags = tags;
+        isAddTag = true;
+    }
+
+    public void setAddTag(boolean addTag) {
+        isAddTag = addTag;
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.component_tag_item, parent, false);
+        View view;
+        if (isAddTag) {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.component_tag_item, parent, false);
+        } else {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.component_tag_picture, parent, false);
+        }
         return new ViewHolder(view);
     }
 
@@ -39,31 +51,36 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder>{
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Tag tag = tags.get(position);
-        if(tag.getType() == 1 || tag.getType() == -1) {
-            @SuppressLint("UseCompatLoadingForColorStateLists") ColorStateList colorStateList = getResources().getColorStateList(R.color.tag_bg);
-            holder.btn.setBackgroundTintList(colorStateList);
-            holder.btn.setIconResource(R.drawable.ic_plus);
-        } else if(tag.getType() == 2) {
-            // Top 3 recent tags
-            @SuppressLint("UseCompatLoadingForColorStateLists") ColorStateList colorStateList = getResources().getColorStateList(R.color.tag_bg);
-            holder.btn.setBackgroundTintList(colorStateList);
-            holder.btn.setIconResource(R.drawable.ic_recent);
-        } else if (tag.getType() == 3) {
-            // Is picture tag
-            @SuppressLint("UseCompatLoadingForColorStateLists") ColorStateList colorStateList = getResources().getColorStateList(R.color.track_on);
-            holder.btn.setBackgroundTintList(colorStateList);
-        } else if(tag.getType() == 4) {
-            @SuppressLint("UseCompatLoadingForColorStateLists") ColorStateList colorStateList = getResources().getColorStateList(R.color.track_on);
-            holder.btn.setBackgroundTintList(colorStateList);
-            holder.btn.setIconResource(R.drawable.ic_hash_tag);
-        }
-        holder.btn.setText(tag.getName());
-        holder.listener = tagClickListener; // Assign the listener here
+        if (isAddTag) {
+            if (tag.getType() == 1 || tag.getType() == -1) {
+                @SuppressLint("UseCompatLoadingForColorStateLists") ColorStateList colorStateList = getResources().getColorStateList(R.color.tag_bg);
+                holder.btn.setBackgroundTintList(colorStateList);
+                holder.btn.setIconResource(R.drawable.ic_plus);
+            } else if (tag.getType() == 2) {
+                // Top 3 recent tags
+                @SuppressLint("UseCompatLoadingForColorStateLists") ColorStateList colorStateList = getResources().getColorStateList(R.color.tag_bg);
+                holder.btn.setBackgroundTintList(colorStateList);
+                holder.btn.setIconResource(R.drawable.ic_recent);
+            } else if (tag.getType() == 3) {
+                // Is picture tag
+                @SuppressLint("UseCompatLoadingForColorStateLists") ColorStateList colorStateList = getResources().getColorStateList(R.color.track_on);
+                holder.btn.setBackgroundTintList(colorStateList);
+            } else if (tag.getType() == 4) {
+                @SuppressLint("UseCompatLoadingForColorStateLists") ColorStateList colorStateList = getResources().getColorStateList(R.color.track_on);
+                holder.btn.setBackgroundTintList(colorStateList);
+                holder.btn.setIconResource(R.drawable.ic_hash_tag);
+            }
+            holder.btn.setText(tag.getName());
 
+        } else {
+            String text = "# " + tag.getName();
+            holder.btn.setText(text);
+        }
+        holder.listener = tagClickListener; // Assign the listener here
         holder.itemView.setOnLongClickListener(v -> {
             if (tagLongClickListener != null) {
                 tagLongClickListener.onTagLongClick(v, position, holder.btn.getText().toString());
-                return true; // Consume the long click event
+                return true;
             }
             return false;
         });
@@ -74,10 +91,11 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder>{
         return tags.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         MaterialButton btn;
         TagClickListener listener;
         TagLongLickListener longClickListener;
+
         @SuppressLint("WrongViewCast")
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -88,7 +106,7 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder>{
 
         @Override
         public void onClick(View view) {
-            if(listener != null) {
+            if (listener != null) {
                 listener.onTagClick(view, getAbsoluteAdapterPosition());
             }
         }
@@ -102,6 +120,7 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder>{
             return false;
         }
     }
+
     public void setOnItemListener(TagClickListener tagClickListener) {
         this.tagClickListener = tagClickListener;
     }
@@ -120,13 +139,13 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder>{
 
     public void updateTagIcon(int position) {
         int type = tags.get(position).getType();
-        if(type == 1 || type == 2) {
+        if (type == 1 || type == 2) {
             tags.get(position).setType(4);
-        } else if(type == 4) {
+        } else if (type == 4) {
             tags.get(position).setType(1);
-        } else if(type == 3) {
+        } else if (type == 3) {
             tags.get(position).setType(-1);
-        }else if (type == -1) {
+        } else if (type == -1) {
             tags.get(position).setType(4);
         }
         notifyItemChanged(position);

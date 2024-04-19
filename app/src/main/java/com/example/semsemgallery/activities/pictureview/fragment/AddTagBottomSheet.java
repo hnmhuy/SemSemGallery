@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -23,14 +24,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.pictureview.TagsAdapter;
+import com.example.semsemgallery.domain.AIHandler;
 import com.example.semsemgallery.domain.TagUtils;
 import com.example.semsemgallery.models.Tag;
 import com.google.android.flexbox.FlexDirection;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayoutManager;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class AddTagBottomSheet extends BottomSheetDialogFragment implements TagsAdapter.TagClickListener, TagsAdapter.TagLongLickListener {
@@ -43,11 +49,13 @@ public class AddTagBottomSheet extends BottomSheetDialogFragment implements Tags
     private boolean editMode = false;
     private int editPosition = -1;
     private String editName = "";
+
     public AddTagBottomSheet(ArrayList<Tag> tags, ArrayList<Long> picture) {
         this.pictureTags = tags;
         this.pictureId = picture;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -61,13 +69,28 @@ public class AddTagBottomSheet extends BottomSheetDialogFragment implements Tags
         RecyclerView recyclerView = view.findViewById(R.id.tags_recycler_view);
         ArrayList<Tag> recentTags = tagUtils.getRecentTags(db);
         createTagEditText = view.findViewById(R.id.create_tag);
+        ProgressBar progressBar = view.findViewById(R.id.progressBar);
         FlexboxLayoutManager flexboxLayout = new FlexboxLayoutManager(getContext());
 
-        if(pictureId.size() == 1) {
-            Log.d("Tag", pictureId.get(0).toString());
-            pictureTags = tagUtils.getTagsByPictureId(db, pictureId.get(0).toString());
+        if (pictureId.size() == 1) {
+            AIHandler.getInstance().getImageLabeling(getContext(), (Long)pictureId.get(0)).addOnSuccessListener(labels -> {
+                int num = Math.min(labels.size(), 3);
+                for(int i = 0; i < num; i++) {
+                    if(!checkTagExistInList(tags, labels.get(i))){
+                        Tag temp = new Tag(-1, labels.get(i));
+                        temp.setType(1);
+                        tags.add(temp);
+                    }
+                }
+                adapter.notifyDataSetChanged();
+                progressBar.setVisibility(View.GONE);
+            }).addOnFailureListener(e -> {
+                // Handle failure
+                Log.e("Error", "Failed to get image labels", e);
+            });
+        } else {
+            progressBar.setVisibility(View.GONE);
         }
-
         if (!checkTagExistInList(pictureTags, "Gallery")) {
             Tag gallery = new Tag(-1, "Gallery");
             gallery.setType(1);
@@ -75,12 +98,12 @@ public class AddTagBottomSheet extends BottomSheetDialogFragment implements Tags
         }
 
         int count = 0;
-        for(Tag tag : recentTags) {
-            if(!checkTagExistInList(tags, tag.getName()) && !checkTagExistInList(pictureTags, tag.getName())) {
+        for (Tag tag : recentTags) {
+            if (!checkTagExistInList(tags, tag.getName()) && !checkTagExistInList(pictureTags, tag.getName())) {
                 tags.add(tag);
-                count ++;
+                count++;
             }
-            if(count == 3) {
+            if (count == 3) {
                 break;
             }
         }
@@ -112,7 +135,7 @@ public class AddTagBottomSheet extends BottomSheetDialogFragment implements Tags
                 } else {
                     createTagEditText.setBackgroundTintMode(PorterDuff.Mode.MULTIPLY);
                     addTagBtn.setEnabled(false);
-                    addTagBtn.setVisibility(View.INVISIBLE);
+                    addTagBtn.setVisibility(View.GONE);
                 }
                 if (charSequence.length() >= 50) {
                     Toast.makeText(getContext(), "Limit 50 characters", Toast.LENGTH_SHORT).show();
@@ -123,7 +146,7 @@ public class AddTagBottomSheet extends BottomSheetDialogFragment implements Tags
             @Override
             public void afterTextChanged(Editable editable) {
                 addTagBtn.setOnClickListener(view -> {
-                    if(editMode) {
+                    if (editMode) {
                         tags.get(editPosition).setEditTag(true);
                         tags.get(editPosition).setName(editable.toString());
                         adapter.notifyDataSetChanged();
@@ -145,11 +168,11 @@ public class AddTagBottomSheet extends BottomSheetDialogFragment implements Tags
 
 
         saveBtn.setOnClickListener(v -> {
-            for(Long picId : pictureId) {
+            for (Long picId : pictureId) {
                 for (Tag tag : tags) {
                     if (tag.getType() == 4 || (tag.isEditTag() && tag.getType() == 3)) {
                         tagUtils.insertTagPicture(db, tag.getName(), picId.toString());
-                        if((tag.isEditTag() && tag.getType() == 3)) {
+                        if ((tag.isEditTag() && tag.getType() == 3)) {
                             tagUtils.removePictureTagById(db, tag.getTagId(), picId.toString());
                         }
                     }
@@ -180,9 +203,11 @@ public class AddTagBottomSheet extends BottomSheetDialogFragment implements Tags
         }
         return isExist;
     }
+
     public void setOnTagAddedListener(OnTagAddedListener listener) {
         mListener = listener;
     }
+
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);

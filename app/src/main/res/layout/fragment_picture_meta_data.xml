@@ -271,18 +271,30 @@
     </LinearLayout>
 
     <LinearLayout
+        android:layout_marginBottom="20dp"
         android:id="@+id/meta_data_map_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <fragment
-            android:id="@+id/meta_data_mapFragment"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="120dp"
-            app:uiZoomControls="false"
-            app:uiZoomGestures="false" />
+            android:layout_height="wrap_content">
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:id="@+id/progressBar"
+                android:layout_centerInParent="true"
+                android:layout_height="wrap_content"/>
+            <fragment
+                android:id="@+id/meta_data_mapFragment"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                app:uiZoomControls="false"
+                app:uiZoomGestures="false" />
+        </RelativeLayout>
+
+
 
         <TextView
             android:layout_marginTop="10dp"
@@ -296,8 +308,7 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/tags_rv"
-        android:layout_marginTop="24dp"
-        android:visibility="invisible"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
@@ -306,11 +317,10 @@
         style="?attr/materialButtonOutlinedStyle"
         android:layout_width="80dp"
         android:layout_height="38dp"
-        android:layout_marginTop="20dp"
         android:layout_marginBottom="30dp"
         android:padding="0dp"
         android:text="@string/add_tag"
-        android:textColor="@color/text_color_black"
+        android:textColor="@color/black"
         android:textSize="12sp" />
 
 </LinearLayout>
