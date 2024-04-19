@@ -33,11 +33,16 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class AddTagBottomSheet extends BottomSheetDialogFragment implements TagsAdapter.TagClickListener {
+public class AddTagBottomSheet extends BottomSheetDialogFragment implements TagsAdapter.TagClickListener, TagsAdapter.TagLongLickListener {
     private ArrayList<Long> pictureId;
     private ArrayList<Tag> pictureTags;
     TagsAdapter adapter;
     private OnTagAddedListener mListener;
+    EditText createTagEditText;
+    ArrayList<Tag> tags;
+    private boolean editMode = false;
+    private int editPosition = -1;
+    private String editName = "";
     public AddTagBottomSheet(ArrayList<Tag> tags, ArrayList<Long> picture) {
         this.pictureTags = tags;
         this.pictureId = picture;
@@ -48,14 +53,14 @@ public class AddTagBottomSheet extends BottomSheetDialogFragment implements Tags
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.component_adding_tag_bottom_sheet, container, false);
-        ArrayList<Tag> tags = new ArrayList<>();
+        tags = new ArrayList<>();
         ImageButton addTagBtn = view.findViewById(R.id.add_tag_btn);
         Button saveBtn = view.findViewById(R.id.save_tags);
         TagUtils tagUtils = new TagUtils(getContext());
         SQLiteDatabase db = tagUtils.myGetDatabase(requireContext());
         RecyclerView recyclerView = view.findViewById(R.id.tags_recycler_view);
         ArrayList<Tag> recentTags = tagUtils.getRecentTags(db);
-        EditText createTagEditText = view.findViewById(R.id.create_tag);
+        createTagEditText = view.findViewById(R.id.create_tag);
         FlexboxLayoutManager flexboxLayout = new FlexboxLayoutManager(getContext());
 
         if(pictureId.size() == 1) {
@@ -83,6 +88,7 @@ public class AddTagBottomSheet extends BottomSheetDialogFragment implements Tags
         tags.addAll(pictureTags);
         adapter = new TagsAdapter(getContext(), tags);
         adapter.setOnItemListener(this);
+        adapter.setOnItemLongClickListener(this);
         flexboxLayout.setFlexDirection(FlexDirection.ROW);
         flexboxLayout.setFlexWrap(FlexWrap.WRAP);
         recyclerView.setLayoutManager(flexboxLayout);
@@ -113,15 +119,24 @@ public class AddTagBottomSheet extends BottomSheetDialogFragment implements Tags
                 }
             }
 
-            @SuppressLint("UseCompatLoadingForDrawables")
+            @SuppressLint({"UseCompatLoadingForDrawables", "NotifyDataSetChanged"})
             @Override
             public void afterTextChanged(Editable editable) {
                 addTagBtn.setOnClickListener(view -> {
-                    if (!checkTagExistInList(tags, editable.toString())) {
-                        tags.add(new Tag(-1, editable.toString()));
-                        adapter.notifyItemInserted(tags.size() - 1);
+                    if(editMode) {
+                        tags.get(editPosition).setEditTag(true);
+                        tags.get(editPosition).setName(editable.toString());
+                        adapter.notifyDataSetChanged();
+
+                        editPosition = -1;
+                        editMode = false;
                     } else {
-                        Toast.makeText(getContext(), "Existed tag", Toast.LENGTH_SHORT).show();
+                        if (!checkTagExistInList(tags, editable.toString())) {
+                            tags.add(new Tag(-1, editable.toString()));
+                            adapter.notifyItemInserted(tags.size() - 1);
+                        } else {
+                            Toast.makeText(getContext(), "Existed tag", Toast.LENGTH_SHORT).show();
+                        }
                     }
                     createTagEditText.setText("");
                 });
@@ -132,8 +147,11 @@ public class AddTagBottomSheet extends BottomSheetDialogFragment implements Tags
         saveBtn.setOnClickListener(v -> {
             for(Long picId : pictureId) {
                 for (Tag tag : tags) {
-                    if (tag.getType() == 4) {
+                    if (tag.getType() == 4 || (tag.isEditTag() && tag.getType() == 3)) {
                         tagUtils.insertTagPicture(db, tag.getName(), picId.toString());
+                        if((tag.isEditTag() && tag.getType() == 3)) {
+                            tagUtils.removePictureTagById(db, tag.getTagId(), picId.toString());
+                        }
                     }
                     if (tag.getType() == -1) {
                         tagUtils.removePictureTag(db, tag.getName(), picId.toString());
@@ -171,6 +189,15 @@ public class AddTagBottomSheet extends BottomSheetDialogFragment implements Tags
         if (mListener != null) {
             mListener.onTagAdded(pictureTags);
         }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    @Override
+    public void onTagLongClick(View view, int position, String buttonText) {
+        createTagEditText.setText(buttonText);
+        editPosition = position;
+        editName = buttonText;
+        editMode = true;
     }
 
     public interface OnTagAddedListener {

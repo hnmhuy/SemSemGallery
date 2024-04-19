@@ -55,10 +55,8 @@ public class TagUtils extends SQLiteOpenHelper {
         try {
             db.execSQL(CREATE_TABLE_PICTURETAG);
             db.execSQL(CREATE_TABLE_TAG);
-            Toast.makeText(mContext, "Create database successfully", Toast.LENGTH_SHORT).show();
         } catch (SQLException e) {
             Log.e("SearchViewActivity", e.toString());
-            Toast.makeText(mContext, "Create database failed", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -86,7 +84,6 @@ public class TagUtils extends SQLiteOpenHelper {
                 ContentValues values = new ContentValues();
                 values.put(COLUMN_TAGNAME, tagName);
                 db.insert(TABLE_TAG, null, values);
-                showToast("Added tag successfully");
             } else {
                 showToast("This" + tagName + " already added");
             }
@@ -106,7 +103,6 @@ public class TagUtils extends SQLiteOpenHelper {
             values.put(COLUMN_TAGID_PICTURETAG, tagId);
             values.put(COLUMN_PICTUREID, pictureId);
             db.insert(TABLE_PICTURETAG, null, values);
-            showToast("Successfully added");
         } catch (SQLException e) {
             Log.e("TagUtils", Objects.requireNonNull(e.getMessage()));
         }
@@ -124,8 +120,6 @@ public class TagUtils extends SQLiteOpenHelper {
                 @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex(COLUMN_TAGID));
                 @SuppressLint("Range") String tagName = cursor.getString(cursor.getColumnIndex(COLUMN_TAGNAME));
                 Tag tag = new Tag(id, tagName);
-                Log.d("Tag", String.valueOf(id));
-                Log.d("Tag", tagName);
                 tags.add(tag);
             } while (cursor.moveToNext());
         }
@@ -237,7 +231,6 @@ public class TagUtils extends SQLiteOpenHelper {
         // Execute the query
         try {
             db.execSQL(query);
-            Log.d("Remove", "Successfully");
             String queryCheck = "SELECT * FROM " + TABLE_PICTURETAG +
                     " WHERE " + COLUMN_TAGID_PICTURETAG + " = ?";
 
@@ -246,16 +239,37 @@ public class TagUtils extends SQLiteOpenHelper {
                 String deleteQuery = "DELETE FROM " + TABLE_TAG +
                         " WHERE " + COLUMN_TAGNAME + " = \"" + tagName  + "\"";
                 db.execSQL(deleteQuery);
-                showToast("Delete from table tag");
             }
             cursor.close();
 
-            showToast("Remove " + tagName);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+    public void removePictureTagById(SQLiteDatabase db, int tagId, String pictureId) {
+        String query = "DELETE FROM " + TABLE_PICTURETAG +
+                " WHERE " + COLUMN_TAGID_PICTURETAG + " = " + tagId  +
+                " AND " + COLUMN_PICTUREID + " = \"" + pictureId  + "\"";
 
+        // Execute the query
+        try {
+            db.execSQL(query);
+            Log.d("Remove", "Successfully");
+            String queryCheck = "SELECT * FROM " + TABLE_PICTURETAG +
+                    " WHERE " + COLUMN_TAGID_PICTURETAG + " = ?";
+
+            Cursor cursor = db.rawQuery(queryCheck, new String[]{String.valueOf(tagId)});
+            if (cursor.getCount() == 0) {
+                String deleteQuery = "DELETE FROM " + TABLE_TAG +
+                        " WHERE " + COLUMN_TAGID + " = \"" + tagId  + "\"";
+                db.execSQL(deleteQuery);
+            }
+            cursor.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
     public ArrayList<Tag> getRecentTags(SQLiteDatabase db) {
         ArrayList<Tag> data = new ArrayList<>();
         String query = "SELECT " + COLUMN_TAGID + ", " + COLUMN_TAGNAME +

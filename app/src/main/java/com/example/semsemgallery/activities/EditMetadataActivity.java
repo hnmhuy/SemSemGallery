@@ -26,20 +26,9 @@
     import androidx.exifinterface.media.ExifInterface;
 
     import com.example.semsemgallery.R;
-    import com.google.android.gms.maps.model.LatLng;
-    import com.kunzisoft.switchdatetime.SwitchDateTimeDialogFragment;
 
-    import java.io.FileNotFoundException;
     import java.io.IOException;
-    import java.io.InputStream;
-    import java.text.DateFormat;
-    import java.text.SimpleDateFormat;
-    import java.util.Calendar;
-    import java.util.Date;
-    import java.util.GregorianCalendar;
-    import java.util.Locale;
     import java.util.Objects;
-    import java.util.TimeZone;
 
 
     public class EditMetadataActivity extends AppCompatActivity {
@@ -49,7 +38,6 @@
         // --------- Begin variable of DateTimePicker dialog ---------
         private static final String TAG = "Sample";
         private static final String TAG_DATETIME_FRAGMENT = "TAG_DATETIME_FRAGMENT";
-        private SwitchDateTimeDialogFragment dateTimeFragment;
 
         // --------- End variable of DateTimePicker dialog ---------
 

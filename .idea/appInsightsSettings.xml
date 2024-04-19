@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.example.semsemgallery" />
-                  <option name="mobileSdkAppId" value="1:764863812102:android:2b83cb51559b63a4d1a987" />
-                  <option name="projectId" value="semsem-gallery" />
-                  <option name="projectNumber" value="764863812102" />
+                  <option name="appId" value="PLACEHOLDER" />
+                  <option name="mobileSdkAppId" value="" />
+                  <option name="projectId" value="" />
+                  <option name="projectNumber" value="" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

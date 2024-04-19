@@ -102,8 +102,8 @@ IMGLY.configure() {
         implementation("com.google.mlkit:language-id:17.0.5");
         implementation("com.google.mlkit:image-labeling:17.0.8");
         implementation("com.google.android.gms:play-services-maps:18.2.0");  // Maps SDK for Android
-        implementation(libs.appcompat)
         implementation(libs.material)
+        implementation(libs.appcompat)
         implementation(libs.activity)
         implementation("com.github.chrisbanes:PhotoView:2.0.0")
         implementation(libs.constraintlayout)
