@@ -47,6 +47,7 @@ import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.cloudbackup.CloudActivity;
 import com.example.semsemgallery.activities.main2.MainActivity;
 import com.example.semsemgallery.activities.main2.adapter.FavoriteAdapter;
+import com.example.semsemgallery.activities.main2.adapter.GalleryAdapter;
 import com.example.semsemgallery.activities.main2.viewholder.GalleryItem;
 import com.example.semsemgallery.activities.pictureview.ChooseAlbumActivity;
 import com.example.semsemgallery.activities.pictureview.PictureViewActivity;

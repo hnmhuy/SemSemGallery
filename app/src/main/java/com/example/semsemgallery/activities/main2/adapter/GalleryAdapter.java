@@ -22,6 +22,7 @@ import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.main2.viewholder.GalleryItem;
 import com.example.semsemgallery.activities.main2.viewholder.GalleryItemViewHolder;
 import com.example.semsemgallery.activities.pictureview.PictureViewActivity;
+import com.example.semsemgallery.domain.Picture.PictureLoadMode;
 import com.example.semsemgallery.models.Picture;
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryItemViewHolder> {
@@ -48,7 +49,12 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryItemViewHolder> 
                     ObservableGridMode<GalleryItem>.DataItem item = observableGridMode.getDataAt(getAbsoluteAdapterPosition());
                     Picture data = (Picture) item.data.getData();
                     intent.putExtra("selectingPic", data);
-                    if (albumId != null) intent.putExtra("albumId", albumId);
+                    if (albumId != null) {
+                        intent.putExtra("albumId", albumId);
+                        intent.putExtra("loadMode", PictureLoadMode.BY_ALBUM.toString());
+                    } else {
+                        intent.putExtra("loadMode", PictureLoadMode.ALL.toString());
+                    }
                     startActivity(context, intent, null);
                 }
             };
