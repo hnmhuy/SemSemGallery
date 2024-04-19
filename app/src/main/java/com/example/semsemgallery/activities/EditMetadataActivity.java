@@ -26,6 +26,7 @@
     import androidx.exifinterface.media.ExifInterface;
 
     import com.example.semsemgallery.R;
+    import com.google.android.gms.maps.model.LatLng;
 
     import java.io.IOException;
     import java.util.Objects;
@@ -89,7 +90,7 @@
 
             imageName.setText(nameIntent);
             imageFormat.setText(formatIntent);
-
+            Log.d("Map", locationAddress);
             if (!Objects.equals(locationAddress, "No location information")){
                 location.setText(locationAddress);
                 addLocationBtn.setVisibility(View.INVISIBLE);
@@ -175,7 +176,6 @@
                     if((Objects.equals(curLocation, "No location information") && !Objects.equals(curLocation, locationAddress)))
                     {
                         intent.putExtra("noLocation", "No Location Information");
-                        Log.d("Map", "Update");
                         updateExifMetadata(null, null);
                     }
                     setResult(RESULT_OK, intent);

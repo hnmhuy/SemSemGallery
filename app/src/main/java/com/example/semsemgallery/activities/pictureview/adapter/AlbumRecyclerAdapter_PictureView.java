@@ -51,6 +51,7 @@ public class AlbumRecyclerAdapter_PictureView extends RecyclerView.Adapter<Album
                 .into(holder.imageView);
         holder.albumName.setText(album.getName());
         holder.setAlbumId(album.getAlbumId());
+        holder.albumQuantity.setText(String.valueOf(album.getCount()));
     }
 
     @Override

@@ -111,6 +111,7 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
                         }
                         if(data.hasExtra("noLocation"))
                         {
+
                             hideLocationMetadata();
                         }
                     }
@@ -390,7 +391,7 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
     }
 
     private void hideLocationMetadata() {
-
+        locationTextView.setText("No location information");
         mapContainer.setVisibility(View.GONE);
 
     }
@@ -408,9 +409,14 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
             @Override
             public void onMapReady(GoogleMap googleMap) {
                 LatLng pictureLocation = new LatLng(gpsLatitude, gpsLongitude);
-                BitmapDescriptor customMarker = createCustomMarker(requireContext(), pathToBitmap(path, 140));
-                googleMap.addMarker(new MarkerOptions().position(pictureLocation).title("Picture Location").icon(customMarker));
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pictureLocation, 15));
+                Bitmap imageBitmap = pathToBitmap(path, 140);
+                if (imageBitmap !=null) {
+                    BitmapDescriptor customMarker = createCustomMarker(requireContext(), pathToBitmap(path, 140));
+                    googleMap.addMarker(new MarkerOptions().position(pictureLocation).title("Picture Location").icon(customMarker));
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pictureLocation, 15));
+                } else {
+                    googleMap.addMarker(new MarkerOptions().position(pictureLocation).title("Picture Location"));
+                }
             }
         });
     }
@@ -497,18 +503,12 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
                 ExifInterface exifInterface = new ExifInterface(path);
                 int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
 
-                int rotationAngle = 0;
-                switch (orientation) {
-                    case ExifInterface.ORIENTATION_ROTATE_90:
-                        rotationAngle = 90;
-                        break;
-                    case ExifInterface.ORIENTATION_ROTATE_180:
-                        rotationAngle = 180;
-                        break;
-                    case ExifInterface.ORIENTATION_ROTATE_270:
-                        rotationAngle = 270;
-                        break;
-                }
+                int rotationAngle = switch (orientation) {
+                    case ExifInterface.ORIENTATION_ROTATE_90 -> 90;
+                    case ExifInterface.ORIENTATION_ROTATE_180 -> 180;
+                    case ExifInterface.ORIENTATION_ROTATE_270 -> 270;
+                    default -> 0;
+                };
 
                 Matrix matrix = new Matrix();
                 matrix.postRotate(rotationAngle);

@@ -71,15 +71,15 @@ public class SearchViewActivity extends AppCompatActivity {
         tagData = studentSQL.getAllTags(db);
 
         listView = findViewById(R.id.searchResult);
-        if(tagData.size() == 0){
-            studentSQL.insertTag(db, "sea");
-            studentSQL.insertTag(db, "dance");
-            studentSQL.insertTag(db, "food");
-            name = new String[tagData.size()];
-            for(int i = 0; i < tagData.size(); i++){
-                name[i] = tagData.get(i).getName();
-            }
-        }
+//        if(tagData.size() == 0){
+//            studentSQL.insertTag(db, "sea");
+//            studentSQL.insertTag(db, "dance");
+//            studentSQL.insertTag(db, "food");
+//            name = new String[tagData.size()];
+//            for(int i = 0; i < tagData.size(); i++){
+//                name[i] = tagData.get(i).getName();
+//            }
+//        }
         if (tagData.size() >= 1){
             name = new String[tagData.size()];
             for(int i = 0; i < tagData.size(); i++){

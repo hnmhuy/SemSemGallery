@@ -2,8 +2,11 @@ package com.example.semsemgallery.activities.main2.adapter;
 
 import static androidx.core.content.ContextCompat.startActivity;
 
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -77,7 +80,8 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryItemViewHolder> 
         if (item.getType() == GalleryItem.GROUPDATE) {
             holder.groupDisplayText.setText(item.getDateFormatted());
         } else {
-            Glide.with(context).load(((Picture) item.getData()).getPath()).into(holder.thumnail);
+            Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ((Picture)item.getData()).getPictureId());
+            Glide.with(context).load(imageUri).sizeMultiplier(0.6f).into(holder.thumnail);
             holder.isFav.setVisibility(((Picture) item.getData()).isFav() ? View.VISIBLE : View.INVISIBLE);
         }
     }
