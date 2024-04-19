@@ -2,6 +2,7 @@ package com.example.semsemgallery.activities.main2.fragment;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,6 +12,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
@@ -27,6 +30,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -49,8 +54,10 @@ import com.example.semsemgallery.activities.main2.MainActivity;
 import com.example.semsemgallery.activities.main2.adapter.GalleryAdapter;
 import com.example.semsemgallery.activities.main2.viewholder.DateHeaderItem;
 import com.example.semsemgallery.activities.main2.viewholder.GalleryItem;
+import com.example.semsemgallery.activities.pictureview.ChooseAlbumActivity;
 import com.example.semsemgallery.activities.pictureview.fragment.AddTagBottomSheet;
 import com.example.semsemgallery.activities.search.SearchViewActivity;
+import com.example.semsemgallery.domain.Album.AlbumHandler;
 import com.example.semsemgallery.domain.Picture.GarbagePictureCollector;
 import com.example.semsemgallery.domain.Picture.PictureLoadMode;
 import com.example.semsemgallery.domain.Picture.PictureLoader;
@@ -90,6 +97,13 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
     private GalleryAdapter adapter = null;
     private PictureLoader loader;
     private RecyclerView recyclerView;
+
+    private String choiceHandler = "";
+    private final ArrayList<Uri> selectedImages = new ArrayList<>();
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
+
+
+
     private final ActivityResultLauncher<Intent> activityCameraResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
@@ -341,6 +355,103 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         else Toast.makeText(context, "Don't have permission", Toast.LENGTH_LONG);
     }
 
+
+
+    private AlertDialog myLoadingDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.component_loading_dialog, null);
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(requireContext()).setView(dialogView);
+
+        AlertDialog dialog = dialogBuilder.create();
+        dialog.setCanceledOnTouchOutside(false);
+
+        Button cancelButton = dialogView.findViewById(R.id.component_loading_dialog_cancelButton);
+        cancelButton.setOnClickListener(v -> {
+            AlbumHandler.stopHandling();
+        });
+
+        return dialog;
+    }
+
+    private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent intentResult = result.getData();
+                        if (intentResult != null) {
+                            String albumName = intentResult.getStringExtra("key");
+
+                            selectedImages.clear();
+
+                            for (GalleryItem item : observableGridMode.getSelectedItems()) {
+                                Picture pictureItem = ((Picture)item.getData());
+                                Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, pictureItem.getPictureId());
+                                selectedImages.add(imageUri);
+                            }
+
+                            if (choiceHandler == "copy" & !selectedImages.isEmpty()) {
+                                AlertDialog loadingDialog = myLoadingDialog();
+                                loadingDialog.show(); // Show Loading Dialog
+                                TextView dialogTitle = loadingDialog.findViewById(R.id.component_loading_dialog_title);
+                                dialogTitle.setText("Copying to " + albumName);
+
+                                AlbumHandler.OnLoadingListener loadingListener = new AlbumHandler.OnLoadingListener() {
+                                    @Override
+                                    public void onLoadingComplete() {
+                                        mHandler.post(()-> {
+                                            loadingDialog.dismiss();
+                                            observableGridMode.fireSelectionChangeForAll(false);
+                                            observableGridMode.setGridMode(GridMode.NORMAL);
+                                            isSelectingAll = false;
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onLoadingProgressUpdate(int progress) {
+                                        ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
+                                        mHandler.post(() -> {
+                                            progressBar.setProgress(progress);
+                                        });
+                                    }
+                                };
+
+                                AlbumHandler.copyImagesToAlbumHandler(context, selectedImages, albumName, loadingListener);
+                            } else if (choiceHandler == "move") {
+                                AlertDialog loadingDialog = myLoadingDialog();
+                                loadingDialog.show(); // Show Loading Dialog
+                                TextView dialogTitle = loadingDialog.findViewById(R.id.component_loading_dialog_title);
+                                dialogTitle.setText("Moving to " + albumName);
+
+                                AlbumHandler.OnLoadingListener loadingListener = new AlbumHandler.OnLoadingListener() {
+                                    @Override
+                                    public void onLoadingComplete() {
+                                        mHandler.post(()-> {
+                                            loadingDialog.dismiss();
+                                            observableGridMode.fireSelectionChangeForAll(false);
+                                            observableGridMode.setGridMode(GridMode.NORMAL);
+                                            isSelectingAll = false;
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onLoadingProgressUpdate(int progress) {
+                                        ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
+                                        mHandler.post(() -> {
+                                            progressBar.setProgress(progress);
+                                        });
+                                    }
+                                };
+
+                                AlbumHandler.moveImagesToAlbumHandler(context, selectedImages, albumName, loadingListener);
+                            }
+
+                        }
+                    }
+                }
+            }
+    );
+
     private void renderMoreMenu(View v, int res) {
         PopupMenu popupMenu = new PopupMenu(context, v);
         popupMenu.inflate(res);
@@ -351,9 +462,25 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
             int id = item.getItemId();
             if (id == R.id.btnMoveToAlbum) {
                 //#TODO
+                if (observableGridMode.getNumberOfSelected() < 1) {
+                    Toast.makeText(context, "No images selected", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
+                choiceHandler = "move";
+                Intent chooseAlbumIntent = new Intent(context, ChooseAlbumActivity.class);
+                activityResultLauncher.launch(chooseAlbumIntent);
                 return true;
             } else if (id == R.id.btnCopyToAlbum) {
                 //#TODO
+                if (observableGridMode.getNumberOfSelected() < 1) {
+                    Toast.makeText(context, "No images selected", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
+                choiceHandler = "copy";
+                Intent chooseAlbumIntent = new Intent(context, ChooseAlbumActivity.class);
+                activityResultLauncher.launch(chooseAlbumIntent);
                 return true;
             } else if (id == R.id.btnSelectAll) {
                 isSelectingAll = !isSelectingAll;
@@ -363,6 +490,8 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         });
         popupMenu.show();
     }
+
+
     private void SetFunctionForActionBar() {
         Button btnDelete = actionBar.findViewById(R.id.btnDelete);
         Button btnShare = actionBar.findViewById(R.id.btnShare);

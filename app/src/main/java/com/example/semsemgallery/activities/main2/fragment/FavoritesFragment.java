@@ -278,9 +278,6 @@ public class FavoritesFragment extends Fragment implements GridModeListener {
 
                                 AlbumHandler.moveImagesToAlbumHandler(context, selectedImages, albumName, loadingListener);
                             }
-                            else {
-                                Toast.makeText(context, "No images selected", Toast.LENGTH_SHORT).show();
-                            }
 
                         }
                     }
@@ -299,12 +296,22 @@ public class FavoritesFragment extends Fragment implements GridModeListener {
             int id = item.getItemId();
             if (id == R.id.btnMoveToAlbum) {
                 //#TODO
+                if (data.getNumberOfSelected() < 1) {
+                    Toast.makeText(context, "No images selected", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
                 choiceHandler = "move";
                 Intent chooseAlbumIntent = new Intent(context, ChooseAlbumActivity.class);
                 activityResultLauncher.launch(chooseAlbumIntent);
                 return true;
             } else if (id == R.id.btnCopyToAlbum) {
                 //#TODO
+                if (data.getNumberOfSelected() < 1) {
+                    Toast.makeText(context, "No images selected", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
                 choiceHandler = "copy";
                 Intent chooseAlbumIntent = new Intent(context, ChooseAlbumActivity.class);
                 activityResultLauncher.launch(chooseAlbumIntent);
