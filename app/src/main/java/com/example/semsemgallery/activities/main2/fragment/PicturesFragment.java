@@ -559,14 +559,6 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 addTagBottomSheet.show(requireActivity().getSupportFragmentManager(), addTagBottomSheet.getTag());
             }
         });
-
-        btnMore.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
-
         btnMore.setOnClickListener((v) -> {
             renderMoreMenu(v, R.menu.pictures_fragment_selecting_mode);
         });

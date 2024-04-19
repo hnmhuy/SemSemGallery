@@ -28,11 +28,9 @@ public class ObservableGridMode<DataType> {
     private GridMode currentMode;
 
     public void reset() {
-        observers.clear();
         if (observedObjects != null) {
             observedObjects.clear();
         }
-        observers.add(master);
     }
 
     public ObservableGridMode(@Nullable List<DataType> data, GridMode initMode) {
