@@ -27,7 +27,6 @@
 
     import com.example.semsemgallery.R;
     import com.google.android.gms.maps.model.LatLng;
-    import com.kunzisoft.switchdatetime.SwitchDateTimeDialogFragment;
 
     import java.io.FileNotFoundException;
     import java.io.IOException;
@@ -49,7 +48,6 @@
         // --------- Begin variable of DateTimePicker dialog ---------
         private static final String TAG = "Sample";
         private static final String TAG_DATETIME_FRAGMENT = "TAG_DATETIME_FRAGMENT";
-        private SwitchDateTimeDialogFragment dateTimeFragment;
 
         // --------- End variable of DateTimePicker dialog ---------
 
