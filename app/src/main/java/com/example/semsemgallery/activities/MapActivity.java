@@ -68,15 +68,7 @@ public class MapActivity extends AppCompatActivity {
                     if (addressList != null && addressList.size() > 0) {
                         Address address = addressList.get(0);
                         LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-                        // Get the map object from the fragment
-                        GoogleMap map = mapFragment.getMap();
-                        if (map != null) {
-                            // Clear previous marker
-                            map.clear();
-                            // Add new marker
-                            map.addMarker(new MarkerOptions().position(latLng).title(location));
-                            map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
-                        }
+                        mapFragment.setMarker(latLng); // Update the marker position
                     }
                 }
                 return false;

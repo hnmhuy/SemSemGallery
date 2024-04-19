@@ -5,6 +5,7 @@
     import android.content.ContentValues;
     import android.content.Context;
     import android.content.Intent;
+    import android.location.Location;
     import android.net.Uri;
     import android.os.Bundle;
     import android.os.Environment;
@@ -22,17 +23,22 @@
     import androidx.activity.result.ActivityResultLauncher;
     import androidx.activity.result.contract.ActivityResultContracts;
     import androidx.appcompat.app.AppCompatActivity;
+    import androidx.exifinterface.media.ExifInterface;
 
     import com.example.semsemgallery.R;
     import com.google.android.gms.maps.model.LatLng;
     import com.kunzisoft.switchdatetime.SwitchDateTimeDialogFragment;
 
+    import java.io.FileNotFoundException;
+    import java.io.IOException;
+    import java.io.InputStream;
     import java.text.DateFormat;
     import java.text.SimpleDateFormat;
     import java.util.Calendar;
     import java.util.Date;
     import java.util.GregorianCalendar;
     import java.util.Locale;
+    import java.util.Objects;
     import java.util.TimeZone;
 
 
@@ -53,11 +59,14 @@
         private ImageButton addLocationBtn, removeLocationBtn, backBtn;
         private Button saveBtn, cancelBtn;
         private long pictureId;
+        private String picturePath;
         private static final int MAP_ACTIVITY_REQUEST_CODE = 897;
         private ActivityResultLauncher<Intent> mapLauncher;
         private ActivityResultLauncher<Intent> editMetadataLauncher;
-        private double latitude = 0;
-        private double longitude = 0;
+        private Double latitude = null;
+        private Double longitude = null;
+        private String curPictureName;
+        private String locationAddress;
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +78,10 @@
             String formatIntent = nameFormatIntent.split("\\.")[1];
             String dateIntent = getIntent().getStringExtra("date");
             String timeIntent = getIntent().getStringExtra("time");
+            picturePath = getIntent().getStringExtra("picturePath");
             pictureId = getIntent().getLongExtra("pictureId", 0);
+            locationAddress = getIntent().getStringExtra("locationAddress");
+            curPictureName = nameIntent;
 
             context = getApplicationContext();
             datetimeContainerClick = (LinearLayout) findViewById(R.id.datetime_action_container);
@@ -90,9 +102,15 @@
             imageName.setText(nameIntent);
             imageFormat.setText(formatIntent);
 
-            initDateTimePicker();
+            if (!Objects.equals(locationAddress, "No location information")){
+                location.setText(locationAddress);
+                addLocationBtn.setVisibility(View.INVISIBLE);
+                removeLocationBtn.setVisibility(View.VISIBLE);
+            } else {
+                addLocationBtn.setVisibility(View.VISIBLE);
+                removeLocationBtn.setVisibility(View.INVISIBLE);
+            }
 
-            datetimeContainerClick.setOnClickListener(onDateTimeClickListener);
             saveBtn.setOnClickListener(onSaveEdit);
             cancelBtn.setOnClickListener(onCancelEdit);
             removeLocationBtn.setOnClickListener(onRemoveLocationClickListener);
@@ -119,8 +137,6 @@
                         }
                     });
 
-
-
             addLocationBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -131,65 +147,6 @@
 
 
         }
-
-
-        private void initDateTimePicker()
-        {
-            // Construct SwitchDateTimePicker
-            dateTimeFragment = (SwitchDateTimeDialogFragment) getSupportFragmentManager().findFragmentByTag(TAG_DATETIME_FRAGMENT);
-            if (dateTimeFragment == null) {
-                dateTimeFragment = SwitchDateTimeDialogFragment.newInstance(
-                        getString(com.kunzisoft.switchdatetime.R.string.label_datetime_dialog),
-                        getString(android.R.string.ok),
-                        getString(android.R.string.cancel),
-                        getString(R.string.clean),// Optional
-                        "en"
-                );
-            }
-
-            // Optionally define a timezone
-            dateTimeFragment.setTimeZone(TimeZone.getDefault());
-
-            // Init format
-            final SimpleDateFormat myDateFormat = new SimpleDateFormat("MMMM dd yyyy HH:mm", java.util.Locale.getDefault());
-            // Assign unmodifiable values
-            dateTimeFragment.set24HoursMode(true);
-            dateTimeFragment.setHighlightAMPMSelection(false);
-            dateTimeFragment.setMinimumDateTime(new GregorianCalendar(2015, Calendar.JANUARY, 1).getTime());
-            dateTimeFragment.setMaximumDateTime(new GregorianCalendar(2030, Calendar.DECEMBER, 31).getTime());
-
-            // Define new day and month format
-            try {
-                dateTimeFragment.setSimpleDateMonthAndDayFormat(new SimpleDateFormat("MMMM dd", Locale.getDefault()));
-            } catch (SwitchDateTimeDialogFragment.SimpleDateMonthAndDayFormatException e) {
-                Log.e(TAG, e.getMessage());
-            }
-
-            dateTimeFragment.setOnButtonClickListener(new SwitchDateTimeDialogFragment.OnButtonWithNeutralClickListener() {
-                @Override
-                public void onNeutralButtonClick(Date date) {
-                    // Optional if neutral button does'nt exists
-                }
-                @Override
-                public void onPositiveButtonClick(Date date) {
-                    String[] dateAndTime = splitDateTime(myDateFormat.format(date));
-                    dateContent.setText(dateAndTime[0]);
-                    timeContent.setText(dateAndTime[1]);
-                    Log.e("DateLogPoss", "POSITIVE");
-                    String formattedDate = myDateFormat.format(date);
-
-                    // Log the formatted date
-                    Log.e("DateLog", "Formatted Date: " + formattedDate);
-                }
-
-                @Override
-                public void onNegativeButtonClick(Date date) {
-
-                }
-            });
-        }
-
-
         private View.OnClickListener onRemoveLocationClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -211,10 +168,28 @@
                     // Handle saving metadata when storage access is granted
                     // Construct the intent to send data back to MetadataBottomSheet
                     Intent intent = new Intent();
-                    intent.putExtra("updatedName", imageName.getText().toString());
-                    intent.putExtra("address", location.getText().toString());
-                    intent.putExtra("latitude", latitude);
-                    intent.putExtra("longitude", longitude);
+                    String curLocation = location.getText().toString();
+
+                    if (!Objects.equals(curPictureName, imageName.getText().toString()))
+                    {
+                        String newFileName = imageName.getText().toString() + "." + imageFormat.getText().toString();
+                        intent.putExtra("updatedName", newFileName);
+                        renameFile(getContentResolver(),pictureId, newFileName);
+                    }
+                    if(latitude != null)
+                    {
+                        intent.putExtra("latitude", latitude);
+                        intent.putExtra("longitude", longitude);
+                        intent.putExtra("address", location.getText().toString());
+                        updateExifMetadata(latitude, longitude);
+
+                    }
+                    if((Objects.equals(curLocation, "No location information") && !Objects.equals(curLocation, locationAddress)))
+                    {
+                        intent.putExtra("noLocation", "No Location Information");
+                        Log.d("Map", "Update");
+                        updateExifMetadata(null, null);
+                    }
                     setResult(RESULT_OK, intent);
                     finish();
                 } else {
@@ -241,6 +216,31 @@
 
         }
 
+        private void updateExifMetadata(Double latitude, Double longitude) {
+            try {
+                    // Create an ExifInterface instance to read and modify the Exif metadata
+                ExifInterface exifInterface = new ExifInterface(picturePath);
+
+                // Remove the GPS tags if latitude and longitude are null
+                if (latitude == null || longitude == null) {
+                    exifInterface.setAttribute(ExifInterface.TAG_GPS_LATITUDE, null);
+                    exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, null);
+                    exifInterface.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, null);
+                    exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, null);
+                    exifInterface.saveAttributes();
+                } else {
+                    // Set the GPS coordinates
+                    Location location = new Location(""); // Empty provider
+                    location.setLatitude(latitude);
+                    location.setLongitude(longitude);
+                    exifInterface.setGpsInfo(location);
+                    exifInterface.saveAttributes();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         private View.OnClickListener onCancelEdit = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -258,31 +258,5 @@
 
             return new String[]{date, time};
         }
-        public String convertDatetime(String datetime)
-        {
-            DateFormat inputFormat = new SimpleDateFormat("MMMM dd, yyyy HH:mm", Locale.getDefault());
-            Date date;
-            try {
-                date = inputFormat.parse(datetime);
-            } catch (Exception e) {
-                return "Error parsing datetime";  // Return empty strings in case of parsing error
-            }
-
-            DateFormat outputFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.ENGLISH);
-            String formattedDateTime = outputFormat.format(date);
-
-            return formattedDateTime;
-
-
-        }
-        private View.OnClickListener onDateTimeClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.e("Click", "CLICK: ");
-                dateTimeFragment.startAtCalendarView();
-                dateTimeFragment.setDefaultDateTime(new GregorianCalendar(2017, Calendar.MARCH, 4, 15, 20).getTime());
-                dateTimeFragment.show(getSupportFragmentManager(), TAG_DATETIME_FRAGMENT);
-            }
-        };
 
     }

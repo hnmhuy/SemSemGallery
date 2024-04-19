@@ -75,7 +75,7 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
     private Long fileSize;
     private Date datetime;
     private LatLng point;
-    private MaterialButton addTagBtn; // add tag
+    private Button addTagBtn; // add tag
     private RecyclerView tagsRv;
     private ArrayList<Tag>[] tags;
     public MetaDataBottomSheet(Long id, String path, String fileName, Date datetime, Long fileSize)
@@ -98,13 +98,21 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     Intent data = result.getData();
                     if (data != null) {
-                        String updatedName = data.getStringExtra("updatedName");
-                        double latitude = data.getDoubleExtra("latitude", 0.0);
-                        double longitude = data.getDoubleExtra("longitude", 0.0);
-                        point = new LatLng(latitude, longitude);
-                        Log.d("Map", point.toString());
-
-                        name.setText(updatedName);
+                        if(data.hasExtra("updatedName"))
+                        {
+                            String updatedName = data.getStringExtra("updatedName");
+                            name.setText(updatedName);
+                        }
+                        if(data.hasExtra("latitude"))
+                        {
+                            double latitude = data.getDoubleExtra("latitude", 0.0);
+                            double longitude = data.getDoubleExtra("longitude", 0.0);
+                            updateMapAndAddress(latitude, longitude);
+                        }
+                        if(data.hasExtra("noLocation"))
+                        {
+                            hideLocationMetadata();
+                        }
                     }
                 }
             }
@@ -140,13 +148,21 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
         tags = new ArrayList[]{tagUtils.getTagsByPictureId(db, id.toString())};
 
         initMetaDate();
-        editBtn.setOnClickListener(view12 -> {
-            Intent intent = new Intent(requireContext(), EditMetadataActivity.class);
-            intent.putExtra("name", fileName);
-            intent.putExtra("date", date.getText());
-            intent.putExtra("time", time.getText());
-            intent.putExtra("pictureId", id);
-            editMetadataLauncher.launch(intent);
+
+        editBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(requireContext(), EditMetadataActivity.class);
+                intent.putExtra("name", fileName);
+                intent.putExtra("date", date.getText());
+                intent.putExtra("time", time.getText());
+                intent.putExtra("pictureId", id);
+                intent.putExtra("picturePath", path);
+                if (locationTextView.getText() != null) {
+                    intent.putExtra("locationAddress", locationTextView.getText());
+                }
+                editMetadataLauncher.launch(intent);
+            }
         });
 
         if(!tags[0].isEmpty()) {
@@ -193,6 +209,19 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
         {
             Log.e("ERROR IN META DATA:", e.getMessage());
         }
+    }
+
+    private void updateMapAndAddress(double latitude, double longitude) {
+        if (mapContainer.getVisibility() != View.VISIBLE) {
+            mapContainer.setVisibility(View.VISIBLE);
+        }
+
+        // Update locationTextView with the new address
+        String address = getAddressFromLatLng(new LatLng(latitude, longitude));
+        locationTextView.setText(address);
+
+        // Update map marker position
+        displayMapWithMarker(latitude, longitude);
     }
 
 
@@ -299,12 +328,35 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
     }
 
     private void handleLocationMetadata(ExifInterface exifInterface) {
-        String gpsLatitudeRational = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
-        String gpsLongitudeRational = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
-        if (gpsLatitudeRational != null && gpsLongitudeRational != null) {
-            Double gpsLatitude = convertRationalToDecimal(gpsLatitudeRational);
-            Double gpsLongitude = convertRationalToDecimal(gpsLongitudeRational);
-            showLocationMetadata(gpsLatitude, gpsLongitude);
+        String gpsLatitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
+        String gpsLongitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
+        String gpsLatitudeRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE_REF);
+        String gpsLongitudeRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF);
+        Double lat = null,  lng = null;
+
+        if (gpsLatitude != null && gpsLongitude != null && gpsLatitudeRef != null && gpsLongitudeRef != null) {
+//            Double gpsLatitude = convertRationalToDecimal(gpsLatitudeRational);
+//            Double gpsLongitude = convertRationalToDecimal(gpsLongitudeRational);
+
+            if(gpsLatitudeRef.equals("N")){
+                lat = convertToDegree(gpsLatitude);
+            }
+            else{
+                lat = 0 - convertToDegree(gpsLatitude);
+            }
+            if(gpsLongitudeRef.equals("E")){
+                lng = convertToDegree(gpsLongitude);
+            }
+            else{
+                lng = 0 - convertToDegree(gpsLongitude);
+            }
+            if(lat != null && lng != null)
+            {
+                showLocationMetadata(lat, lng);
+            }
+            else {
+                Log.e("Map", "ERROR NO LATLNG");
+            }
         } else {
             hideLocationMetadata();
         }
@@ -338,7 +390,9 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
     }
 
     private void hideLocationMetadata() {
+
         mapContainer.setVisibility(View.GONE);
+
     }
 
     private void displayMapWithMarker(Double gpsLatitude, Double gpsLongitude) {
@@ -354,7 +408,7 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
             @Override
             public void onMapReady(GoogleMap googleMap) {
                 LatLng pictureLocation = new LatLng(gpsLatitude, gpsLongitude);
-                BitmapDescriptor customMarker = createCustomMarker(requireContext(), pathToBitmap(path, 180));
+                BitmapDescriptor customMarker = createCustomMarker(requireContext(), pathToBitmap(path, 140));
                 googleMap.addMarker(new MarkerOptions().position(pictureLocation).title("Picture Location").icon(customMarker));
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pictureLocation, 15));
             }
@@ -404,38 +458,31 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
         return numerator + "/" + denominator;
     }
 
-    private double convertRationalToDecimal(String rationalString) {
-        // Split the rational string into parts based on the comma separator
-        String[] parts = rationalString.split(",");
+    private Double convertToDegree(String stringDMS){
+        Double result = null;
+        String[] DMS = stringDMS.split(",", 3);
 
-        if (parts.length != 3) {
-            // Invalid format, return 0
-            return 0.0;
-        }
+        String[] stringD = DMS[0].split("/", 2);
+        Double D0 = new Double(stringD[0]);
+        Double D1 = new Double(stringD[1]);
+        Double FloatD = D0/D1;
 
-        // Split each part into numerator and denominator based on the slash separator
-        String[] degreesParts = parts[0].split("/");
-        String[] minutesParts = parts[1].split("/");
-        String[] secondsParts = parts[2].split("/");
+        String[] stringM = DMS[1].split("/", 2);
+        Double M0 = new Double(stringM[0]);
+        Double M1 = new Double(stringM[1]);
+        Double FloatM = M0/M1;
 
-        // Parse numerator and denominator strings into integers
-        int degreesNumerator = Integer.parseInt(degreesParts[0]);
-        int degreesDenominator = Integer.parseInt(degreesParts[1]);
-        int minutesNumerator = Integer.parseInt(minutesParts[0]);
-        int minutesDenominator = Integer.parseInt(minutesParts[1]);
-        int secondsNumerator = Integer.parseInt(secondsParts[0]);
-        int secondsDenominator = Integer.parseInt(secondsParts[1]);
+        String[] stringS = DMS[2].split("/", 2);
+        Double S0 = new Double(stringS[0]);
+        Double S1 = new Double(stringS[1]);
+        Double FloatS = S0/S1;
 
-        // Calculate the decimal value of degrees, minutes, and seconds
-        double degrees = (double) degreesNumerator / degreesDenominator;
-        double minutes = (double) minutesNumerator / minutesDenominator;
-        double seconds = (double) secondsNumerator / secondsDenominator;
+        result = new Double(FloatD + (FloatM/60) + (FloatS/3600));
 
-        // Combine the decimal values of degrees, minutes, and seconds to get the final latitude value
-        double latitude = degrees + (minutes / 60) + (seconds / 3600);
+        return result;
 
-        return latitude;
-    }
+
+    };
 
     private BitmapDescriptor createCustomMarker(Context context, Bitmap bitmap) {
         return BitmapDescriptorFactory.fromBitmap(bitmap);

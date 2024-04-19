@@ -109,6 +109,13 @@ public class MapFragment extends Fragment implements
     @Override
     public boolean onMarkerClick(Marker clickedMarker) {
         if (clickedMarker.equals(marker)) {
+            // Get the current position of the clicked marker
+            LatLng currentPosition = clickedMarker.getPosition();
+            // Move the marker to a new position (if needed)
+            LatLng newPosition = new LatLng(currentPosition.latitude, currentPosition.longitude); // Example: Move the marker by 0.001 in both latitude and longitude
+            marker.setPosition(newPosition);
+            // Optionally, update the address associated with the marker
+            getAddressFromLatLng(newPosition);
             return true;
         }
         return false;
@@ -120,7 +127,7 @@ public class MapFragment extends Fragment implements
         // Reverse geocode to get the address from LatLng
         getAddressFromLatLng(point);
         if (marker == null) {
-            marker = map.addMarker(new MarkerOptions().position(point).title("Clicked Position"));
+            marker = map.addMarker(new MarkerOptions().position(point).title("Marker"));
         } else {
             marker.setPosition(point);
         }
@@ -183,5 +190,17 @@ public class MapFragment extends Fragment implements
     public LatLng getClickedLatLng()
     {
         return clickedLatLng;
+    }
+    public void setMarker(LatLng point)
+    {
+        marker.setPosition(point);
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(point) // Sets the center of the map to the clicked position
+                .zoom(17) // Sets the zoom level
+                .build();
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+        map.animateCamera(cameraUpdate, 800, null); // 1000 milliseconds = 1 second
+        updateSearchViewText(point);
+
     }
 }

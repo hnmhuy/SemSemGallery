@@ -155,7 +155,7 @@
             android:layout_centerInParent="true"
             android:layout_toEndOf="@+id/location_icon_edit"
             android:textColor="@color/text_color_black"
-            android:maxWidth="295dp"
+            android:maxWidth="285dp"
             android:textSize="14sp"
             android:textStyle="bold"
             android:id="@+id/location_TextView"
