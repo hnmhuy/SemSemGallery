@@ -1,26 +1,34 @@
 package com.example.semsemgallery.activities.album;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -29,31 +37,42 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.base.GridMode;
+import com.example.semsemgallery.activities.base.GridModeEvent;
+import com.example.semsemgallery.activities.base.GridModeListener;
 import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.main2.adapter.GalleryAdapter;
 import com.example.semsemgallery.activities.main2.viewholder.GalleryItem;
+import com.example.semsemgallery.activities.pictureview.ChooseAlbumActivity;
+import com.example.semsemgallery.activities.pictureview.fragment.AddTagBottomSheet;
 import com.example.semsemgallery.domain.Album.AlbumHandler;
+import com.example.semsemgallery.domain.Picture.GarbagePictureCollector;
 import com.example.semsemgallery.domain.Picture.PictureLoadMode;
 import com.example.semsemgallery.domain.Picture.PictureLoader;
 import com.example.semsemgallery.models.Picture;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
-public class AlbumViewActivity extends AppCompatActivity {
+public class AlbumViewActivity extends AppCompatActivity implements GridModeListener {
     private final Context context = this;
+    private String choiceHandler;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
-    private ObservableGridMode<GalleryItem> observedObj = null;
-    private TreeSet<GalleryItem> galleryItems = new TreeSet<>(Comparator.reverseOrder());
+    private ObservableGridMode<GalleryItem> observedObj = new ObservableGridMode<>(null, GridMode.NORMAL);
+    private final TreeSet<GalleryItem> galleryItems = new TreeSet<>(Comparator.reverseOrder());
     private GalleryAdapter adapter = null;
     private String albumId;
     private String albumName;
     private int albumQuantity;
-    private com.google.android.material.appbar.MaterialToolbar topBar;
+    private LinearLayout actionBar;
+    private MaterialToolbar selectingTopBar;
+    private MaterialToolbar topBar;
+    private boolean isSelectingAll = false;
     private RecyclerView recyclerView;
     private ArrayList<Uri> selectedImages;
 
@@ -104,11 +123,23 @@ public class AlbumViewActivity extends AppCompatActivity {
         @Override
         public void preExecute(String... strings) {
             super.preExecute(strings);
-
-            if (observedObj != null) {
-                observedObj.reset();
-            }
+            observedObj.reset();
             galleryItems.clear();
+        }
+    };
+
+    private final OnBackPressedCallback backHandler = new OnBackPressedCallback(true) {
+        @Override
+        public void handleOnBackPressed() {
+            Log.d("BackPressed", observedObj.getCurrentMode().toString());
+            if (observedObj.getCurrentMode() == GridMode.SELECTING) {
+                observedObj.fireSelectionChangeForAll(false);
+                observedObj.setGridMode(GridMode.NORMAL);
+                isSelectingAll = false;
+            } else {
+                // If not in selecting mode, finish the activity
+                finish();
+            }
         }
     };
 
@@ -122,7 +153,7 @@ public class AlbumViewActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
+        observedObj.addObserver(this);
         // ====== Get albumId & albumName from Intent
         albumId = getIntent().getStringExtra("albumId");
         albumName = getIntent().getStringExtra("albumName");
@@ -133,10 +164,211 @@ public class AlbumViewActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(manager);
 
         // ====== Set title of Top bar
-        topBar = (com.google.android.material.appbar.MaterialToolbar) findViewById(R.id.activity_album_view_topAppBar);
+        topBar = findViewById(R.id.activity_album_view_topAppBar);
+        selectingTopBar = findViewById(R.id.selecting_top_bar);
+        actionBar = findViewById(R.id.action_bar);
         topBar.setTitle(albumName);
-
+        getOnBackPressedDispatcher().addCallback(this, backHandler);
         selectedImages = new ArrayList<>();
+    }
+
+    private final View.OnClickListener trashPicture = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (observedObj.getNumberOfSelected() == 0) return;
+            //= Loading dialog (without cancellation)
+            MaterialAlertDialogBuilder confirmDialog = new MaterialAlertDialogBuilder(context)
+                    .setTitle("Move " + observedObj.getNumberOfSelected() + " to Trash?")
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    })
+                    .setPositiveButton("Move to Trash", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ProcessTrashPicture();
+                        }
+                    });
+            confirmDialog.show();
+        }
+    };
+
+    private AlertDialog createDialog(String titleText, boolean isCancel, View.OnClickListener cancelCallback) {
+        //=Prepare dialog
+        View dialogView = getLayoutInflater().inflate(R.layout.component_loading_dialog, null);
+        TextView title = dialogView.findViewById(R.id.component_loading_dialog_title);
+        title.setText(titleText);
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(context).setView(dialogView);
+
+        AlertDialog loadingDialog = dialogBuilder.create();
+        loadingDialog.setCanceledOnTouchOutside(false);
+
+        Button cancelButton = dialogView.findViewById(R.id.component_loading_dialog_cancelButton);
+        cancelButton.setVisibility(isCancel ? View.VISIBLE : View.INVISIBLE);
+        if (cancelCallback != null) {
+            cancelButton.setOnClickListener(cancelCallback);
+        }
+        return loadingDialog;
+    }
+
+    private void ProcessTrashPicture() {
+        AlertDialog loadingDialog = createDialog("Moving images to Trash", false, null);
+        //== Prepare data and handler
+        List<ObservableGridMode<GalleryItem>.DataItem> temp = observedObj.getSelectedDataItem();
+        Long[] deleteIds = new Long[temp.size()];
+        for (int i = 0; i < temp.size(); i++) {
+            deleteIds[i] = ((Picture) temp.get(i).data.getData()).getPictureId();
+        }
+        final boolean[] canExecute = {false};
+        boolean isStorageManager = false;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            isStorageManager = Environment.isExternalStorageManager();
+        }
+
+        if (isStorageManager) {
+            // Your app already has storage management permissions
+            // You can proceed with file operations
+            canExecute[0] = true;
+        } else {
+            // Your app does not have storage management permissions
+            // Guide the user to the system settings page to grant permission
+            Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+
+            startActivity(intent);
+        }
+
+        GarbagePictureCollector.TrashPictureHandler collector = new GarbagePictureCollector.TrashPictureHandler(this) {
+            @Override
+            public void preExecute(Long... longs) {
+                Log.i("TrashImage", "Prepare trash");
+                loadingDialog.show();
+            }
+
+            @Override
+            public void onProcessUpdate(Integer... integers) {
+                if (integers == null) return;
+                Log.i("TrashImage", "Trashed " + integers[0] + " / " + temp.size());
+                int index = observedObj.getObservedObjects().indexOf(temp.get(integers[0] - 1));
+                observedObj.getObservedObjects().remove(temp.get(integers[0] - 1));
+                adapter.notifyItemRemoved(index);
+                ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
+                assert progressBar != null;
+                progressBar.setProgress((integers[0] * 100) / temp.size());
+
+            }
+
+            @Override
+            public void postExecute(Void res) {
+                Log.i("TrashImage", "Completely trashed");
+                observedObj.setGridMode(GridMode.NORMAL);
+                isSelectingAll = false;
+                loadingDialog.dismiss();
+            }
+        };
+        if (canExecute[0]) collector.execute(deleteIds);
+        else Toast.makeText(context, "Don't have permission", Toast.LENGTH_LONG);
+    }
+
+    private void SetFunctionForActionBar() {
+        Button btnDelete = actionBar.findViewById(R.id.btnDelete);
+        Button btnShare = actionBar.findViewById(R.id.btnShare);
+        Button btnAddTag = actionBar.findViewById(R.id.btnAddTag);
+        Button btnMore = actionBar.findViewById(R.id.btnMore);
+        btnDelete.setOnClickListener(this.trashPicture);
+        btnShare.setOnClickListener(v -> {
+            if (observedObj.getNumberOfSelected() == 0) return;
+
+            //== Retrieve the data for sharing
+            List<GalleryItem> pictures = observedObj.getSelectedItems();
+            ArrayList<Uri> shareFiles = new ArrayList<>();
+            for (GalleryItem item : pictures) {
+                Object data = item.getData();
+                if (data instanceof Picture) {
+                    File shareFile = new File(((Picture) data).getPath());
+                    Uri shareUri = FileProvider.getUriForFile(
+                            context.getApplicationContext(),
+                            context.getApplicationContext().getPackageName() + ".provider",
+                            shareFile
+                    );
+                    shareFiles.add(shareUri);
+                }
+            }
+
+            //==Start the new activity
+            Intent shareIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+            shareIntent.setType("image/*");
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, shareFiles);
+            startActivity(Intent.createChooser(shareIntent, "Share images via..."));
+
+        });
+
+        btnAddTag.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                List<ObservableGridMode<GalleryItem>.DataItem> temp = observedObj.getSelectedDataItem();
+                ArrayList<Long> pictureIds = new ArrayList<>();
+                for (int i = 0; i < temp.size(); i++) {
+                    pictureIds.add((((Picture) temp.get(i).data.getData()).getPictureId()));
+                }
+
+                AddTagBottomSheet addTagBottomSheet = new AddTagBottomSheet(new ArrayList<>(), pictureIds);
+                addTagBottomSheet.setOnTagAddedListener(tags -> observedObj.setGridMode(GridMode.NORMAL));
+                addTagBottomSheet.show(getSupportFragmentManager(), addTagBottomSheet.getTag());
+            }
+        });
+
+        btnMore.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        btnMore.setOnClickListener((v) -> {
+            renderMoreMenu(v, R.menu.pictures_fragment_selecting_mode);
+        });
+    }
+
+    private void renderMoreMenu(View v, int res) {
+        PopupMenu popupMenu = new PopupMenu(context, v);
+        popupMenu.inflate(res);
+        MenuItem btnSelectAll = popupMenu.getMenu().findItem(R.id.btnSelectAll);
+        if (isSelectingAll) btnSelectAll.setTitle(getString(R.string.unselect_all));
+        else btnSelectAll.setTitle(R.string.select_all);
+        popupMenu.setOnMenuItemClickListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.btnMoveToAlbum) {
+                //#TODO
+                if (observedObj.getNumberOfSelected() < 1) {
+                    Toast.makeText(context, "No images selected", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
+                choiceHandler = "move";
+                Intent chooseAlbumIntent = new Intent(context, ChooseAlbumActivity.class);
+                activityResultLauncher.launch(chooseAlbumIntent);
+                return true;
+            } else if (id == R.id.btnCopyToAlbum) {
+                //#TODO
+                if (observedObj.getNumberOfSelected() < 1) {
+                    Toast.makeText(context, "No images selected", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
+                choiceHandler = "copy";
+                Intent chooseAlbumIntent = new Intent(context, ChooseAlbumActivity.class);
+                activityResultLauncher.launch(chooseAlbumIntent);
+                return true;
+            } else if (id == R.id.btnSelectAll) {
+                isSelectingAll = !isSelectingAll;
+                observedObj.fireSelectionChangeForAll(isSelectingAll);
+                return true;
+            } else return false;
+        });
+        popupMenu.show();
     }
 
     @Override
@@ -150,11 +382,12 @@ public class AlbumViewActivity extends AppCompatActivity {
                 return true;
             }
             else if (item.getItemId() == R.id.edit) { // === Change to selecting mode
-                Log.d("AlbumViewActivity", "Edit");
+                observedObj.setGridMode(GridMode.SELECTING);
                 return true;
             }
             else if (item.getItemId() == R.id.select_all) { // === Select all images in this Album
-                Log.d("AlbumViewActivity", "Select all");
+                observedObj.setGridMode(GridMode.SELECTING);
+                observedObj.fireSelectionChangeForAll(true);
                 return true;
             }
             else if (item.getItemId() == R.id.rename) { // === Rename this Album
@@ -315,4 +548,31 @@ public class AlbumViewActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onModeChange(GridModeEvent event) {
+        if (event.getGridMode() == GridMode.NORMAL) {
+            actionBar.setVisibility(View.GONE);
+            topBar.setVisibility(View.VISIBLE);
+            selectingTopBar.setVisibility(View.INVISIBLE);
+        } else if (event.getGridMode() == GridMode.SELECTING) {
+            actionBar.setVisibility(View.VISIBLE);
+            topBar.setVisibility(View.INVISIBLE);
+            selectingTopBar.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onSelectionChange(GridModeEvent event) {
+        long quantity = observedObj.getNumberOfSelected();
+        selectingTopBar.setTitle(quantity == 0 ? "Select items" : quantity + "selected");
+    }
+
+    @Override
+    public void onSelectingAll(GridModeEvent event) {
+        if (event.getNewSelectionForAll()) {
+            selectingTopBar.setTitle(observedObj.getDataSize() + " selected");
+        } else {
+            selectingTopBar.setTitle(String.valueOf(0) + " selected");
+        }
+    }
 }

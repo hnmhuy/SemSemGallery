@@ -88,6 +88,7 @@ class PictureViewActivity : AppCompatActivity() {
         }
     }
     private var albumId: String? = null
+    private var loadMode: String? = null
     private lateinit var fragmentActivity: PictureViewActivity
     private lateinit var topBar: MaterialToolbar
     private lateinit var actions: MaterialToolbar
@@ -180,7 +181,9 @@ class PictureViewActivity : AppCompatActivity() {
         // Load data
         viewPager = findViewById(R.id.vp_image)
         selectingPic = intent.getParcelableExtra<Picture>("selectingPic")!!
+        loadMode = intent.getStringExtra("loadMode")
         albumId = intent.getStringExtra("albumId")
+
         Log.d("PictureViewActivity", "AlbumID = " + albumId)
         pictureList.add(selectingPic)
         adapter =
@@ -206,16 +209,15 @@ class PictureViewActivity : AppCompatActivity() {
             }
         })
 
-
-
-        if (albumId == null) {
-            loader.execute(PictureLoadMode.ALL.toString())
+        if (loadMode != null) {
+            if (loadMode == PictureLoadMode.BY_ALBUM.toString() && albumId != null) {
+                loader.execute(loadMode, albumId);
+            } else {
+                loader.execute(loadMode);
+            }
         } else {
-            loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId);
+            Toast.makeText(this, "Some thing went wrong :(", Toast.LENGTH_LONG);
         }
-
-
-
         // UI handler
 
         topBar = findViewById(R.id.activity_picture_view_topAppBar)
