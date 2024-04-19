@@ -187,12 +187,9 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
     }
 
     private Task<Void> loaderAsync() {
-        Callable<Void> callable = new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                loader.execute();
-                return null; // Since the function doesn't return anything, return null
-            }
+        Callable<Void> callable = () -> {
+            loader.execute();
+            return null; // Since the function doesn't return anything, return null
         };
 
         return Tasks.call(callable);

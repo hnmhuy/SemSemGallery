@@ -58,6 +58,8 @@ import com.example.semsemgallery.domain.Picture.PictureLoadMode;
 import com.example.semsemgallery.domain.Picture.PictureLoader;
 import com.example.semsemgallery.models.Picture;
 import com.example.semsemgallery.domain.MediaRetriever;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
@@ -65,12 +67,13 @@ import com.google.firebase.auth.FirebaseAuth;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public class FavoritesFragment extends Fragment implements GridModeListener {
     private final String TAG = "FavoritesFragment";
     FirebaseAuth auth = FirebaseAuth.getInstance();
     private Context context;
-    private ObservableGridMode<Picture> data;
+    private ObservableGridMode<Picture> data = new ObservableGridMode<>(null, GridMode.NORMAL);;
     private FavoriteAdapter adapter;
     private PictureLoader loader;
     private LinearLayout actionBar;
@@ -81,14 +84,19 @@ public class FavoritesFragment extends Fragment implements GridModeListener {
     private String choiceHandler = "";
     private final ArrayList<Uri> selectedImages = new ArrayList<>();
     private final Handler mHandler = new Handler(Looper.getMainLooper());
-
+    private ProgressBar progressBar;
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         this.context = context;
-        data = new ObservableGridMode<>(null, GridMode.NORMAL);
         adapter = new FavoriteAdapter(context, data);
         loader = new PictureLoader(context) {
+            @Override
+            public void preExecute(String... strings) {
+                super.preExecute(strings);
+                data.reset();
+            }
+
             @Override
             public void onProcessUpdate(Picture... pictures) {
                 data.addData(pictures[0]);
@@ -126,6 +134,24 @@ public class FavoritesFragment extends Fragment implements GridModeListener {
         }
     };
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        loaderAsync().addOnSuccessListener(unused -> {
+            progressBar.setVisibility(View.GONE);
+        });
+    }
+
+    private Task<Void> loaderAsync() {
+        Callable<Void> callable = () -> {
+            loader.execute(PictureLoadMode.FAVORITE.toString());
+            return null; // Since the function doesn't return anything, return null
+        };
+
+        return Tasks.call(callable);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -134,10 +160,12 @@ public class FavoritesFragment extends Fragment implements GridModeListener {
         GridLayoutManager manager = new GridLayoutManager(getActivity(), 3);
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
+        progressBar = view.findViewById(R.id.progressBar);
         topBar = view.findViewById(R.id.topAppBar);
         selectingTopBar = view.findViewById(R.id.selecting_top_bar);
         actionBar = view.findViewById(R.id.action_bar);
-        loader.execute(PictureLoadMode.FAVORITE.toString());
+
+
         if (auth.getCurrentUser() == null) {
             Menu menu = topBar.getMenu();
             menu.removeItem(R.id.cloud);
