@@ -100,7 +100,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                     Toast.makeText(getActivity(), "Image capture failed", Toast.LENGTH_SHORT).show();
                 }
             });
-    private OnBackPressedCallback backHandler = new OnBackPressedCallback(true) {
+    private final OnBackPressedCallback backHandler = new OnBackPressedCallback(true) {
         @Override
         public void handleOnBackPressed() {
             Log.d("BackPressed", observableGridMode.getCurrentMode().toString());
