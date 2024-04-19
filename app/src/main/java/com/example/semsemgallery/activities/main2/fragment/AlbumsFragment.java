@@ -1,5 +1,6 @@
 package com.example.semsemgallery.activities.main2.fragment;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -118,10 +119,12 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
                 Log.d("AlbumLoader", albums[0].getAlbumId() + " - " + albums[0].getName() + " - " + albums[0].getWallPath());
             }
 
+            @SuppressLint("NotifyDataSetChanged")
             @Override
             public void postExecute(Void res) {
                 super.postExecute(res);
                 adapter.notifyDataSetChanged();
+                progressBar.setVisibility(View.GONE);
             }
 
             @Override
@@ -181,19 +184,9 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
     @Override
     public void onResume() {
         super.onResume();
-        loaderAsync().addOnSuccessListener(unused -> {
-            progressBar.setVisibility(View.GONE);
-        });
+        loader.execute();
     }
 
-    private Task<Void> loaderAsync() {
-        Callable<Void> callable = () -> {
-            loader.execute();
-            return null; // Since the function doesn't return anything, return null
-        };
-
-        return Tasks.call(callable);
-    }
 
     // ====== Show Input Dialog
     private void showInputDialog() {

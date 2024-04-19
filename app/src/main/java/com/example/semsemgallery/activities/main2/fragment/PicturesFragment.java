@@ -163,6 +163,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                     observableGridMode.addData(dataList.get(i));
                 }
                 adapter.notifyDataSetChanged();
+                progressBar.setVisibility(View.GONE);
             }
         };
 
@@ -182,19 +183,9 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
     @Override
     public void onResume() {
         super.onResume();
-        loaderAsync().addOnSuccessListener(unused -> {
-            progressBar.setVisibility(View.GONE);
-        });
+        loader.execute(PictureLoadMode.ALL.toString());
     }
 
-    private Task<Void> loaderAsync() {
-        Callable<Void> callable = () -> {
-            loader.execute(PictureLoadMode.ALL.toString());
-            return null; // Since the function doesn't return anything, return null
-        };
-
-        return Tasks.call(callable);
-    }
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -208,6 +199,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         selectingTopBar = view.findViewById(R.id.selecting_top_bar);
         progressBar = view.findViewById(R.id.progressBar);
         recyclerView.setAdapter(adapter);
+
         FloatingActionButton openCamera;
         openCamera = view.findViewById(R.id.add_fab);
 

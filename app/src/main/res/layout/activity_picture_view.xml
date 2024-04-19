@@ -8,6 +8,13 @@
     android:layout_height="match_parent"
     tools:context=".activities.pictureview.PictureViewActivity">
 
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        app:tint="@color/text_color_black"
+        android:id="@+id/progressBar"
+        android:layout_centerInParent="true"/>
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/vp_image"

@@ -106,6 +106,7 @@ public class FavoritesFragment extends Fragment implements GridModeListener {
             @Override
             public void postExecute(Boolean res) {
                 adapter.notifyDataSetChanged();
+                progressBar.setVisibility(View.GONE);
             }
         };
     }
@@ -137,18 +138,7 @@ public class FavoritesFragment extends Fragment implements GridModeListener {
     @Override
     public void onResume() {
         super.onResume();
-        loaderAsync().addOnSuccessListener(unused -> {
-            progressBar.setVisibility(View.GONE);
-        });
-    }
-
-    private Task<Void> loaderAsync() {
-        Callable<Void> callable = () -> {
-            loader.execute(PictureLoadMode.FAVORITE.toString());
-            return null; // Since the function doesn't return anything, return null
-        };
-
-        return Tasks.call(callable);
+        loader.execute(PictureLoadMode.FAVORITE.toString());
     }
 
     @Nullable
