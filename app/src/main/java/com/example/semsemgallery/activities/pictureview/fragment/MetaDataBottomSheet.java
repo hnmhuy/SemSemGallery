@@ -206,19 +206,13 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
 //            handleLocationMetadata(exifInterface);
             exifInterfaceAsync(exifInterface);
             locationAsync(exifInterface)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            // Handle success
-                            progressBar.setVisibility(View.GONE);
-                        }
+                    .addOnSuccessListener(aVoid -> {
+                        // Handle success
+                        progressBar.setVisibility(View.GONE);
                     })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(Exception e) {
-                            // Handle failure
-                            System.out.println("Failed to handle location metadata: " + e.getMessage());
-                        }
+                    .addOnFailureListener(e -> {
+                        // Handle failure
+                        System.out.println("Failed to handle location metadata: " + e.getMessage());
                     });
         }catch (Exception e)
         {

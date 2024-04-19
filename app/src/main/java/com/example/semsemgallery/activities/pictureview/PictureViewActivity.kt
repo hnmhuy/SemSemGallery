@@ -226,6 +226,7 @@ class PictureViewActivity : AppCompatActivity() {
         val infoBtn: ImageButton = findViewById(R.id.info_button)
         val shareBtn: ImageButton = findViewById(R.id.share_button)
 
+
         topBar.setOnMenuItemClickListener { menuItem -> onOptionsItemSelected(menuItem) }
 
 

@@ -62,6 +62,9 @@ import com.example.semsemgallery.domain.Picture.GarbagePictureCollector;
 import com.example.semsemgallery.domain.Picture.PictureLoadMode;
 import com.example.semsemgallery.domain.Picture.PictureLoader;
 import com.example.semsemgallery.models.Picture;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -77,6 +80,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 
 
 public class PicturesFragment extends Fragment implements FragmentCallBack, GridModeListener {
@@ -101,7 +105,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
     private String choiceHandler = "";
     private final ArrayList<Uri> selectedImages = new ArrayList<>();
     private final Handler mHandler = new Handler(Looper.getMainLooper());
-
+    private ProgressBar progressBar;
 
 
     private final ActivityResultLauncher<Intent> activityCameraResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
@@ -176,6 +180,25 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         );
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        loaderAsync().addOnSuccessListener(unused -> {
+            progressBar.setVisibility(View.GONE);
+        });
+    }
+
+    private Task<Void> loaderAsync() {
+        Callable<Void> callable = new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                loader.execute(PictureLoadMode.ALL.toString());
+                return null; // Since the function doesn't return anything, return null
+            }
+        };
+
+        return Tasks.call(callable);
+    }
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -187,6 +210,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         SetFunctionForActionBar();
         topBar = view.findViewById(R.id.topAppBar);
         selectingTopBar = view.findViewById(R.id.selecting_top_bar);
+        progressBar = view.findViewById(R.id.progressBar);
         recyclerView.setAdapter(adapter);
         FloatingActionButton openCamera;
         openCamera = view.findViewById(R.id.add_fab);
@@ -252,8 +276,6 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 } else return false;
             }
         });
-        loader.execute(PictureLoadMode.ALL.toString());
-
         return view;
     }
 

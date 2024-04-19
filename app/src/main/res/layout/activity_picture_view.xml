@@ -82,6 +82,7 @@
                 android:layout_weight="1"
                 android:id="@+id/favorite_button"
                 android:layout_width="0dp"
+                app:tint="@color/text_color_black"
                 android:layout_height="wrap_content"
                 style="?attr/materialIconButtonStyle"
                 />
@@ -90,6 +91,7 @@
                 android:contentDescription="@string/edit"
                 android:id="@+id/edit_picture_button"
                 style="?attr/materialIconButtonStyle"
+                app:tint="@color/text_color_black"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -99,6 +101,7 @@
                 android:contentDescription="@string/information"
                 android:layout_weight="1"
                 android:id="@+id/info_button"
+                app:tint="@color/text_color_black"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 style="?attr/materialIconButtonStyle"
@@ -107,6 +110,7 @@
             <ImageButton
                 android:contentDescription="@string/share"
                 android:layout_weight="1"
+                app:tint="@color/text_color_black"
                 android:id="@+id/share_button"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -118,6 +122,7 @@
                 android:layout_weight="1"
                 android:id="@+id/delete_button"
                 android:layout_width="0dp"
+                app:tint="@color/text_color_black"
                 android:layout_height="wrap_content"
                 style="?attr/materialIconButtonStyle"
                 android:src="@drawable/ic_delete"/>
