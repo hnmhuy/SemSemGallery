@@ -417,6 +417,8 @@ class PictureViewActivity : AppCompatActivity() {
                 val lockAndHomeScreensTextView =
                     bottomSheetView.findViewById<TextView>(R.id.lock_and_home_screens)
                 lockScreenTextView.setOnClickListener {
+                    // Dismiss the dialog
+                    dialog.dismiss()
                     GlobalScope.launch {
                         // Start the background task in a coroutine
                         val job = launch {
@@ -432,17 +434,19 @@ class PictureViewActivity : AppCompatActivity() {
                         // Display "Successfully" message on the main thread
                         showMessageOnMainThread("Successfully")
 
-                        // Dismiss the dialog
-                        dialog.dismiss()
                     }
                 }
 
                 homeScreenTextView.setOnClickListener {
+                    // Dismiss the dialog
+                    dialog.dismiss()
                     GlobalScope.launch {
                         // Start the background task in a coroutine
                         val job = launch {
                             handler.setAsHomeScreen(selectingPic.path)
                         }
+
+
 
                         // Display "Processing" message on the main thread
                         showMessageOnMainThread("Processing...")
@@ -452,13 +456,12 @@ class PictureViewActivity : AppCompatActivity() {
 
                         // Display "Successfully" message on the main thread
                         showMessageOnMainThread("Successfully")
-
-                        // Dismiss the dialog
-                        dialog.dismiss()
                     }
                 }
 
                 lockAndHomeScreensTextView.setOnClickListener {
+                    // Dismiss the dialog
+                    dialog.dismiss()
                     GlobalScope.launch {
                         // Start the background task in a coroutine
                         val job = launch {
@@ -473,9 +476,6 @@ class PictureViewActivity : AppCompatActivity() {
 
                         // Display "Successfully" message on the main thread
                         showMessageOnMainThread("Successfully")
-
-                        // Dismiss the dialog
-                        dialog.dismiss()
                     }
                 }
 

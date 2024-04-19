@@ -197,13 +197,15 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
             String[] dateTimeFormatted = splitDateTimeFormat(String.valueOf(datetime));
             setDateAndTime(dateTimeFormatted);
             appendId(name, fileName);
+
             processDirectoryPath(path);
-            processDeviceText(exifInterface);
             processFileSize(fileSize);
-            processImageDimensions(exifInterface);
-            processImageInfoCamera(exifInterface);
+//            processDeviceText(exifInterface);
+//            processImageDimensions(exifInterface);
+//            processImageInfoCamera(exifInterface);
 //            handleLocationMetadata(exifInterface);
-            handleLocationMetadataAsync(exifInterface)
+            exifInterfaceAsync(exifInterface);
+            locationAsync(exifInterface)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
@@ -224,16 +226,24 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
         }
     }
 
-    private Task<Void> handleLocationMetadataAsync(final ExifInterface exifInterface) {
-        Callable<Void> callable = new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                handleLocationMetadata(exifInterface);
-                return null; // Since the function doesn't return anything, return null
-            }
+    private Task<Void> locationAsync(final ExifInterface exifInterface) {
+        Callable<Void> callable = () -> {
+            handleLocationMetadata(exifInterface);
+            return null; // Since the function doesn't return anything, return null
         };
 
         return Tasks.call(callable);
+    }
+
+    private void exifInterfaceAsync(final ExifInterface exifInterface) {
+        Callable<Void> callable = () -> {
+            processDeviceText(exifInterface);
+            processImageDimensions(exifInterface);
+            processImageInfoCamera(exifInterface);
+            return null; // Since the function doesn't return anything, return null
+        };
+
+        Tasks.call(callable);
     }
     private void updateMapAndAddress(double latitude, double longitude) {
         if (mapContainer.getVisibility() != View.VISIBLE) {

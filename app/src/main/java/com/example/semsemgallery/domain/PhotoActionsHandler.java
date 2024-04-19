@@ -8,6 +8,8 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
@@ -66,13 +68,39 @@ public class PhotoActionsHandler {
         // Implement set as wallpaper functionality here
         WallpaperManager wallpaperManager = WallpaperManager.getInstance(context);
         Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+        ExifInterface exifInterface = new ExifInterface(imagePath);
+        int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+        bitmap = rotateBitmap(bitmap, orientation);
         wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK | WallpaperManager.FLAG_SYSTEM);
+    }
+
+    private Bitmap rotateBitmap(Bitmap bitmap, int orientation) {
+        Matrix matrix = new Matrix();
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                matrix.postRotate(90);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                matrix.postRotate(180);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                matrix.postRotate(270);
+                break;
+            case ExifInterface.ORIENTATION_NORMAL:
+            default:
+                // Do nothing if orientation is normal
+                break;
+        }
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 
     public void setAsLockScreen(String imagePath) throws IOException {
         // Implement set as wallpaper functionality here
         WallpaperManager wallpaperManager = WallpaperManager.getInstance(context);
         Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+        ExifInterface exifInterface = new ExifInterface(imagePath);
+        int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+        bitmap = rotateBitmap(bitmap, orientation);
         wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK);
     }
 
@@ -80,6 +108,9 @@ public class PhotoActionsHandler {
         // Implement set as wallpaper functionality here
         WallpaperManager wallpaperManager = WallpaperManager.getInstance(context);
         Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+        ExifInterface exifInterface = new ExifInterface(imagePath);
+        int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+        bitmap = rotateBitmap(bitmap, orientation);
         wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM);
     }
 
