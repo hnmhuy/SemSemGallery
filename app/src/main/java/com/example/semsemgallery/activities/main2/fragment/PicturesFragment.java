@@ -155,7 +155,6 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
             public void postExecute(Boolean res) {
                 List<Long> temp = new ArrayList<>(header);
                 for (Long item : temp) {
-
                     DateHeaderItem i = new DateHeaderItem(new Date(item));
                     galleryItems.add(new GalleryItem(i));
                 }

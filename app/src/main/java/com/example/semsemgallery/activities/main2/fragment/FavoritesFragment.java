@@ -74,7 +74,8 @@ public class FavoritesFragment extends Fragment implements GridModeListener {
     FirebaseAuth auth = FirebaseAuth.getInstance();
     private Context context;
     private ObservableGridMode<Picture> data = new ObservableGridMode<>(null, GridMode.NORMAL);;
-    private FavoriteAdapter adapter;
+    private FavoriteAdapter adapter = null;
+    private RecyclerView recyclerView;
     private PictureLoader loader;
     private LinearLayout actionBar;
     private MaterialToolbar selectingTopBar;
@@ -100,12 +101,11 @@ public class FavoritesFragment extends Fragment implements GridModeListener {
             @Override
             public void onProcessUpdate(Picture... pictures) {
                 data.addData(pictures[0]);
-                adapter.notifyItemInserted(data.getDataSize() - 1);
             }
 
             @Override
             public void postExecute(Boolean res) {
-
+                adapter.notifyDataSetChanged();
             }
         };
     }
@@ -137,7 +137,6 @@ public class FavoritesFragment extends Fragment implements GridModeListener {
     @Override
     public void onResume() {
         super.onResume();
-
         loaderAsync().addOnSuccessListener(unused -> {
             progressBar.setVisibility(View.GONE);
         });
@@ -156,7 +155,7 @@ public class FavoritesFragment extends Fragment implements GridModeListener {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_favorites, container, false);
-        RecyclerView recyclerView = view.findViewById(R.id.gallery_recycler);
+        recyclerView = view.findViewById(R.id.gallery_recycler);
         GridLayoutManager manager = new GridLayoutManager(getActivity(), 3);
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
