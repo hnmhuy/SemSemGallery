@@ -18,7 +18,7 @@
         app:navigationIcon="@drawable/ic_backward"
         app:title="Name"
         app:subtitle="0 image"
-        app:subtitleTextColor="@color/material_dynamic_neutral50"
+        app:subtitleTextColor="@color/action_bar_background"
         />
 
     <androidx.recyclerview.widget.RecyclerView

@@ -20,4 +20,5 @@
     <color name="navbar_map_background">#f5eff3</color>
     <color name="text_map">#702e55</color>
     <color name="tag_bg">#E3E1D9</color>
+    <color name="action_bar_background">#747679</color>
 </resources>
