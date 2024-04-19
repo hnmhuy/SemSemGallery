@@ -242,7 +242,7 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
             AlertDialog loadingDialog = myLoadingDialog();
             loadingDialog.show(); // Show Loading Dialog
             TextView dialogTitle = loadingDialog.findViewById(R.id.component_loading_dialog_title);
-            dialogTitle.setText("Copying items to " + newAlbumName);
+            dialogTitle.setText("Copying to " + newAlbumName);
 
             // Create a listener for completion & set progress
             AlbumHandler.OnLoadingListener loadingListener = new AlbumHandler.OnLoadingListener() {
@@ -272,7 +272,7 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
             AlertDialog loadingDialog = myLoadingDialog();
             loadingDialog.show(); // Show Loading Dialog
             TextView dialogTitle = loadingDialog.findViewById(R.id.component_loading_dialog_title);
-            dialogTitle.setText("Moving items to " + newAlbumName);
+            dialogTitle.setText("Moving to " + newAlbumName);
 
             // Create a listener for completion & set progress
             AlbumHandler.OnLoadingListener loadingListener = new AlbumHandler.OnLoadingListener() {
