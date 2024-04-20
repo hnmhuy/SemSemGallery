@@ -1,26 +1,8 @@
 package com.example.semsemgallery.activities.search;
 
-import android.content.Context;
-import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -34,21 +16,9 @@ import com.example.semsemgallery.activities.base.GridModeEvent;
 import com.example.semsemgallery.activities.base.GridModeListener;
 import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.main2.adapter.FavoriteAdapter;
-import com.example.semsemgallery.activities.main2.adapter.GalleryAdapter;
-import com.example.semsemgallery.activities.main2.viewholder.GalleryItem;
-import com.example.semsemgallery.domain.Album.AlbumHandler;
 import com.example.semsemgallery.domain.Picture.PictureLoadMode;
 import com.example.semsemgallery.domain.Picture.PictureLoader;
-import com.example.semsemgallery.domain.TagUtils;
 import com.example.semsemgallery.models.Picture;
-import com.example.semsemgallery.models.Tag;
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.TreeSet;
 
 public class SearchResultActivity extends AppCompatActivity implements GridModeListener {
     private ObservableGridMode<Picture> observedObj = new ObservableGridMode<>(null, GridMode.NORMAL);
@@ -82,7 +52,7 @@ public class SearchResultActivity extends AppCompatActivity implements GridModeL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.fragment_favorites);
+        setContentView(R.layout.fragment_search_result);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);

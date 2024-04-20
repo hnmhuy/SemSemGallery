@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    android:id="@+id/main"
+<RelativeLayout android:id="@+id/main"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <ProgressBar
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="visible"
         app:tint="@color/text_color_black"
         android:id="@+id/progressBar"
-        android:layout_centerInParent="true"/>
+        android:layout_centerInParent="true" />
+
     <include
         layout="@layout/top_bar_search_result"
         android:id="@+id/top_bar" />
 
     <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/selecting_top_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="invisible"
-        android:id="@+id/selecting_top_bar"
         app:title="@string/select_items" />
 
     <androidx.recyclerview.widget.RecyclerView

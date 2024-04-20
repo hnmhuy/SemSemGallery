@@ -136,7 +136,6 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         this.context = context;
-        adapter = new GalleryAdapter(context, observableGridMode, null);
         loader = new PictureLoader(context) {
             @Override
             public void preExecute(String... strings) {
@@ -189,6 +188,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        adapter = new GalleryAdapter(context, observableGridMode, null);
         View view = inflater.inflate(R.layout.fragment_pictures, container, false);
         recyclerView = view.findViewById(R.id.picture_recycler_view);
         StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL); // Adjust the span count as needed
@@ -471,23 +471,19 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
         popupMenu.setOnMenuItemClickListener(item -> {
             int id = item.getItemId();
             if (id == R.id.btnMoveToAlbum) {
-                //#TODO
                 if (observableGridMode.getNumberOfSelected() < 1) {
                     Toast.makeText(context, "No images selected", Toast.LENGTH_SHORT).show();
                     return false;
                 }
-
                 choiceHandler = "move";
                 Intent chooseAlbumIntent = new Intent(context, ChooseAlbumActivity.class);
                 activityResultLauncher.launch(chooseAlbumIntent);
                 return true;
             } else if (id == R.id.btnCopyToAlbum) {
-                //#TODO
                 if (observableGridMode.getNumberOfSelected() < 1) {
                     Toast.makeText(context, "No images selected", Toast.LENGTH_SHORT).show();
                     return false;
                 }
-
                 choiceHandler = "copy";
                 Intent chooseAlbumIntent = new Intent(context, ChooseAlbumActivity.class);
                 activityResultLauncher.launch(chooseAlbumIntent);
@@ -544,9 +540,11 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 for (int i = 0; i < temp.size(); i++) {
                     pictureIds.add((((Picture) temp.get(i).data.getData()).getPictureId()));
                 }
-
                 AddTagBottomSheet addTagBottomSheet = new AddTagBottomSheet(new ArrayList<>() ,pictureIds);
-                addTagBottomSheet.setOnTagAddedListener(tags -> observableGridMode.setGridMode(GridMode.NORMAL));
+                addTagBottomSheet.setOnTagAddedListener(tags -> {
+                    observableGridMode.setGridMode(GridMode.NORMAL);
+                    observableGridMode.fireSelectionChangeForAll(false);
+                });
                 addTagBottomSheet.show(requireActivity().getSupportFragmentManager(), addTagBottomSheet.getTag());
             }
         });
@@ -577,7 +575,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
     @Override
     public void onSelectionChange(GridModeEvent event) {
         long quantity = observableGridMode.getNumberOfSelected();
-        selectingTopBar.setTitle(quantity == 0 ? "Select items" : quantity + "selected");
+        selectingTopBar.setTitle(quantity == 0 ? "Select items" : quantity + " selected");
     }
 
     @Override

@@ -33,7 +33,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -47,19 +46,13 @@ import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.cloudbackup.CloudActivity;
 import com.example.semsemgallery.activities.main2.MainActivity;
 import com.example.semsemgallery.activities.main2.adapter.FavoriteAdapter;
-import com.example.semsemgallery.activities.main2.adapter.GalleryAdapter;
-import com.example.semsemgallery.activities.main2.viewholder.GalleryItem;
 import com.example.semsemgallery.activities.pictureview.ChooseAlbumActivity;
-import com.example.semsemgallery.activities.pictureview.PictureViewActivity;
 import com.example.semsemgallery.activities.search.SearchViewActivity;
 import com.example.semsemgallery.domain.Album.AlbumHandler;
 import com.example.semsemgallery.domain.Picture.GarbagePictureCollector;
 import com.example.semsemgallery.domain.Picture.PictureLoadMode;
 import com.example.semsemgallery.domain.Picture.PictureLoader;
 import com.example.semsemgallery.models.Picture;
-import com.example.semsemgallery.domain.MediaRetriever;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
@@ -67,7 +60,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 public class FavoritesFragment extends Fragment implements GridModeListener {
     private final String TAG = "FavoritesFragment";
@@ -144,7 +136,7 @@ public class FavoritesFragment extends Fragment implements GridModeListener {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_favorites, container, false);
+        View view = inflater.inflate(R.layout.fragment_favourite, container, false);
         recyclerView = view.findViewById(R.id.gallery_recycler);
         GridLayoutManager manager = new GridLayoutManager(getActivity(), 3);
         recyclerView.setLayoutManager(manager);
