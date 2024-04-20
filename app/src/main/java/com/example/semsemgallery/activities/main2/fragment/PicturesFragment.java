@@ -101,13 +101,10 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
     private GalleryAdapter adapter = null;
     private PictureLoader loader;
     private RecyclerView recyclerView;
-
     private String choiceHandler = "";
     private final ArrayList<Uri> selectedImages = new ArrayList<>();
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private ProgressBar progressBar;
-
-
     private final ActivityResultLauncher<Intent> activityCameraResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
@@ -142,6 +139,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 super.preExecute(strings);
                 observableGridMode.reset();
                 galleryItems.clear();
+                adapter.notifyDataSetChanged();
             }
 
             @Override
@@ -163,6 +161,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 }
                 adapter.notifyDataSetChanged();
                 progressBar.setVisibility(View.GONE);
+                recyclerView.setVisibility(View.VISIBLE);
             }
         };
 
@@ -182,6 +181,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
     @Override
     public void onResume() {
         super.onResume();
+        recyclerView.setVisibility(View.INVISIBLE);
         loader.execute(PictureLoadMode.ALL.toString());
     }
 

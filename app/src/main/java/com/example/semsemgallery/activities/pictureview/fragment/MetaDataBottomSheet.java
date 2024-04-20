@@ -3,6 +3,7 @@ package com.example.semsemgallery.activities.pictureview.fragment;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.database.sqlite.SQLiteDatabase;
@@ -24,6 +25,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.FragmentManager;
@@ -86,6 +88,11 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
         super.onCreate(savedInstanceState);
     }
 
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+    }
+
     private final ActivityResultLauncher<Intent> editMetadataLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -105,7 +112,6 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
                         }
                         if(data.hasExtra("noLocation"))
                         {
-
                             hideLocationMetadata();
                         }
                     }

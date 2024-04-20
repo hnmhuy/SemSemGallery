@@ -31,6 +31,8 @@ public class ObservableGridMode<DataType> {
         if (observedObjects != null) {
             observedObjects.clear();
         }
+        observers.clear();
+        observers.add(master);
     }
 
     public ObservableGridMode(@Nullable List<DataType> data, GridMode initMode) {

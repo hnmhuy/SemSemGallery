@@ -1,7 +1,9 @@
 package com.example.semsemgallery.activities.pictureview
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.ContentResolver
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Intent
 import android.net.Uri
@@ -33,6 +35,7 @@ import com.example.semsemgallery.domain.Picture.PictureLoader
 import com.example.semsemgallery.models.Picture
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -194,7 +197,6 @@ class PictureViewActivity : AppCompatActivity() {
             )
         processOCR(0)
         viewPager.adapter = adapter
-        viewPager.offsetLeftAndRight(2);
         viewPager.setCurrentItem(0, false);
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(pos: Int) {
@@ -227,10 +229,40 @@ class PictureViewActivity : AppCompatActivity() {
         val editBtn: ImageButton = findViewById(R.id.edit_picture_button)
         val infoBtn: ImageButton = findViewById(R.id.info_button)
         val shareBtn: ImageButton = findViewById(R.id.share_button)
+        val deleteBtn: ImageButton = findViewById(R.id.delete_button)
 
 
         topBar.setOnMenuItemClickListener { menuItem -> onOptionsItemSelected(menuItem) }
 
+        deleteBtn.setOnClickListener {
+            val confirmDialog: MaterialAlertDialogBuilder = MaterialAlertDialogBuilder(this)
+                .setTitle("Move this picture to Trash?")
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton(
+                    "Move to trash"
+                ) { _, _ ->
+                    val values: ContentValues = ContentValues()
+                    values.put(MediaStore.Images.Media.IS_TRASHED, 1);
+                    val imageUri: Uri = ContentUris.withAppendedId(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        selectingPic.pictureId
+                    )
+
+                    var res = this.contentResolver.update(imageUri, values, null, null)
+                    if (res > 0) {
+                        values.remove(MediaStore.Images.Media.IS_TRASHED)
+                        values.put(MediaStore.Images.Media.IS_PENDING, 0)
+                        this.contentResolver.update(imageUri, values, null, null)
+                        var index = pictureList.indexOf(selectingPic)
+                        if (index != -1 && pictureList.remove(selectingPic)) {
+                            viewPager.currentItem =
+                                if (index + 1 > pictureList.size - 1) pictureList.size - 1 else index;
+                            adapter.notifyItemRemoved(index)
+                        }
+                    }
+                };
+            confirmDialog.show()
+        }
 
         infoBtn.setOnClickListener {
             var temp = if (selectingPic.dateTaken.time != 0L) selectingPic.dateTaken else selectingPic.dateAdded
