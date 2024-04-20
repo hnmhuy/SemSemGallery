@@ -28,6 +28,10 @@ import com.example.semsemgallery.models.Picture;
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryItemViewHolder> {
     private ObservableGridMode<GalleryItem> observableGridMode;
     private String albumId;
+
+    public void setAlbumId(String newId) {
+        this.albumId = newId;
+    }
     private Context context;
 
     public GalleryAdapter(Context context, ObservableGridMode<GalleryItem> data, String albumId) {

@@ -1,5 +1,7 @@
 package com.example.semsemgallery.activities.album;
 
+import android.app.Activity;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -8,6 +10,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.MenuItem;
@@ -49,11 +52,13 @@ import com.example.semsemgallery.domain.Picture.GarbagePictureCollector;
 import com.example.semsemgallery.domain.Picture.PictureLoadMode;
 import com.example.semsemgallery.domain.Picture.PictureLoader;
 import com.example.semsemgallery.models.Picture;
+import com.example.semsemgallery.models.Tag;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -63,18 +68,100 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
     private final Context context = this;
     private String choiceHandler;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
-    private ObservableGridMode<GalleryItem> observedObj = new ObservableGridMode<>(null, GridMode.NORMAL);
+    private final ObservableGridMode<GalleryItem> observedObj = new ObservableGridMode<>(null, GridMode.NORMAL);
     private final TreeSet<GalleryItem> galleryItems = new TreeSet<>(Comparator.reverseOrder());
-    private GalleryAdapter adapter = null;
     private String albumId;
+    private final GalleryAdapter adapter = new GalleryAdapter(this, observedObj, albumId);
     private String albumName;
     private int albumQuantity;
     private LinearLayout actionBar;
     private MaterialToolbar selectingTopBar;
     private MaterialToolbar topBar;
     private boolean isSelectingAll = false;
-    private RecyclerView recyclerView;
     private ArrayList<Uri> selectedImages;
+
+    //====== Choose album activity
+    private final ActivityResultLauncher<Intent> chooseAlbumResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent intentResult = result.getData();
+                        if (intentResult != null) {
+                            String albumName = intentResult.getStringExtra("key");
+
+                            selectedImages.clear();
+
+                            for (GalleryItem pictureItem : observedObj.getSelectedItems()) {
+                                Picture data = (Picture) pictureItem.getData();
+                                Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, data.getPictureId());
+                                selectedImages.add(imageUri);
+                            }
+
+                            if (choiceHandler == "copy" & !selectedImages.isEmpty()) {
+                                AlertDialog loadingDialog = myLoadingDialog();
+                                loadingDialog.show(); // Show Loading Dialog
+                                TextView dialogTitle = loadingDialog.findViewById(R.id.component_loading_dialog_title);
+                                dialogTitle.setText("Copying to " + albumName);
+
+                                AlbumHandler.OnLoadingListener loadingListener = new AlbumHandler.OnLoadingListener() {
+                                    @Override
+                                    public void onLoadingComplete() {
+                                        mHandler.post(() -> {
+                                            loadingDialog.dismiss();
+                                            observedObj.fireSelectionChangeForAll(false);
+                                            observedObj.setGridMode(GridMode.NORMAL);
+                                            isSelectingAll = false;
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onLoadingProgressUpdate(int progress) {
+                                        ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
+                                        mHandler.post(() -> {
+                                            progressBar.setProgress(progress);
+                                        });
+                                    }
+                                };
+
+                                AlbumHandler.copyImagesToAlbumHandler(context, selectedImages, albumName, loadingListener);
+                            } else if (choiceHandler == "move") {
+                                AlertDialog loadingDialog = myLoadingDialog();
+                                loadingDialog.show(); // Show Loading Dialog
+                                TextView dialogTitle = loadingDialog.findViewById(R.id.component_loading_dialog_title);
+                                dialogTitle.setText("Moving to " + albumName);
+
+                                AlbumHandler.OnLoadingListener loadingListener = new AlbumHandler.OnLoadingListener() {
+                                    @Override
+                                    public void onLoadingComplete() {
+                                        mHandler.post(() -> {
+                                            loadingDialog.dismiss();
+                                            observedObj.fireSelectionChangeForAll(false);
+                                            observedObj.setGridMode(GridMode.NORMAL);
+                                            loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId);
+                                            isSelectingAll = false;
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onLoadingProgressUpdate(int progress) {
+                                        ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
+                                        mHandler.post(() -> {
+                                            progressBar.setProgress(progress);
+                                        });
+                                    }
+                                };
+
+                                AlbumHandler.moveImagesToAlbumHandler(context, selectedImages, albumName, loadingListener);
+                            }
+
+                        }
+                    }
+                }
+            }
+    );
+
 
     // ====== Activity Result Launcher for Photo Picker
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
@@ -112,10 +199,11 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
         @Override
         public void postExecute(Boolean res) {
             List<GalleryItem> pictures = new ArrayList<>(galleryItems);
-            observedObj = new ObservableGridMode<>(pictures, GridMode.NORMAL);
-            adapter = new GalleryAdapter(context, observedObj, albumId);
-            recyclerView.setAdapter(adapter);
-
+//            observedObj = new ObservableGridMode<>(pictures, GridMode.NORMAL);
+            for (GalleryItem g : pictures) {
+                observedObj.addData(g);
+            }
+            adapter.notifyDataSetChanged();
             albumQuantity = observedObj.getDataSize();
             topBar.setSubtitle(String.valueOf(albumQuantity) + (albumQuantity == 0 ? " image" : " images"));
         }
@@ -123,6 +211,7 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
         @Override
         public void preExecute(String... strings) {
             super.preExecute(strings);
+            adapter.setAlbumId(strings[1]);
             observedObj.reset();
             galleryItems.clear();
         }
@@ -154,21 +243,23 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
             return insets;
         });
         observedObj.addObserver(this);
+        observedObj.setMaster(this);
         // ====== Get albumId & albumName from Intent
         albumId = getIntent().getStringExtra("albumId");
         albumName = getIntent().getStringExtra("albumName");
 
         // Get UI component and set up
-        recyclerView = findViewById(R.id.activity_album_view_recycler);
+        RecyclerView recyclerView = findViewById(R.id.activity_album_view_recycler);
         GridLayoutManager manager = new GridLayoutManager(this, 3);
         recyclerView.setLayoutManager(manager);
-
+        recyclerView.setAdapter(adapter);
         // ====== Set title of Top bar
         topBar = findViewById(R.id.activity_album_view_topAppBar);
         selectingTopBar = findViewById(R.id.selecting_top_bar);
         actionBar = findViewById(R.id.action_bar);
         topBar.setTitle(albumName);
         getOnBackPressedDispatcher().addCallback(this, backHandler);
+        SetFunctionForActionBar();
         selectedImages = new ArrayList<>();
     }
 
@@ -341,7 +432,6 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
         popupMenu.setOnMenuItemClickListener(item -> {
             int id = item.getItemId();
             if (id == R.id.btnMoveToAlbum) {
-                //#TODO
                 if (observedObj.getNumberOfSelected() < 1) {
                     Toast.makeText(context, "No images selected", Toast.LENGTH_SHORT).show();
                     return false;
@@ -349,10 +439,9 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
 
                 choiceHandler = "move";
                 Intent chooseAlbumIntent = new Intent(context, ChooseAlbumActivity.class);
-                activityResultLauncher.launch(chooseAlbumIntent);
+                chooseAlbumResultLauncher.launch(chooseAlbumIntent);
                 return true;
             } else if (id == R.id.btnCopyToAlbum) {
-                //#TODO
                 if (observedObj.getNumberOfSelected() < 1) {
                     Toast.makeText(context, "No images selected", Toast.LENGTH_SHORT).show();
                     return false;
@@ -360,7 +449,7 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
 
                 choiceHandler = "copy";
                 Intent chooseAlbumIntent = new Intent(context, ChooseAlbumActivity.class);
-                activityResultLauncher.launch(chooseAlbumIntent);
+                chooseAlbumResultLauncher.launch(chooseAlbumIntent);
                 return true;
             } else if (id == R.id.btnSelectAll) {
                 isSelectingAll = !isSelectingAll;
@@ -550,6 +639,7 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
 
     @Override
     public void onModeChange(GridModeEvent event) {
+        Log.e("AlbumViewActivity", "ModeChange");
         if (event.getGridMode() == GridMode.NORMAL) {
             actionBar.setVisibility(View.GONE);
             topBar.setVisibility(View.VISIBLE);

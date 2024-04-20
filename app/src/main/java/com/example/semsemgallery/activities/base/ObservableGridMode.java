@@ -28,7 +28,7 @@ public class ObservableGridMode<DataType> {
     private GridMode currentMode;
 
     public void reset() {
-        if(observedObjects != null){
+        if (observedObjects != null) {
             observedObjects.clear();
         }
     }

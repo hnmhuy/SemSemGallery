@@ -1,5 +1,6 @@
 package com.example.semsemgallery.activities.main2.fragment;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -50,11 +51,14 @@ import com.example.semsemgallery.domain.Picture.PictureLoadMode;
 import com.example.semsemgallery.domain.Picture.PictureLoader;
 import com.example.semsemgallery.models.Album;
 import com.example.semsemgallery.models.Picture;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public class AlbumsFragment extends Fragment implements GridModeListener {
     private MainActivity mainActivity;
@@ -70,6 +74,7 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
     private MaterialToolbar selectingTopBar;
     private LinearLayout bottomAction;
     private Context context;
+    private ProgressBar progressBar;
 
     // ====== Activity Result Launcher for Photo Picker
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
@@ -114,10 +119,12 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
                 Log.d("AlbumLoader", albums[0].getAlbumId() + " - " + albums[0].getName() + " - " + albums[0].getWallPath());
             }
 
+            @SuppressLint("NotifyDataSetChanged")
             @Override
             public void postExecute(Void res) {
                 super.postExecute(res);
                 adapter.notifyDataSetChanged();
+                progressBar.setVisibility(View.GONE);
             }
 
             @Override
@@ -158,14 +165,12 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
         Log.i("AlbumFragment", "On create view");
 
         // ====== Render View
-        AppCompatActivity appCompatActivity = (AppCompatActivity) getActivity();
-        List<Album> albumsRetriever = new MediaRetriever(appCompatActivity).getAlbumList();
         View view = inflater.inflate(R.layout.fragment_albums, container, false);
         RecyclerView recyclerView = view.findViewById(R.id.album_recycler);
         GridLayoutManager manager = new GridLayoutManager(getActivity(), 3);
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
-
+        progressBar = view.findViewById(R.id.progressBar);
         // ====== Get TopBar
         topBar = view.findViewById(R.id.fragment_albums_topAppBar);
         selectingTopBar = view.findViewById(R.id.fragment_albums_topAppBarSelecting);
@@ -179,9 +184,9 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
     @Override
     public void onResume() {
         super.onResume();
-        Log.i("AlbumFragment", "On resume");
         loader.execute();
     }
+
 
     // ====== Show Input Dialog
     private void showInputDialog() {
