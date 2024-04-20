@@ -487,9 +487,10 @@ class PictureViewActivity : AppCompatActivity() {
 
             R.id.print -> {
                 // Handle print action
-                handler.print()
+
                 return true
             }
+
 
             else -> return super.onOptionsItemSelected(item)
         }

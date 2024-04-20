@@ -1,13 +1,17 @@
 package com.example.semsemgallery.domain.Picture;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.provider.MediaStore;
 import android.util.Log;
 
+import com.example.semsemgallery.domain.TagUtils;
 import com.example.semsemgallery.domain.TaskBase;
 import com.example.semsemgallery.models.Picture;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Objects;
 
@@ -65,6 +69,8 @@ public abstract class PictureLoader extends TaskBase<String, Picture, Boolean> {
             LoadByAlbum(strings[1]);
         } else if (Objects.equals(mode, PictureLoadMode.FAVORITE.toString())) {
             LoadFavorite();
+        } else if(Objects.equals(mode, PictureLoadMode.ID.toString())){
+            LoadByID(strings[1]);
         }
         return false;
     }
@@ -125,5 +131,36 @@ public abstract class PictureLoader extends TaskBase<String, Picture, Boolean> {
         CoreLoader(cursor);
     }
 
+    protected void LoadByID(String tagName) {
+        ArrayList<String> pictureIDs = new ArrayList<>();
+        TagUtils tagUtils = new TagUtils(context);
+        SQLiteDatabase db = tagUtils.myGetDatabase(context);
+        pictureIDs = tagUtils.getPictureIdsByTagName(db, tagName);
+        if (pictureIDs == null || pictureIDs.isEmpty()) {
+            return; // Return if the list is null or empty
+        }
 
+        StringBuilder selectionBuilder = new StringBuilder();
+        String[] selectionArgs = new String[pictureIDs.size()];
+
+        // Construct the selection string with "?" placeholders for each ID
+        for (int i = 0; i < pictureIDs.size(); i++) {
+            selectionBuilder.append(MediaStore.Images.Media._ID).append(" = ?");
+            selectionArgs[i] = String.valueOf(pictureIDs.get(i));
+
+            if (i < pictureIDs.size() - 1) {
+                selectionBuilder.append(" OR ");
+            }
+        }
+
+        Cursor cursor = context.getContentResolver().query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                PROJECTION,
+                selectionBuilder.toString(),
+                selectionArgs,
+                ORDER_DEFAULT
+        );
+
+        CoreLoader(cursor);
+    }
 }

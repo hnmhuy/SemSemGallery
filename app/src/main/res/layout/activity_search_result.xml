@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    android:id="@+id/main"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <include
-        layout="@layout/top_bar_search_result"
-        android:id="@+id/top_bar" />
-
+    <!-- Your content here -->
     <com.google.android.material.appbar.MaterialToolbar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,16 +12,19 @@
         android:id="@+id/selecting_top_bar"
         app:title="@string/select_items" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/gallery_recycler"
-        android:layout_below="@+id/top_bar"
+    <RelativeLayout
         android:layout_above="@+id/action_bar"
+        android:id="@+id/contentGroup"
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:scrollbars="vertical"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/picture_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </RelativeLayout>
+
 
     <LinearLayout
         android:id="@id/action_bar"
@@ -37,7 +34,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_weight="4">
-
         <Button
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -47,7 +43,6 @@
             android:text="@string/share"
             android:id="@+id/btnShare"
             android:drawableTop="@drawable/ic_share" />
-
         <Button
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -57,7 +52,6 @@
             android:id="@+id/btnAddTag"
             android:text="@string/add_tag"
             android:drawableTop="@drawable/ic_hash_tag" />
-
         <Button
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -67,7 +61,6 @@
             android:id="@+id/btnDelete"
             android:text="@string/delete"
             android:drawableTop="@drawable/ic_delete" />
-
         <Button
             android:layout_width="0dp"
             android:id="@+id/btnMore"
@@ -78,5 +71,4 @@
             android:textColor="@color/text_color_black"
             android:drawableTop="@drawable/ic_menu" />
     </LinearLayout>
-
 </RelativeLayout>

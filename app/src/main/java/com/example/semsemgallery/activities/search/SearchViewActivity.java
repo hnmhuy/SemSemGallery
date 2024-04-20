@@ -1,6 +1,9 @@
 package com.example.semsemgallery.activities.search;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -22,40 +25,38 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.semsemgallery.activities.people.PeopleAdapter;
-import com.example.semsemgallery.activities.people.SeeAllPeopleActivity;
+import com.example.semsemgallery.activities.pictureview.TagsAdapter;
 import com.example.semsemgallery.domain.TagUtils;
 import com.example.semsemgallery.models.People;
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.models.Tag;
+import com.google.android.flexbox.FlexDirection;
+import com.google.android.flexbox.FlexWrap;
+import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.material.appbar.MaterialToolbar;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
-public class SearchViewActivity extends AppCompatActivity {
+public class SearchViewActivity extends AppCompatActivity implements TagsAdapter.TagClickListener, SearchHistoryAdapter.SearchedTagClickListener{
     FragmentTransaction ft;
     ListView listView;
-    String[] name = {"Nguyen", "Styx", "Drink"};
-    String[] tagName;
+    private ArrayList<String> tagName = new ArrayList<>();
+    private ArrayList<Tag> searchedKeyword = new ArrayList<>();
     Tag searchResult;
     ArrayAdapter<String> arrayAdapter;
     SQLiteDatabase db;
+    private RecyclerView tagsRv;
+    private RecyclerView search;
     private ArrayList<Tag> tagData = new ArrayList<>();
-    private RecyclerView recyclerView;
-    private People mitem;
-    private ArrayList<People> listitem;
-    private PeopleAdapter mitemAdapter;
     private LinearLayout linearLayout;
-    private void loadTag(){
-
-    }
-    private void data(){
-        listitem.add(new People(R.drawable.icon_people));
-        listitem.add(new People(R.drawable.icon_people));
-        listitem.add(new People(R.drawable.icon_people));
-        listitem.add(new People(R.drawable.icon_people));
-    }
+    TagUtils tagSQL;
     MaterialToolbar toolbar;
+
+    SharedPreferences sharedPreferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,31 +65,39 @@ public class SearchViewActivity extends AppCompatActivity {
         LinearLayout beforeSearch = findViewById(R.id.beforeSearch);
         LinearLayout afterSearch = findViewById(R.id.afterSearch);
         LinearLayout duringSearch = findViewById(R.id.duringSearch);
+        sharedPreferences = getSharedPreferences("SearchHistory", MODE_PRIVATE);
+
+        tagsRv = findViewById(R.id.tags_rv);
         toolbar = findViewById(R.id.topAppBarNormal);
-        TagUtils studentSQL = new TagUtils(this);
-        db = studentSQL.myGetDatabase(this);
-//        studentSQL.myCreate(db);
-        tagData = studentSQL.getAllTags(db);
+        tagSQL = new TagUtils(this);
+        db = tagSQL.myGetDatabase(this);
+
+        tagData = tagSQL.getAllTags(db);
+
+        Set<String> searchHistory = sharedPreferences.getStringSet("searchHistory", new HashSet<>());
+
+        // Convert set to list and display
+        List<String> searchHistoryList = new ArrayList<>(searchHistory);
+        for (String search: searchHistoryList
+        ) {
+            searchedKeyword.add(tagSQL.searchTag(db, search));
+        }
+
+        if(!tagData.isEmpty()) {
+            TagsAdapter adapter = new TagsAdapter(this, tagData);
+            tagsRv.setVisibility(View.VISIBLE);
+            FlexboxLayoutManager flexboxLayout = new FlexboxLayoutManager(this);
+            flexboxLayout.setFlexDirection(FlexDirection.ROW);
+            flexboxLayout.setFlexWrap(FlexWrap.WRAP);
+            tagsRv.setLayoutManager(flexboxLayout);
+            adapter.setOnItemListener(this);
+            tagsRv.setAdapter(adapter);
+            for(int i = 0; i < tagData.size(); i++){
+                tagName.add(tagData.get(i).getName());
+            }
+        }
 
         listView = findViewById(R.id.searchResult);
-//        if(tagData.size() == 0){
-//            studentSQL.insertTag(db, "sea");
-//            studentSQL.insertTag(db, "dance");
-//            studentSQL.insertTag(db, "food");
-//            name = new String[tagData.size()];
-//            for(int i = 0; i < tagData.size(); i++){
-//                name[i] = tagData.get(i).getName();
-//            }
-//        }
-        if (tagData.size() >= 1){
-            name = new String[tagData.size()];
-            for(int i = 0; i < tagData.size(); i++){
-                name[i] = tagData.get(i).getName();
-            }
-            tagName = name;
-        } else {
-            tagName = name;
-        }
 
         arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,tagName);
         listView.setAdapter(arrayAdapter);
@@ -96,12 +105,30 @@ public class SearchViewActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String selectedItem = (String) parent.getItemAtPosition(position);
-                searchResult = studentSQL.searchTag(db, selectedItem);
+                searchResult = tagSQL.searchTag(db, selectedItem);
                 if(searchResult != null){
-                    Toast.makeText(SearchViewActivity.this, searchResult.getName(), Toast.LENGTH_SHORT).show();
+                    searchedKeyword.add(searchResult);
+                    saveSearchQuery(selectedItem);
+                    Intent intent = new Intent(SearchViewActivity.this, SearchResultActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("tagName", searchResult.getName());
+                    intent.putExtras(bundle);
+                    startActivity(intent);
                 }
             }
         });
+
+
+        search = findViewById(R.id.search_history);
+
+        SearchHistoryAdapter newAdapter = new SearchHistoryAdapter(this, searchedKeyword);
+        FlexboxLayoutManager newFlexboxLayout = new FlexboxLayoutManager(this);
+        newFlexboxLayout.setFlexDirection(FlexDirection.ROW);
+        newFlexboxLayout.setFlexWrap(FlexWrap.WRAP);
+        search.setLayoutManager(newFlexboxLayout);
+        newAdapter.setOnItemListener(this);
+        search.setAdapter(newAdapter);
+
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -157,23 +184,28 @@ public class SearchViewActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+    private void saveSearchQuery(String query) {
+        Set<String> searchHistory;
 
-        linearLayout = (LinearLayout) findViewById(R.id.linearChoosePeople);
-        linearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(SearchViewActivity.this, SeeAllPeopleActivity.class);
-                startActivity(intent);
-            }
-        });
-        recyclerView =(RecyclerView) findViewById(R.id.shortListPeople);
-        recyclerView.setHasFixedSize(true);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(SearchViewActivity.this, 4);
-        recyclerView.setLayoutManager(gridLayoutManager);
-        listitem = new ArrayList<>();
-        data();
-        mitemAdapter = new PeopleAdapter(listitem, SearchViewActivity.this);
-        recyclerView.setAdapter(mitemAdapter);
+        // Retrieve existing search history
+        searchHistory = sharedPreferences.getStringSet("searchHistory", new HashSet<>());
+
+        // Convert set to list and add new query
+        LinkedList<String> searchHistoryList = new LinkedList<>(searchHistory);
+        searchHistoryList.addFirst(query);
+
+        // Remove oldest query if more than 10
+        while (searchHistoryList.size() > 10) {
+            searchHistoryList.removeLast();
+        }
+
+        // Save updated search history to SharedPreferences
+        searchHistory.clear();
+        searchHistory.addAll(searchHistoryList);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putStringSet("searchHistory", searchHistory);
+        editor.apply();
     }
 
     @Override
@@ -186,5 +218,34 @@ public class SearchViewActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         toolbar.setNavigationOnClickListener(v -> finish());
+    }
+
+    @Override
+    public void onTagClick(View view, int position) {
+
+        Intent intent = new Intent(SearchViewActivity.this, SearchResultActivity.class);
+
+        Tag tag = tagData.get(position);
+        Bundle bundle = new Bundle();
+
+        bundle.putString("tagName", tag.getName());
+        bundle.putInt("tagId", tag.getTagId());
+
+        intent.putExtras(bundle);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onSearchedTagClick(View view, int position) {
+        Intent intent = new Intent(SearchViewActivity.this, SearchResultActivity.class);
+
+        Tag tag = searchedKeyword.get(position);
+        Bundle bundle = new Bundle();
+
+        bundle.putString("tagName", tag.getName());
+        bundle.putInt("tagId", tag.getTagId());
+
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 }

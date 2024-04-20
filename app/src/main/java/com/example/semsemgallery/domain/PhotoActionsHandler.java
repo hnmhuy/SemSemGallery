@@ -6,6 +6,7 @@ import android.app.WallpaperManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -83,9 +84,9 @@ public class PhotoActionsHandler {
         wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM);
     }
 
-    public void print() {
-        // Implement print functionality here
-        showToast("Printing");
+    public void print(String imagePath) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(imagePath));
+        context.startActivity(intent);
     }
 
     private void showToast(String message) {
