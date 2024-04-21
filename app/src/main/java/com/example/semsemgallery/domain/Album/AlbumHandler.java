@@ -24,6 +24,7 @@ import java.util.ArrayList;
 
 public class AlbumHandler {
     private static boolean isHandling = false;
+    public static ArrayList<Uri> duplicatedImages = new ArrayList<>();
 
     public static void stopHandling() {
         isHandling = false;
@@ -98,6 +99,9 @@ public class AlbumHandler {
         Handler handler = new Handler(Looper.getMainLooper());
         new Thread(() -> {
             int totalImages = imageUris.size();
+            if (duplicatedImages.size() != 0) {
+                duplicatedImages.clear();
+            }
             isHandling = true;
 
             // Get DCIM Folder in device & Album with name as albumName
@@ -117,7 +121,10 @@ public class AlbumHandler {
                 try {
                     String fileName = getFileName(context, imageUri);
                     File destFile = new File(albumDirectory, fileName);
-                    if (destFile.exists()) { continue; }
+                    if (destFile.exists()) {
+                        duplicatedImages.add(imageUri);
+                        continue;
+                    }
 
                     InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
                     if (inputStream != null) {
@@ -282,35 +289,6 @@ public class AlbumHandler {
         return filePath;
     }
 
-    // ====== Delete Album (Remembers to check if the album exists before deleting)
-    public static void deleteAlbumHandler(Context context, String albumName, OnLoadingListener listener) {
-        new Thread(() -> {
-            isHandling = true;
-
-            File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-            File albumDirectory = new File(dcimDirectory, albumName);
-
-            if (albumDirectory.exists()) {
-                File[] files = albumDirectory.listFiles();
-                int totalFiles = files != null ? files.length : 0;
-                int deletedFiles = 0;
-
-                if (files != null) {
-                    for (File file : files) {
-                        if (!isHandling) break;
-                        file.delete();
-                        deletedFiles++;
-
-                        int progress = (int) (((float) deletedFiles / totalFiles) * 100);
-                        listener.onLoadingProgressUpdate(progress);
-                    }
-                }
-                albumDirectory.delete();
-            }
-
-            listener.onLoadingComplete();
-        }).start();
-    }
 
     // ====== Rename album (Remembers to check if the album exists before renaming)
     public static void renameAlbum(Context context, String oldAlbumName, String newAlbumName) {
@@ -327,7 +305,7 @@ public class AlbumHandler {
 
 
     // ====== Get File Name from Uri
-    private static String getFileName(Context context, Uri uri) {
+    public static String getFileName(Context context, Uri uri) {
         String fileName = null;
         String scheme = uri.getScheme();
         if (scheme != null && scheme.equals("content")) {
@@ -380,4 +358,36 @@ public class AlbumHandler {
         );
     }
 
+
+//    // ====== Delete Album (Remembers to check if the album exists before deleting)
+//    public static void deleteAlbumHandler(Context context, String albumName, OnLoadingListener listener) {
+//        new Thread(() -> {
+//            isHandling = true;
+//
+//            File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+//            File albumDirectory = new File(dcimDirectory, albumName);
+//
+//            if (albumDirectory.exists()) {
+//                File[] files = albumDirectory.listFiles();
+//                int totalFiles = files != null ? files.length : 0;
+//                int deletedFiles = 0;
+//
+//                if (files != null) {
+//                    for (File file : files) {
+//                        if (!isHandling) break;
+//                        file.delete();
+//                        deletedFiles++;
+//
+//                        int progress = (int) (((float) deletedFiles / totalFiles) * 100);
+//                        listener.onLoadingProgressUpdate(progress);
+//                    }
+//                }
+//                albumDirectory.delete();
+//            }
+//
+//            listener.onLoadingComplete();
+//        }).start();
+//    }
+
 }
+

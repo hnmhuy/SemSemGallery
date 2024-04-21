@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -110,7 +111,6 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        Log.i("AlbumFragment", "On attach");
         observedObj.setMaster(this);
         observedObj.addObserver(this);
         adapter = new AlbumRecyclerAdapter(context, observedObj);
@@ -143,7 +143,6 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
     private OnBackPressedCallback backHandler = new OnBackPressedCallback(true) {
         @Override
         public void handleOnBackPressed() {
-            Log.d("BackPressed", observedObj.getCurrentMode().toString());
             if (observedObj.getCurrentMode() == GridMode.SELECTING) {
                 observedObj.fireSelectionChangeForAll(false);
                 observedObj.setGridMode(GridMode.NORMAL);
@@ -166,7 +165,6 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Log.i("AlbumFragment", "On create view");
 
         // ====== Render View
         View view = inflater.inflate(R.layout.fragment_albums, container, false);
@@ -261,12 +259,19 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
             AlbumHandler.OnLoadingListener loadingListener = new AlbumHandler.OnLoadingListener() {
                 @Override
                 public void onLoadingComplete() {
+                    Log.d("AlbumsFM", "Finish Copy");
                     loadingDialog.dismiss();
                     loader.execute();
+                    mHandler.post(() -> {
+                        if (AlbumHandler.duplicatedImages.size() != 0) {
+                            showExceptionHandlerDialog();
+                        }
+                    });
                 }
 
                 @Override
                 public void onLoadingProgressUpdate(int progress) {
+                    Log.d("AlbumsFM", "Update Copy progres");
                     ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
                     mHandler.post(() -> {
                         progressBar.setProgress(progress);
@@ -274,9 +279,9 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
                 }
             };
 
+            Log.d("AlbumsFM", "Begin Copy");
             AlbumHandler.copyImagesToAlbumHandler(context, selectedImages, newAlbumName, loadingListener);
         });
-
 
         // ====== Listener for MoveButton in AlbumHandlerDialog clicked
         moveBtn.setOnClickListener(v -> {
@@ -306,6 +311,43 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
 
             AlbumHandler.moveImagesToAlbumHandler(context, selectedImages, newAlbumName, loadingListener);
         });
+    }
+
+    private void showExceptionHandlerDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.component_exception_handler_dialog, null);
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(context).setView(dialogView);
+        AlertDialog dialog = dialogBuilder.create();
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+
+        TextView description = dialogView.findViewById(R.id.component_exception_handler_dialog_description);
+        CheckBox applyCheckbox = dialogView.findViewById(R.id.component_exception_handler_dialog_checkbox);
+        TextView skipBtn = dialogView.findViewById(R.id.component_exception_handler_dialog_skip);
+        TextView replaceBtn = dialogView.findViewById(R.id.component_exception_handler_dialog_replace);
+
+        applyCheckbox.setOnClickListener(v -> {
+            if (applyCheckbox.isChecked()) {
+                Log.d("AlbumsFM", "Checked");
+            }
+            else {
+                Log.d("AlbumsFM", "UnChecked");
+            }
+        });
+
+        // ====== Listener for CancelButton in Delete Confirm Dialog clicked
+        skipBtn.setOnClickListener(v -> {
+            // Log.d("AlbumsFM", "Skip");
+            for (Uri imageUri : AlbumHandler.duplicatedImages) {
+               Log.d("AlbumsFM", "Exist file : " + AlbumHandler.getFileName(context, imageUri));
+            }
+        });
+
+        // ====== Listener for DeleteButton in Delete Confirm Dialog clicked
+        replaceBtn.setOnClickListener(v -> {
+            Log.d("AlbumsFM", "Replace");
+        });
+
+
     }
 
     // ==== Just only able to init Dialog in Fragment/Activity
@@ -419,12 +461,15 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
             loadingDialog.show(); // Show Loading Dialog
             TextView dialogTitle = loadingDialog.findViewById(R.id.component_loading_dialog_title);
             dialogTitle.setText("Retrieving data");
+
             final ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
             final ContentResolver resolver = context.getContentResolver();
             ContentValues values = new ContentValues();
             values.put(MediaStore.Images.Media.IS_TRASHED, 1);
+
             List<Picture> deleteData = new ArrayList<>();
             List<Album> albumList = observedObj.getSelectedItems();
+
             PictureLoader pictureLoader = new PictureLoader(context) {
                 @Override
                 public void onProcessUpdate(Picture... pictures) {
