@@ -48,6 +48,8 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -65,11 +67,13 @@ import java.util.concurrent.Callable;
 public class MetaDataBottomSheet extends BottomSheetDialogFragment implements TagsAdapter.TagClickListener{
     private TextView date, time, name, filePath, device, size, height, width, megaPixels, iso, focalLength, ev, fNumber, exTime, locationTextView;
     private LinearLayout row2, mapContainer;
-    private final String path;
-    private final String fileName;
+    private String path;
+    private String fileName;
     private final Long id;
     private final Long fileSize;
     private final Date datetime;
+    private String updatedPath = null;
+    private String updatedName = null;
     private ProgressBar progressBar;
     private ArrayList<Tag>[] tags;
     private onBottomSheetDismissInterface listner = null;
@@ -112,14 +116,17 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
                     if (data != null) {
                         if(data.hasExtra("updatedName"))
                         {
-                            String updatedName = data.getStringExtra("updatedName");
+                            updatedName = data.getStringExtra("updatedName");
+                            updatedPath = data.getStringExtra("updatedPath");
                             isUpdateFileName = true;
                             name.setText(updatedName);
+
                         }
                         if(data.hasExtra("latitude"))
                         {
                             double latitude = data.getDoubleExtra("latitude", 0.0);
                             double longitude = data.getDoubleExtra("longitude", 0.0);
+                            Log.d("Test map sheet ", latitude + " - " + longitude);
                             updateMapAndAddress(latitude, longitude);
                         }
                         if(data.hasExtra("noLocation"))
@@ -169,6 +176,11 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(requireContext(), EditMetadataActivity.class);
+                if (updatedName != null)
+                {
+                    fileName = updatedName;
+                    path = updatedPath;
+                }
                 intent.putExtra("name", fileName);
                 intent.putExtra("date", date.getText());
                 intent.putExtra("time", time.getText());
@@ -454,12 +466,15 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap googleMap) {
+                googleMap.clear();
                 LatLng pictureLocation = new LatLng(gpsLatitude, gpsLongitude);
+                if(updatedPath != null)
+                    path = updatedPath;
                 Bitmap imageBitmap = pathToBitmap(path, 140);
-                if (imageBitmap !=null) {
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pictureLocation, 15));
+                if (imageBitmap != null) {
                     BitmapDescriptor customMarker = createCustomMarker(requireContext(), pathToBitmap(path, 140));
                     googleMap.addMarker(new MarkerOptions().position(pictureLocation).title("Picture Location").icon(customMarker));
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pictureLocation, 15));
                 } else {
                     googleMap.addMarker(new MarkerOptions().position(pictureLocation).title("Picture Location"));
                 }

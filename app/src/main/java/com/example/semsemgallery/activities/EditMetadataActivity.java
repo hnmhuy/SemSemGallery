@@ -31,6 +31,8 @@
     import java.io.IOException;
     import java.util.Objects;
 
+    import javax.annotation.Nullable;
+
 
     public class EditMetadataActivity extends AppCompatActivity {
         // save InstanceState
@@ -88,6 +90,7 @@
             dateContent.setText(dateIntent);
             timeContent.setText(timeIntent);
 
+            Log.d("Test Map", nameIntent);
             imageName.setText(nameIntent);
             imageFormat.setText(formatIntent);
             Log.d("Map", locationAddress);
@@ -158,11 +161,14 @@
                     // Construct the intent to send data back to MetadataBottomSheet
                     Intent intent = new Intent();
                     String curLocation = location.getText().toString();
+                    String newPath = null;
 
                     if (!Objects.equals(curPictureName, imageName.getText().toString()))
                     {
                         String newFileName = imageName.getText().toString() + "." + imageFormat.getText().toString();
+                        newPath = updatePathAfterRename(picturePath, newFileName);
                         intent.putExtra("updatedName", newFileName);
+                        intent.putExtra("updatedPath", newPath);
                         renameFile(getContentResolver(),pictureId, newFileName);
                     }
                     if(latitude != null)
@@ -170,13 +176,23 @@
                         intent.putExtra("latitude", latitude);
                         intent.putExtra("longitude", longitude);
                         intent.putExtra("address", location.getText().toString());
-                        updateExifMetadata(latitude, longitude);
+                        if(newPath != null)
+                        {
+                            Log.d("Test Map 1", newPath);
+                            updateExifMetadata(newPath, latitude, longitude);
+                            Log.d("Test Map 2", newPath);
+                        }
+                        else
+                            updateExifMetadata(picturePath, latitude, longitude);
 
                     }
                     if((Objects.equals(curLocation, "No location information") && !Objects.equals(curLocation, locationAddress)))
                     {
                         intent.putExtra("noLocation", "No Location Information");
-                        updateExifMetadata(null, null);
+                        if(newPath != null)
+                            updateExifMetadata(newPath, null, null);
+                        else
+                            updateExifMetadata(picturePath, null, null);
                     }
                     setResult(RESULT_OK, intent);
                     finish();
@@ -203,11 +219,22 @@
             }
 
         }
-
-        private void updateExifMetadata(Double latitude, Double longitude) {
+        public String updatePathAfterRename(String oldPath, String newFileName) {
+            // Find the last occurrence of '/' to determine the directory part of the path
+            int lastSeparatorIndex = oldPath.lastIndexOf("/");
+            if (lastSeparatorIndex != -1) {
+                // Extract the directory part of the path
+                String directory = oldPath.substring(0, lastSeparatorIndex + 1); // Include the separator
+                // Combine the directory path with the new file name
+                return directory + newFileName;
+            }
+            // If there's no separator, return the new file name only
+            return null;
+        }
+        private void updateExifMetadata(String newPath , Double latitude, Double longitude) {
             try {
                     // Create an ExifInterface instance to read and modify the Exif metadata
-                ExifInterface exifInterface = new ExifInterface(picturePath);
+                ExifInterface exifInterface = new ExifInterface(newPath);
 
                 // Remove the GPS tags if latitude and longitude are null
                 if (latitude == null || longitude == null) {

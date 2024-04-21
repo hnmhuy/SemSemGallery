@@ -67,12 +67,13 @@ class PictureViewActivity : AppCompatActivity() {
     companion object {
         const val PESDK_RESULT = 1
     }
-    private lateinit var imageUri:Uri
 
-    private lateinit var handler:PhotoActionsHandler
+    private lateinit var imageUri: Uri
 
-    private var albumName : String? = ""
-    private var choice: String?=""
+    private lateinit var handler: PhotoActionsHandler
+
+    private var albumName: String? = ""
+    private var choice: String? = ""
 
     private val activityResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -82,10 +83,10 @@ class PictureViewActivity : AppCompatActivity() {
             if (data != null) {
                 val returnedData = data?.getStringExtra("key")
                 albumName = returnedData
-                if(choice == "copy")
-                    handler.copyToAlbum(this, imageUri ,albumName)
-                else if(choice =="move"){
-                    handler.moveToAlbum(this, imageUri ,albumName)
+                if (choice == "copy")
+                    handler.copyToAlbum(this, imageUri, albumName)
+                else if (choice == "move") {
+                    handler.moveToAlbum(this, imageUri, albumName)
                 }
                 // Now you have the returned data from OtherActivity
                 // Process it as needed
@@ -269,8 +270,15 @@ class PictureViewActivity : AppCompatActivity() {
 
         infoBtn.setOnClickListener {
             Log.d("PictureViewActivity", selectingPic.path)
-            var temp = if (selectingPic.dateTaken.time != 0L) selectingPic.dateTaken else selectingPic.dateAdded
-            val botSheetFrag = MetaDataBottomSheet(selectingPic.pictureId,selectingPic.path, selectingPic.fileName, temp, selectingPic.fileSize)
+            var temp =
+                if (selectingPic.dateTaken.time != 0L) selectingPic.dateTaken else selectingPic.dateAdded
+            val botSheetFrag = MetaDataBottomSheet(
+                selectingPic.pictureId,
+                selectingPic.path,
+                selectingPic.fileName,
+                temp,
+                selectingPic.fileSize
+            )
             botSheetFrag.setListner { isUpdateFileName ->
                 if (isUpdateFileName) {
                     val imageUri = ContentUris.withAppendedId(
@@ -278,13 +286,14 @@ class PictureViewActivity : AppCompatActivity() {
                         selectingPic.pictureId
                     )
                     selectingPic.path = getRealPathFromURI(imageUri, this)
+                    selectingPic.fileName = getFileNameFromURI(imageUri, this)
                 }
 
             }
             botSheetFrag.show(supportFragmentManager, botSheetFrag.tag)
         }
 
-        ocrBtn.setOnClickListener{
+        ocrBtn.setOnClickListener {
             val ocrBottomSheet = OCRStickyBottomSheet.newInstance(linesText);
             ocrBottomSheet.show(supportFragmentManager, ocrBottomSheet.tag)
         }
@@ -344,6 +353,17 @@ class PictureViewActivity : AppCompatActivity() {
         }
     }
 
+    fun getFileNameFromURI(contentUri: Uri, context: Context): String? {
+        val projection = arrayOf(MediaStore.Images.Media.DISPLAY_NAME)
+        val cursor = context.contentResolver.query(contentUri, projection, null, null, null)
+        cursor?.use { c ->
+            if (c.moveToFirst()) {
+                val displayNameIndex = c.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)
+                return c.getString(displayNameIndex)
+            }
+        }
+        return null
+    }
     fun getRealPathFromURI(contentUri: Uri, context: Context): String? {
         val proj = arrayOf(MediaStore.Images.Media.DATA)
         val cursor = context.contentResolver.query(contentUri, proj, null, null, null)
