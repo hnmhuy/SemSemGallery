@@ -48,8 +48,6 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -74,6 +72,10 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
     private final Date datetime;
     private ProgressBar progressBar;
     private ArrayList<Tag>[] tags;
+    private onBottomSheetDismissInterface listner = null;
+    public void setListner(onBottomSheetDismissInterface listner) {
+        this.listner = listner;
+    }
     public MetaDataBottomSheet(Long id, String path, String fileName, Date datetime, Long fileSize)
     {
         this.id = id;
@@ -88,9 +90,18 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
         super.onCreate(savedInstanceState);
     }
 
+    public boolean isUpdateFileName() {
+        return isUpdateFileName;
+    }
+
+    private boolean isUpdateFileName = false;
+
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
+        if(listner!=null) {
+            listner.onDismissed(isUpdateFileName);
+        }
     }
 
     private final ActivityResultLauncher<Intent> editMetadataLauncher = registerForActivityResult(
@@ -102,6 +113,7 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
                         if(data.hasExtra("updatedName"))
                         {
                             String updatedName = data.getStringExtra("updatedName");
+                            isUpdateFileName = true;
                             name.setText(updatedName);
                         }
                         if(data.hasExtra("latitude"))
@@ -165,6 +177,7 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
                 if (locationTextView.getText() != null) {
                     intent.putExtra("locationAddress", locationTextView.getText());
                 }
+                isUpdateFileName = false;
                 editMetadataLauncher.launch(intent);
             }
         });
@@ -582,4 +595,9 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment implements Ta
     public void onTagClick(View view, int position) {
         Toast.makeText(getContext(), "Search by " + tags[0].get(position).getName(), Toast.LENGTH_SHORT).show();
     }
+
+    static public interface onBottomSheetDismissInterface {
+        public void onDismissed(boolean isUpdateFileName);
+    }
+
 }

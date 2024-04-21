@@ -5,6 +5,8 @@ import android.app.AlertDialog
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.ContentValues
+import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -255,6 +257,7 @@ class PictureViewActivity : AppCompatActivity() {
                         this.contentResolver.update(imageUri, values, null, null)
                         var index = pictureList.indexOf(selectingPic)
                         if (index != -1 && pictureList.remove(selectingPic)) {
+                            Log.d("PictureViewActivity", "" + pictureList.size)
                             viewPager.currentItem =
                                 if (index + 1 > pictureList.size - 1) pictureList.size - 1 else index;
                             adapter.notifyItemRemoved(index)
@@ -265,8 +268,19 @@ class PictureViewActivity : AppCompatActivity() {
         }
 
         infoBtn.setOnClickListener {
+            Log.d("PictureViewActivity", selectingPic.path)
             var temp = if (selectingPic.dateTaken.time != 0L) selectingPic.dateTaken else selectingPic.dateAdded
             val botSheetFrag = MetaDataBottomSheet(selectingPic.pictureId,selectingPic.path, selectingPic.fileName, temp, selectingPic.fileSize)
+            botSheetFrag.setListner { isUpdateFileName ->
+                if (isUpdateFileName) {
+                    val imageUri = ContentUris.withAppendedId(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        selectingPic.pictureId
+                    )
+                    selectingPic.path = getRealPathFromURI(imageUri, this)
+                }
+
+            }
             botSheetFrag.show(supportFragmentManager, botSheetFrag.tag)
         }
 
@@ -328,6 +342,16 @@ class PictureViewActivity : AppCompatActivity() {
             }
 
         }
+    }
+
+    fun getRealPathFromURI(contentUri: Uri, context: Context): String? {
+        val proj = arrayOf(MediaStore.Images.Media.DATA)
+        val cursor = context.contentResolver.query(contentUri, proj, null, null, null)
+        val column_index = cursor?.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+        cursor?.moveToFirst()
+        val path = cursor?.getString(column_index ?: -1)
+        cursor?.close()
+        return path
     }
 
     override fun onResume() {
