@@ -99,7 +99,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             style="?attr/materialIconButtonStyle"
-            android:drawableTop="@drawable/imgly_icon_download"
+            android:drawableTop="@drawable/ic_cloud_download"
             android:text="Download" />
 
         <Button

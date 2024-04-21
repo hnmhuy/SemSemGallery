@@ -82,7 +82,7 @@
             android:layout_weight="1"
             android:text="@string/more"
             android:textColor="@color/text_color_black"
-            android:drawableTop="@drawable/ic_menu" />
+            android:drawableTop="@drawable/ic_more_vert" />
     </LinearLayout>
 
 </RelativeLayout>
