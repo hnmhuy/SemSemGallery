@@ -205,6 +205,7 @@ class PictureViewActivity : AppCompatActivity() {
                 super.onPageSelected(pos)
                 selectingPic = pictureList[pos];
                 toggleFavorite(selectingPic.isFav)
+                Log.d("TrashForPictureViewActivity", "Index = $pos")
             }
 
             override fun onPageScrollStateChanged(state: Int) {
@@ -256,11 +257,9 @@ class PictureViewActivity : AppCompatActivity() {
                         values.put(MediaStore.Images.Media.IS_PENDING, 0)
                         this.contentResolver.update(imageUri, values, null, null)
                         var index = pictureList.indexOf(selectingPic)
+                        Log.d("TrashForPictureViewActivity", "Index = $index")
                         if (index != -1 && pictureList.remove(selectingPic)) {
-                            Log.d("PictureViewActivity", "" + pictureList.size)
-                            viewPager.currentItem =
-                                if (index + 1 > pictureList.size - 1) pictureList.size - 1 else index;
-                            adapter.notifyItemRemoved(index)
+                            adapter.notifyItemRemoved(if (index - 1 >= 0) index - 1 else 0)
                         }
                     }
                 };

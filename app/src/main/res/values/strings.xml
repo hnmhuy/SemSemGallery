@@ -63,6 +63,7 @@
     <string name="videos">Videos</string>
 
     <string name="yes">Yes</string>
+    <string name="backup_setting">Backup setting</string>
 
     <!-- Top app bar -->
     <string name="cloud_sync">Sync with cloud</string>
