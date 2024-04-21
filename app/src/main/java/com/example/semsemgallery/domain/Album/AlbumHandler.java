@@ -95,47 +95,7 @@
 
         // Copy Images to Album - but split Thread for show Loading Dialog
         public static void copyImagesToAlbumHandler(Context context, ArrayList<Uri> imageUris, String albumName, OnLoadingListener listener) {
-            Handler handler = new Handler(Looper.getMainLooper());
-            new Thread(() -> {
-                int totalImages = imageUris.size();
-                isHandling = true;
 
-                // Get DCIM Folder in device & Album with name as albumName
-                File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-                File albumDirectory = new File(dcimDirectory, albumName);
-
-                // Create the album directory if it doesn't exist
-                if (!albumDirectory.exists()) {
-                    albumDirectory.mkdirs();
-                }
-
-                // Copy images to the album directory
-                for (int i = 0; i < totalImages; i++) {
-                    if (!isHandling) break;
-
-                    Uri imageUri = imageUris.get(i);
-                    try {
-                        String fileName = getFileName(context, imageUri);
-                        File destFile = new File(albumDirectory, fileName);
-                        if (destFile.exists()) { continue; }
-
-                        InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
-                        if (inputStream != null) {
-                            copyFile(inputStream, destFile);
-
-                            int progress = (int) (((i + 1) / (float) totalImages) * 100);
-                            listener.onLoadingProgressUpdate(progress);
-
-                            inputStream.close();
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                // Scan the directory
-                AlbumHandler.scanAlbumForMediaStoreRegister(context, albumDirectory.getAbsolutePath(), handler);
-                listener.onLoadingComplete();
-            }).start();
         }
 
 
@@ -193,57 +153,7 @@
 
         // Move Images to Album - but split Thread for show Loading Dialog
         public static void moveImagesToAlbumHandler(Context context, ArrayList<Uri> imageUris, String albumName, OnLoadingListener listener) {
-            Handler handler = new Handler(Looper.getMainLooper());
-            new Thread(() -> {
-                int totalImages = imageUris.size();
-                isHandling = true;
 
-                // Get DCIM Folder in device & Album with name as albumName
-                File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-                File albumDirectory = new File(dcimDirectory, albumName);
-
-                // Create the album directory if it doesn't exist
-                if (!albumDirectory.exists()) {
-                    albumDirectory.mkdirs();
-                }
-
-                // Copy images to the album directory
-                for (int i = 0; i < totalImages; i++) {
-                    if (!isHandling) break;
-
-                    Uri imageUri = imageUris.get(i);
-                    try {
-                        String fileName = getFileName(context, imageUri);
-                        File destFile = new File(albumDirectory, fileName);
-                        if (destFile.exists()) { continue; }
-
-                        InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
-                        if (inputStream != null) {
-                            copyFile(inputStream, destFile);
-
-                            int progress = (int) (((i + 1) / (float) totalImages) * 100);
-                            listener.onLoadingProgressUpdate(progress);
-
-                            inputStream.close();
-
-                            // Delete the original file
-                            File originalFile = new File(imageUri.getPath());
-                            String fileId = originalFile.getName();
-                            imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, Long.valueOf(fileId));
-                            if (deleteFileByUri(context, imageUri)) {
-                                Log.d("DeleteImage", "File " + fileName + " deleted successfully");
-                            } else {
-                                Log.d("DeleteImage", "Failed to delete file " + fileName);
-                            }
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                AlbumHandler.scanAlbumForMediaStoreRegister(context, albumDirectory.getAbsolutePath(), handler);
-
-                listener.onLoadingComplete();
-            }).start();
         }
 
         public static boolean deleteFileByUri(Context context, Uri uri) {
@@ -264,105 +174,7 @@
             }
         }
 
-        private static String getFilePathFromUri(Context context, Uri uri) {
-            String filePath = null;
-            String[] projection = {MediaStore.Images.Media.DATA};
-            ContentResolver contentResolver = context.getContentResolver();
-            try {
-                // Query the media store to get the file path
-                android.database.Cursor cursor = contentResolver.query(uri, projection, null, null, null);
-                if (cursor != null && cursor.moveToFirst()) {
-                    int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                    filePath = cursor.getString(columnIndex);
-                    cursor.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return filePath;
-        }
 
-        // ====== Delete Album (Remembers to check if the album exists before deleting)
-        public static void deleteAlbumHandler(Context context, String albumName, OnLoadingListener listener) {
-            new Thread(() -> {
-                isHandling = true;
-
-                File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-                File albumDirectory = new File(dcimDirectory, albumName);
-
-                if (albumDirectory.exists()) {
-                    File[] files = albumDirectory.listFiles();
-                    int totalFiles = files != null ? files.length : 0;
-                    int deletedFiles = 0;
-
-                    if (files != null) {
-                        for (File file : files) {
-                            if (!isHandling) break;
-                            file.delete();
-                            deletedFiles++;
-
-                            int progress = (int) (((float) deletedFiles / totalFiles) * 100);
-                            listener.onLoadingProgressUpdate(progress);
-                        }
-                    }
-                    albumDirectory.delete();
-                }
-
-                listener.onLoadingComplete();
-            }).start();
-        }
-
-        // ====== Rename album (Remembers to check if the album exists before renaming)
-        public static void renameAlbum(Context context, String oldAlbumName, String newAlbumName) {
-            File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-
-            File oldAlbumDirectory = new File(dcimDirectory, oldAlbumName);
-            File newAlbumDirectory = new File(dcimDirectory, newAlbumName);
-
-            if (oldAlbumDirectory.exists()) {
-                oldAlbumDirectory.renameTo(newAlbumDirectory);
-            }
-        }
-
-
-
-        // ====== Get File Name from Uri
-        private static String getFileName(Context context, Uri uri) {
-            String fileName = null;
-            String scheme = uri.getScheme();
-            if (scheme != null && scheme.equals("content")) {
-                try (Cursor cursor = context.getContentResolver().query(uri, null, null, null, null)) {
-                    if (cursor != null && cursor.moveToFirst()) {
-                        fileName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME));
-                    }
-                }
-            }
-            if (fileName == null) {
-                fileName = uri.getLastPathSegment();
-            }
-            return fileName;
-        }
-
-        // ====== Copy File
-        private static void copyFile(InputStream inputStream, File destFile) throws IOException {
-            OutputStream outputStream = null;
-            try {
-                outputStream = new FileOutputStream(destFile);
-                byte[] buffer = new byte[1024];
-                int length;
-                while ((length = inputStream.read(buffer)) > 0) {
-                    outputStream.write(buffer, 0, length);
-                }
-            } finally {
-                if (outputStream != null) {
-                    try {
-                        outputStream.close(); // Close the OutputStream
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
 
         private static void scanAlbumForMediaStoreRegister(Context context, String folderPath, Handler handler) {
             MediaScannerConnection.scanFile(
