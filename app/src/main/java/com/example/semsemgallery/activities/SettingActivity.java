@@ -24,6 +24,7 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.AuthCredential;
@@ -39,6 +40,7 @@ public class SettingActivity extends AppCompatActivity {
     FirebaseAuth auth = FirebaseAuth.getInstance();
     GoogleSignInClient googleSignInClient;
     private MaterialSwitch materialSwitch;
+    private MaterialToolbar appTopBar;
     private TextView syncStatus;
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
         @Override
@@ -84,7 +86,10 @@ public class SettingActivity extends AppCompatActivity {
         View include = (View) findViewById(R.id.included_setting);
 
         FirebaseApp.initializeApp(SettingActivity.this);
-
+        appTopBar = findViewById(R.id.setting_topAppBar);
+        appTopBar.setNavigationOnClickListener((v) -> {
+            finish();
+        });
 
         materialSwitch = include.findViewById(R.id.switch_main);
         syncStatus = (TextView) include.findViewById(R.id.sync_status);

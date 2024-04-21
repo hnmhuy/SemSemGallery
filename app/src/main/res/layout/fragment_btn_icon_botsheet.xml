@@ -22,52 +22,52 @@
 
         android:paddingBottom="12dp">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:orientation="vertical">
+        <!--        <LinearLayout-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:gravity="center"-->
+        <!--            android:layout_weight="1"-->
+        <!--            android:orientation="vertical">-->
 
-            <Button
-                android:id="@+id/location"
-                style="?attr/materialIconButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:icon="@drawable/ic_location" />
+        <!--            <Button-->
+        <!--                android:id="@+id/location"-->
+        <!--                style="?attr/materialIconButtonStyle"-->
+        <!--                android:layout_width="wrap_content"-->
+        <!--                android:layout_height="wrap_content"-->
+        <!--                app:icon="@drawable/ic_location" />-->
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/locations"
-                />
+        <!--            <TextView-->
+        <!--                android:layout_width="wrap_content"-->
+        <!--                android:layout_height="wrap_content"-->
+        <!--                android:gravity="center"-->
+        <!--                android:text="@string/locations"-->
+        <!--                />-->
 
-        </LinearLayout>
+        <!--        </LinearLayout>-->
 
-        <LinearLayout
-            android:clickable="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:orientation="vertical">
+        <!--        <LinearLayout-->
+        <!--            android:clickable="true"-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:gravity="center"-->
+        <!--            android:layout_weight="1"-->
+        <!--            android:orientation="vertical">-->
 
-            <Button
-                android:id="@+id/recents"
-                style="?attr/materialIconButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:icon="@drawable/ic_recent" />
+        <!--            <Button-->
+        <!--                android:id="@+id/recents"-->
+        <!--                style="?attr/materialIconButtonStyle"-->
+        <!--                android:layout_width="wrap_content"-->
+        <!--                android:layout_height="wrap_content"-->
+        <!--                app:icon="@drawable/ic_recent" />-->
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/recent"
-                />
+        <!--            <TextView-->
+        <!--                android:layout_width="wrap_content"-->
+        <!--                android:layout_height="wrap_content"-->
+        <!--                android:gravity="center"-->
+        <!--                android:text="@string/recent"-->
+        <!--                />-->
 
-        </LinearLayout>
+        <!--        </LinearLayout>-->
 
         <LinearLayout
             android:clickable="true"

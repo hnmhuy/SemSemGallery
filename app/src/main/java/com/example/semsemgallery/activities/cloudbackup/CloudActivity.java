@@ -117,6 +117,11 @@ public class CloudActivity extends AppCompatActivity implements GridModeListener
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        if (auth.getCurrentUser() == null) {
+            Toast.makeText(this, "Please sign in before using this feature", Toast.LENGTH_LONG);
+            finish();
+        }
+
         observedObj.addObserver(this);
         observedObj.setMaster(this);
         RecyclerView recyclerView = findViewById(R.id.deleted_item_recycler_view);

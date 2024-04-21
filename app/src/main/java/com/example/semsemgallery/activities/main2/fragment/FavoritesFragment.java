@@ -130,6 +130,10 @@ public class FavoritesFragment extends Fragment implements GridModeListener {
     @Override
     public void onResume() {
         super.onResume();
+        if (auth.getCurrentUser() == null) {
+            Menu menu = topBar.getMenu();
+            menu.removeItem(R.id.cloud);
+        }
         loader.execute(PictureLoadMode.FAVORITE.toString());
     }
 
@@ -145,12 +149,6 @@ public class FavoritesFragment extends Fragment implements GridModeListener {
         topBar = view.findViewById(R.id.topAppBar);
         selectingTopBar = view.findViewById(R.id.selecting_top_bar);
         actionBar = view.findViewById(R.id.action_bar);
-
-
-        if (auth.getCurrentUser() == null) {
-            Menu menu = topBar.getMenu();
-            menu.removeItem(R.id.cloud);
-        }
         topBar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.search) {
                 startActivity(new Intent(getActivity().getApplicationContext(), SearchViewActivity.class));

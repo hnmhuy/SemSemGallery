@@ -181,7 +181,12 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
     @Override
     public void onResume() {
         super.onResume();
+        if (auth.getCurrentUser() == null) {
+            Menu menu = topBar.getMenu();
+            menu.removeItem(R.id.cloud);
+        }
         recyclerView.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.VISIBLE);
         loader.execute(PictureLoadMode.ALL.toString());
     }
 
@@ -238,11 +243,6 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 }
             }
         });
-
-        if (auth.getCurrentUser() == null) {
-            Menu menu = topBar.getMenu();
-            menu.removeItem(R.id.cloud);
-        }
 
         topBar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override

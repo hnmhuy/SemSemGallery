@@ -13,6 +13,7 @@ import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -55,13 +56,16 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 public class AlbumsFragment extends Fragment implements GridModeListener {
+
     private MainActivity mainActivity;
+    FirebaseAuth auth = FirebaseAuth.getInstance();
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private boolean isSelectingAll;
     private final ArrayList<Uri> selectedImages = new ArrayList<>();
@@ -184,6 +188,10 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
     @Override
     public void onResume() {
         super.onResume();
+        if (auth.getCurrentUser() == null) {
+            Menu menu = topBar.getMenu();
+            menu.removeItem(R.id.cloud);
+        }
         loader.execute();
     }
 
