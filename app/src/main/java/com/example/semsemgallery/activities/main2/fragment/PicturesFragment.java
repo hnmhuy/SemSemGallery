@@ -23,6 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
@@ -430,6 +431,13 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                                             progressBar.setProgress(progress);
                                         });
                                     }
+                                    
+                                    @Override
+                                    public void onLoadingException() {
+                                        mHandler.post(() -> {
+                                            showExceptionHandlerDialog();
+                                        });
+                                    }
                                 };
 
                                 AlbumHandler.copyImagesToAlbumHandler(context, selectedImages, albumName, loadingListener);
@@ -458,6 +466,13 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                                             progressBar.setProgress(progress);
                                         });
                                     }
+                                    
+                                    @Override
+                                    public void onLoadingException() {
+                                        mHandler.post(() -> {
+                                            showExceptionHandlerDialog();
+                                        });
+                                    }
                                 };
 
                                 AlbumHandler.moveImagesToAlbumHandler(context, selectedImages, albumName, loadingListener);
@@ -468,6 +483,41 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 }
             }
     );
+
+
+    private void showExceptionHandlerDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.component_exception_handler_dialog, null);
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(context).setView(dialogView);
+        AlertDialog dialog = dialogBuilder.create();
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+
+        CheckBox applyCheckbox = dialogView.findViewById(R.id.component_exception_handler_dialog_checkbox);
+        TextView skipBtn = dialogView.findViewById(R.id.component_exception_handler_dialog_skip);
+        TextView replaceBtn = dialogView.findViewById(R.id.component_exception_handler_dialog_replace);
+        TextView description = dialogView.findViewById(R.id.component_exception_handler_dialog_description);
+        description.setText("There is already an item name " + AlbumHandler.getFileName(context, AlbumHandler.currentDuplicateImageUri) + " in the selected album");
+
+        applyCheckbox.setOnClickListener(v -> {
+            AlbumHandler.isApplyToAll = applyCheckbox.isChecked();
+        });
+
+        // ====== Listener for CancelButton in Delete Confirm Dialog clicked
+        skipBtn.setOnClickListener(v -> {
+            Log.d("AlbumsFM", "Skip " + AlbumHandler.getFileName(context, AlbumHandler.currentDuplicateImageUri));
+            dialog.dismiss();
+            AlbumHandler.duplicateHandleChoice = "skip";
+            AlbumHandler.isDuplicateHandling = false;
+        });
+
+        // ====== Listener for DeleteButton in Delete Confirm Dialog clicked
+        replaceBtn.setOnClickListener(v -> {
+            Log.d("AlbumsFM", "Replace " + AlbumHandler.getFileName(context, AlbumHandler.currentDuplicateImageUri));
+            dialog.dismiss();
+            AlbumHandler.duplicateHandleChoice = "replace";
+            AlbumHandler.isDuplicateHandling = false;
+        });
+    }
 
     private void renderMoreMenu(View v, int res) {
         PopupMenu popupMenu = new PopupMenu(context, v);

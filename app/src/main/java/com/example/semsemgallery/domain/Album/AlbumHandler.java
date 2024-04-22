@@ -31,6 +31,8 @@ public class AlbumHandler {
     public static boolean isDuplicateHandling = false;
     public static Uri currentDuplicateImageUri = null;
     public static String duplicateHandleChoice = "";
+    public static boolean isApplyToAll = false;
+    
 
     public interface OnLoadingListener {
         void onLoadingComplete();
@@ -104,6 +106,8 @@ public class AlbumHandler {
             int totalImages = imageUris.size();
             isHandling = true;
             isDuplicateHandling = false;
+            duplicateHandleChoice = "";
+            isApplyToAll = false;
 
             // Get DCIM Folder in device & Album with name as albumName
             File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
@@ -125,13 +129,17 @@ public class AlbumHandler {
 
                     // If exist -> Waiting for choosing SKIP or REPLACE
                     if (destFile.exists()) {
-                        isDuplicateHandling = true;
-                        currentDuplicateImageUri = imageUri;
+                        if (!isApplyToAll) {
+                            isDuplicateHandling = true;
+                            currentDuplicateImageUri = imageUri;
 
-                        listener.onLoadingException();
+                            listener.onLoadingException();
 
-                        while (true) { if (!isDuplicateHandling) break; }
+                            while (true) {
+                                if (!isDuplicateHandling) break;
+                            }
 
+                        }
                         if (duplicateHandleChoice == "skip") { continue;}
                         else if (duplicateHandleChoice == "replace") { destFile.delete(); }
                     }
@@ -215,6 +223,8 @@ public class AlbumHandler {
             int totalImages = imageUris.size();
             isHandling = true;
             isDuplicateHandling = false;
+            duplicateHandleChoice = "";
+            isApplyToAll = false;
 
             // Get DCIM Folder in device & Album with name as albumName
             File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
@@ -236,13 +246,17 @@ public class AlbumHandler {
 
                     // If exist -> Waiting for choosing SKIP or REPLACE
                     if (destFile.exists()) {
-                        isDuplicateHandling = true;
-                        currentDuplicateImageUri = imageUri;
+                        if (!isApplyToAll) {
+                            isDuplicateHandling = true;
+                            currentDuplicateImageUri = imageUri;
 
-                        listener.onLoadingException();
+                            listener.onLoadingException();
 
-                        while (true) { if (!isDuplicateHandling) break; }
+                            while (true) {
+                                if (!isDuplicateHandling) break;
+                            }
 
+                        }
                         if (duplicateHandleChoice == "skip") { continue;}
                         else if (duplicateHandleChoice == "replace") { destFile.delete(); }
                     }
