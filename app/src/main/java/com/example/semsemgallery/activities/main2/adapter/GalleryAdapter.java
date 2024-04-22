@@ -91,7 +91,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryItemViewHolder> 
             holder.groupDisplayText.setText(item.getDateFormatted());
         } else {
             Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ((Picture)item.getData()).getPictureId());
-            Glide.with(context).load(imageUri).sizeMultiplier(0.6f).into(holder.thumnail);
+            Glide.with(context).load(imageUri).skipMemoryCache(true).into(holder.thumnail);
             holder.isFav.setVisibility(((Picture) item.getData()).isFav() ? View.VISIBLE : View.INVISIBLE);
         }
     }

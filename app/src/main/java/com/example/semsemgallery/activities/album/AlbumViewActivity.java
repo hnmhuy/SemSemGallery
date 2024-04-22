@@ -114,6 +114,7 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
                                             observedObj.fireSelectionChangeForAll(false);
                                             observedObj.setGridMode(GridMode.NORMAL);
                                             isSelectingAll = false;
+                                            loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId);
                                         });
                                     }
 

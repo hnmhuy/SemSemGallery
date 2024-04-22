@@ -11,13 +11,18 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Button
+import android.widget.CheckBox
 import android.widget.ImageButton
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -31,6 +36,7 @@ import com.example.semsemgallery.activities.pictureview.adapter.PictureAdapter
 import com.example.semsemgallery.activities.pictureview.fragment.MetaDataBottomSheet
 import com.example.semsemgallery.activities.pictureview.fragment.OCRStickyBottomSheet
 import com.example.semsemgallery.domain.AIHandler
+import com.example.semsemgallery.domain.Album.AlbumHandler
 import com.example.semsemgallery.domain.PhotoActionsHandler
 import com.example.semsemgallery.domain.Picture.PictureLoadMode
 import com.example.semsemgallery.domain.Picture.PictureLoader
@@ -75,6 +81,7 @@ class PictureViewActivity : AppCompatActivity() {
     private var albumName: String? = ""
     private var choice: String? = ""
     private var tagName: String? =""
+    private val mHandler = Handler(Looper.getMainLooper())
 
     private val activityResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -84,16 +91,145 @@ class PictureViewActivity : AppCompatActivity() {
             if (data != null) {
                 val returnedData = data?.getStringExtra("key")
                 albumName = returnedData
-                if (choice == "copy")
-                    handler.copyToAlbum(this, imageUri, albumName)
+                if (choice == "copy") {
+                    // handler.copyToAlbum(this, imageUri, albumName)
+
+                    val uris: ArrayList<Uri> = arrayListOf()
+                    uris.add(ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, selectingPic.pictureId))
+
+                    val loadingDialog = myLoadingDialog()
+                    loadingDialog.show() // Show Loading Dialog
+                    val dialogTitle = loadingDialog.findViewById<TextView>(R.id.component_loading_dialog_title)
+                    if (dialogTitle != null) {
+                        dialogTitle.text = "Copying to $albumName"
+                    }
+
+                    // Create a listener for completion & set progress
+                    val loadingListener = object : AlbumHandler.OnLoadingListener {
+                        override fun onLoadingComplete() {
+                            mHandler.post {
+                                loadingDialog.dismiss()
+                            }
+                        }
+
+                        override fun onLoadingProgressUpdate(progress: Int) {
+                            val progressBar = loadingDialog.findViewById<ProgressBar>(R.id.component_loading_dialog_progressBar)
+                            mHandler.post {
+                                if (progressBar != null) {
+                                    progressBar.progress = progress
+                                }
+                            }
+                        }
+
+                        override fun onLoadingException() {
+                            mHandler.post {
+                                showExceptionHandlerDialog()
+                            }
+                        }
+                    }
+
+                    AlbumHandler.copyImagesToAlbumHandler(this, uris, albumName, loadingListener)
+                }
                 else if (choice == "move") {
-                    handler.moveToAlbum(this, imageUri, albumName)
+                    // handler.moveToAlbum(this, imageUri, albumName)
+
+                    val uris: ArrayList<Uri> = arrayListOf()
+                    uris.add(ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, selectingPic.pictureId))
+
+                    val loadingDialog = myLoadingDialog()
+                    loadingDialog.show() // Show Loading Dialog
+                    val dialogTitle = loadingDialog.findViewById<TextView>(R.id.component_loading_dialog_title)
+                    if (dialogTitle != null) {
+                        dialogTitle.text = "Copying to $albumName"
+                    }
+
+                    // Create a listener for completion & set progress
+                    val loadingListener = object : AlbumHandler.OnLoadingListener {
+                        override fun onLoadingComplete() {
+                            mHandler.post {
+                                loadingDialog.dismiss()
+                            }
+                        }
+
+                        override fun onLoadingProgressUpdate(progress: Int) {
+                            val progressBar = loadingDialog.findViewById<ProgressBar>(R.id.component_loading_dialog_progressBar)
+                            mHandler.post {
+                                if (progressBar != null) {
+                                    progressBar.progress = progress
+                                }
+                            }
+                        }
+
+                        override fun onLoadingException() {
+                            mHandler.post {
+                                showExceptionHandlerDialog()
+                            }
+                        }
+                    }
+
+                    AlbumHandler.moveImagesToAlbumHandler(this, uris, albumName, loadingListener)
                 }
                 // Now you have the returned data from OtherActivity
                 // Process it as needed
             }
         }
     }
+
+
+
+    private fun showExceptionHandlerDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.component_exception_handler_dialog, null)
+        val dialogBuilder = MaterialAlertDialogBuilder(this).setView(dialogView)
+        val dialog = dialogBuilder.create()
+        dialog.setCanceledOnTouchOutside(false)
+        dialog.show()
+
+        val applyCheckbox = dialogView.findViewById<CheckBox>(R.id.component_exception_handler_dialog_checkbox)
+        val skipBtn = dialogView.findViewById<TextView>(R.id.component_exception_handler_dialog_skip)
+        val replaceBtn = dialogView.findViewById<TextView>(R.id.component_exception_handler_dialog_replace)
+        val description = dialogView.findViewById<TextView>(R.id.component_exception_handler_dialog_description)
+        description.text = "There is already an item name ${AlbumHandler.getFileName(this, AlbumHandler.currentDuplicateImageUri)} in the selected album"
+
+        applyCheckbox.setOnClickListener {
+            AlbumHandler.isApplyToAll = applyCheckbox.isChecked
+        }
+
+        // Listener for CancelButton in Delete Confirm Dialog clicked
+        skipBtn.setOnClickListener {
+            Log.d("AlbumsFM", "Skip ${AlbumHandler.getFileName(this, AlbumHandler.currentDuplicateImageUri)}")
+            dialog.dismiss()
+            AlbumHandler.duplicateHandleChoice = "skip"
+            AlbumHandler.isDuplicateHandling = false
+        }
+
+        // Listener for DeleteButton in Delete Confirm Dialog clicked
+        replaceBtn.setOnClickListener {
+            Log.d("AlbumsFM", "Replace ${AlbumHandler.getFileName(this, AlbumHandler.currentDuplicateImageUri)}")
+            dialog.dismiss()
+            AlbumHandler.duplicateHandleChoice = "replace"
+            AlbumHandler.isDuplicateHandling = false
+        }
+    }
+
+    // Just only able to init Dialog in Fragment/Activity
+    private fun myLoadingDialog(): androidx.appcompat.app.AlertDialog {
+        val dialogView = layoutInflater.inflate(R.layout.component_loading_dialog, null)
+        val dialogBuilder = MaterialAlertDialogBuilder(this).setView(dialogView)
+
+        val dialog = dialogBuilder.create()
+        dialog.setCanceledOnTouchOutside(false)
+
+        val cancelButton = dialogView.findViewById<Button>(R.id.component_loading_dialog_cancelButton)
+        cancelButton.setOnClickListener {
+            AlbumHandler.stopHandling()
+        }
+
+        return dialog
+    }
+
+
+
+
     private var albumId: String? = null
     private var loadMode: String? = null
     private lateinit var fragmentActivity: PictureViewActivity
@@ -477,6 +613,9 @@ class PictureViewActivity : AppCompatActivity() {
                     applicationContext.packageName + ".provider",
                     imageFile
                 )
+
+
+
                 choice = "copy"
                 pickAlbum()
                 return true

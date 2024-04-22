@@ -50,11 +50,12 @@ public class PhotoActionsHandler {
 
     public void copyToAlbum(Context context, Uri imageUri, String albumName) {
         // Implement copy to album functionality here
-        ArrayList<Uri> uris = new ArrayList<>();
-        uris.add(imageUri);
-        AlbumHandler.copyImagesToAlbum(context, uris, albumName );
+//        ArrayList<Uri> uris = new ArrayList<>();
+//        uris.add(imageUri);
+//        AlbumHandler.copyImagesToAlbum(context, uris, albumName );
 
-        showToast("Copied to album");
+
+
     }
 
     public void moveToAlbum(Context context, Uri imageUri, String albumName) {
