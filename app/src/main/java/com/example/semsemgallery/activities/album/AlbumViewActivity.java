@@ -85,6 +85,7 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
     private ArrayList<Uri> selectedImages;
     private String sortMode = "";
     private List<GalleryItem> pictures;
+    private RecyclerView recyclerView;
     //====== Choose album activity
     private final ActivityResultLauncher<Intent> chooseAlbumResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -264,6 +265,7 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
             adapter.notifyDataSetChanged();
             albumQuantity = observedObj.getDataSize();
             topBar.setSubtitle(String.valueOf(albumQuantity) + (albumQuantity == 0 ? " image" : " images"));
+            recyclerView.setAdapter(adapter);
         }
 
         @Override
@@ -273,6 +275,8 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
             adapter.setAlbumId(strings[1]);
             observedObj.reset();
             galleryItems.clear();
+            adapter.notifyDataSetChanged();
+            recyclerView.setAdapter(null);
         }
     };
 
@@ -308,7 +312,7 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
         albumName = getIntent().getStringExtra("albumName");
 
         // Get UI component and set up
-        RecyclerView recyclerView = findViewById(R.id.activity_album_view_recycler);
+        recyclerView = findViewById(R.id.activity_album_view_recycler);
         GridLayoutManager manager = new GridLayoutManager(this, 3);
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
