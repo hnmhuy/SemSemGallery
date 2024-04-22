@@ -73,7 +73,7 @@ public class SearchResultActivity extends AppCompatActivity implements GridModeL
     private ProgressBar myProgressBar;
     private ObservableGridMode<Picture> observedObj = new ObservableGridMode<>(null, GridMode.NORMAL);
 
-    private FavoriteAdapter adapter = new FavoriteAdapter(this, observedObj);
+    private SearchAdapter adapter;
     private int tagID;
     private String tagName;
 
@@ -121,7 +121,7 @@ public class SearchResultActivity extends AppCompatActivity implements GridModeL
         tagID = bundle.getInt("tagId");
         tagName = bundle.getString("tagName");
 
-
+        adapter = new SearchAdapter(this, observedObj, tagName);
         actionBar = findViewById(R.id.action_bar);
         selectingTopBar = findViewById(R.id.selecting_top_bar);
         // Get UI component and set up

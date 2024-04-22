@@ -74,6 +74,7 @@ class PictureViewActivity : AppCompatActivity() {
 
     private var albumName: String? = ""
     private var choice: String? = ""
+    private var tagName: String? =""
 
     private val activityResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -189,6 +190,7 @@ class PictureViewActivity : AppCompatActivity() {
         selectingPic = intent.getParcelableExtra<Picture>("selectingPic")!!
         loadMode = intent.getStringExtra("loadMode")
         albumId = intent.getStringExtra("albumId")
+        tagName = intent.getStringExtra("tagName")
 
         Log.d("PictureViewActivity", "AlbumID = " + albumId)
         pictureList.add(selectingPic)
@@ -204,9 +206,16 @@ class PictureViewActivity : AppCompatActivity() {
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(pos: Int) {
                 super.onPageSelected(pos)
-                selectingPic = pictureList[pos];
-                toggleFavorite(selectingPic.isFav)
-                Log.d("TrashForPictureViewActivity", "Index = $pos")
+                if (pictureList.isNotEmpty()) {
+                    val element = pictureList[0]
+                    selectingPic = pictureList[pos];
+                    toggleFavorite(selectingPic.isFav)
+                    Log.d("TrashForPictureViewActivity", "Index = $pos")
+                } else {
+                    // Handle the case where the ArrayList is empty
+                    Log.e("PictureViewActivity", "ArrayList is empty")
+                }
+
             }
 
             override fun onPageScrollStateChanged(state: Int) {
@@ -218,7 +227,10 @@ class PictureViewActivity : AppCompatActivity() {
         if (loadMode != null) {
             if (loadMode == PictureLoadMode.BY_ALBUM.toString() && albumId != null) {
                 loader.execute(loadMode, albumId);
-            } else {
+            } else if(loadMode == PictureLoadMode.ID.toString()){
+                loader.execute(loadMode, tagName);
+            }
+            else {
                 loader.execute(loadMode);
             }
         } else {
