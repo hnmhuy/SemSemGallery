@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/mapContainer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+    <RelativeLayout
+        android:background="@color/navbar_map_background"
+        android:id="@+id/map_header_container"
+        android:layout_alignParentTop="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/idSearchView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:background="@android:color/transparent"
+            android:elevation="5dp"
+            android:textAppearance="@color/text_map"
+            app:iconifiedByDefault="false"
+            app:queryHint="Search Here" />
+    </RelativeLayout>
+
+    <FrameLayout
+        android:layout_below="@+id/map_header_container"
+        android:layout_above="@+id/map_button_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/map_holder"/>
+
+    <LinearLayout
+        android:background="@color/navbar_map_background"
+        android:weightSum="2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/map_button_container"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/map_cancelBtn"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:textSize="18sp"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textColor="@color/text_map"
+            android:text="@string/cancel"
+            style="?android:attr/buttonBarButtonStyle" />
+
+        <Button
+            android:id="@+id/map_doneBtn"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:textSize="18sp"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textColor="@color/text_map"
+            android:text="@string/done"
+            style="?android:attr/buttonBarButtonStyle" />
+
+
+    </LinearLayout>
+
+
+
+
+</RelativeLayout>

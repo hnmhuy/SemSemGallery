@@ -1,9 +1,15 @@
     package com.example.semsemgallery.activities;
 
+    import android.content.ContentResolver;
+    import android.content.ContentUris;
+    import android.content.ContentValues;
     import android.content.Context;
     import android.content.Intent;
+    import android.location.Location;
+    import android.net.Uri;
     import android.os.Bundle;
     import android.os.Environment;
+    import android.provider.MediaStore;
     import android.provider.Settings;
     import android.util.Log;
     import android.view.View;
@@ -14,25 +20,18 @@
     import android.widget.TextView;
     import android.widget.Toast;
 
+    import androidx.activity.result.ActivityResultLauncher;
+    import androidx.activity.result.contract.ActivityResultContracts;
     import androidx.appcompat.app.AppCompatActivity;
     import androidx.exifinterface.media.ExifInterface;
 
     import com.example.semsemgallery.R;
-    import com.kunzisoft.switchdatetime.SwitchDateTimeDialogFragment;
+    import com.google.android.gms.maps.model.LatLng;
 
-    import java.io.File;
     import java.io.IOException;
-    import java.nio.file.Files;
-    import java.nio.file.Path;
-    import java.nio.file.Paths;
-    import java.text.DateFormat;
-    import java.text.SimpleDateFormat;
-    import java.util.Calendar;
-    import java.util.Date;
-    import java.util.GregorianCalendar;
-    import java.util.Locale;
     import java.util.Objects;
-    import java.util.TimeZone;
+
+    import javax.annotation.Nullable;
 
 
     public class EditMetadataActivity extends AppCompatActivity {
@@ -42,23 +41,23 @@
         // --------- Begin variable of DateTimePicker dialog ---------
         private static final String TAG = "Sample";
         private static final String TAG_DATETIME_FRAGMENT = "TAG_DATETIME_FRAGMENT";
-        private SwitchDateTimeDialogFragment dateTimeFragment;
 
         // --------- End variable of DateTimePicker dialog ---------
 
-        public LinearLayout datetimeContainerClick;
-        public TextView dateContent;
-        public TextView timeContent;
-        public EditText imageName;
-        public TextView imageFormat;
-        public TextView location;
-        public ImageButton addLocationBtn;
-        public ImageButton removeLocationBtn;
-        public ImageButton backBtn;
-        public Button saveBtn;
-        public Button cancelBtn;
-
-        public String path;
+        private LinearLayout datetimeContainerClick;
+        private TextView dateContent, timeContent, imageFormat, location;
+        private EditText imageName;
+        private ImageButton addLocationBtn, removeLocationBtn, backBtn;
+        private Button saveBtn, cancelBtn;
+        private long pictureId;
+        private String picturePath;
+        private static final int MAP_ACTIVITY_REQUEST_CODE = 897;
+        private ActivityResultLauncher<Intent> mapLauncher;
+        private ActivityResultLauncher<Intent> editMetadataLauncher;
+        private Double latitude = null;
+        private Double longitude = null;
+        private String curPictureName;
+        private String locationAddress;
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
@@ -70,9 +69,10 @@
             String formatIntent = nameFormatIntent.split("\\.")[1];
             String dateIntent = getIntent().getStringExtra("date");
             String timeIntent = getIntent().getStringExtra("time");
-            path = getIntent().getStringExtra("filePath");
-            Log.d("PATH INTENT", path);
-
+            picturePath = getIntent().getStringExtra("picturePath");
+            pictureId = getIntent().getLongExtra("pictureId", 0);
+            locationAddress = getIntent().getStringExtra("locationAddress");
+            curPictureName = nameIntent;
 
             context = getApplicationContext();
             datetimeContainerClick = (LinearLayout) findViewById(R.id.datetime_action_container);
@@ -90,14 +90,19 @@
             dateContent.setText(dateIntent);
             timeContent.setText(timeIntent);
 
+            Log.d("Test Map", nameIntent);
             imageName.setText(nameIntent);
             imageFormat.setText(formatIntent);
+            Log.d("Map", locationAddress);
+            if (!Objects.equals(locationAddress, "No location information")){
+                location.setText(locationAddress);
+                addLocationBtn.setVisibility(View.INVISIBLE);
+                removeLocationBtn.setVisibility(View.VISIBLE);
+            } else {
+                addLocationBtn.setVisibility(View.VISIBLE);
+                removeLocationBtn.setVisibility(View.INVISIBLE);
+            }
 
-
-
-            initDateTimePicker();
-
-            datetimeContainerClick.setOnClickListener(onDateTimeClickListener);
             saveBtn.setOnClickListener(onSaveEdit);
             cancelBtn.setOnClickListener(onCancelEdit);
             removeLocationBtn.setOnClickListener(onRemoveLocationClickListener);
@@ -108,174 +113,147 @@
                 }
             });
 
+            mapLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == RESULT_OK) {
+                            Intent data = result.getData();
+                            if (data != null) {
+                                String address = data.getStringExtra("address");
+                                location.setText(address);
+                                latitude = data.getDoubleExtra("latitude", 0.0);
+                                longitude = data.getDoubleExtra("longitude", 0.0);
+                                // Change the button to remove button
+                                addLocationBtn.setVisibility(View.INVISIBLE);
+                                removeLocationBtn.setVisibility(View.VISIBLE);
+                            }
+                        }
+                    });
 
-        }
-
-        @Override
-        protected void onStart() {
-            super.onStart();
-            Toast.makeText(this, "onStart", Toast.LENGTH_SHORT ).show();
-
-        }
-
-        private void initDateTimePicker()
-        {
-            // Construct SwitchDateTimePicker
-            dateTimeFragment = (SwitchDateTimeDialogFragment) getSupportFragmentManager().findFragmentByTag(TAG_DATETIME_FRAGMENT);
-            if (dateTimeFragment == null) {
-                dateTimeFragment = SwitchDateTimeDialogFragment.newInstance(
-                        getString(com.kunzisoft.switchdatetime.R.string.label_datetime_dialog),
-                        getString(android.R.string.ok),
-                        getString(android.R.string.cancel),
-                        getString(R.string.clean),// Optional
-                        "en"
-                );
-            }
-
-            // Optionally define a timezone
-            dateTimeFragment.setTimeZone(TimeZone.getDefault());
-
-            // Init format
-            final SimpleDateFormat myDateFormat = new SimpleDateFormat("MMMM dd yyyy HH:mm", java.util.Locale.getDefault());
-            // Assign unmodifiable values
-            dateTimeFragment.set24HoursMode(true);
-            dateTimeFragment.setHighlightAMPMSelection(false);
-            dateTimeFragment.setMinimumDateTime(new GregorianCalendar(2015, Calendar.JANUARY, 1).getTime());
-            dateTimeFragment.setMaximumDateTime(new GregorianCalendar(2030, Calendar.DECEMBER, 31).getTime());
-
-            // Define new day and month format
-            try {
-                dateTimeFragment.setSimpleDateMonthAndDayFormat(new SimpleDateFormat("MMMM dd", Locale.getDefault()));
-            } catch (SwitchDateTimeDialogFragment.SimpleDateMonthAndDayFormatException e) {
-                Log.e(TAG, e.getMessage());
-            }
-
-            dateTimeFragment.setOnButtonClickListener(new SwitchDateTimeDialogFragment.OnButtonWithNeutralClickListener() {
+            addLocationBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onNeutralButtonClick(Date date) {
-                    // Optional if neutral button does'nt exists
-                }
-                @Override
-                public void onPositiveButtonClick(Date date) {
-                    String[] dateAndTime = splitDateTime(myDateFormat.format(date));
-                    dateContent.setText(dateAndTime[0]);
-                    timeContent.setText(dateAndTime[1]);
-                    Log.e("DateLogPoss", "POSITIVE");
-                    String formattedDate = myDateFormat.format(date);
-
-                    // Log the formatted date
-                    Log.e("DateLog", "Formatted Date: " + formattedDate);
-                }
-
-                @Override
-                public void onNegativeButtonClick(Date date) {
-
+                public void onClick(View v) {
+                    Intent intent = new  Intent(getApplicationContext(), MapActivity.class);
+                    mapLauncher.launch(intent);
                 }
             });
+
+
         }
-
-
         private View.OnClickListener onRemoveLocationClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 location.setText(R.string.location_default);
                 addLocationBtn.setVisibility(View.VISIBLE);
-                removeLocationBtn.setVisibility(View.GONE);
+                removeLocationBtn.setVisibility(View.INVISIBLE);
             }
         };
 
         private View.OnClickListener onSaveEdit = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-
                 boolean isStorageManager = false;
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
                     isStorageManager = Environment.isExternalStorageManager();
                 }
 
                 if (isStorageManager) {
-                    // Your app already has storage management permissions
-                    // You can proceed with file operations
-                } else {
-                    // Your app does not have storage management permissions
-                    // Guide the user to the system settings page to grant permission
-                    Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                    // Handle saving metadata when storage access is granted
+                    // Construct the intent to send data back to MetadataBottomSheet
+                    Intent intent = new Intent();
+                    String curLocation = location.getText().toString();
+                    String newPath = null;
 
+                    if (!Objects.equals(curPictureName, imageName.getText().toString()))
+                    {
+                        String newFileName = imageName.getText().toString() + "." + imageFormat.getText().toString();
+                        newPath = updatePathAfterRename(picturePath, newFileName);
+                        intent.putExtra("updatedName", newFileName);
+                        intent.putExtra("updatedPath", newPath);
+                        renameFile(getContentResolver(),pictureId, newFileName);
+                    }
+                    if(latitude != null)
+                    {
+                        intent.putExtra("latitude", latitude);
+                        intent.putExtra("longitude", longitude);
+                        intent.putExtra("address", location.getText().toString());
+                        if(newPath != null)
+                        {
+                            Log.d("Test Map 1", newPath);
+                            updateExifMetadata(newPath, latitude, longitude);
+                            Log.d("Test Map 2", newPath);
+                        }
+                        else
+                            updateExifMetadata(picturePath, latitude, longitude);
+
+                    }
+                    if((Objects.equals(curLocation, "No location information") && !Objects.equals(curLocation, locationAddress)))
+                    {
+                        intent.putExtra("noLocation", "No Location Information");
+                        if(newPath != null)
+                            updateExifMetadata(newPath, null, null);
+                        else
+                            updateExifMetadata(picturePath, null, null);
+                    }
+                    setResult(RESULT_OK, intent);
+                    finish();
+                } else {
+                    // Request storage access if not granted
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
                     startActivity(intent);
                 }
-//                UpdateDateByExif(path);
-
-                String newFileName = imageName.getText().toString() + "." + imageFormat.getText().toString();
-                Log.d("NEW FILE NAME", newFileName);
-                renameFile(path, newFileName);
-                Toast.makeText(context, "Data Saved",Toast.LENGTH_SHORT).show();
-
 
             }
         };
 
-        public void UpdateDateByExif(String imagePath)
-        {
-            ExifInterface exif = null;
+        public void renameFile(ContentResolver contentResolver, long pictureId, String newFileName) {
+
+            Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, pictureId);
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DISPLAY_NAME, newFileName);
+//            contentResolver.update(uri, values, null, null);
+            int rowsUpdated = contentResolver.update(uri, values, null, null);
+            if (rowsUpdated > 0) {
+                Log.d("UPDATE SUCCESS", "Image date updated successfully");
+            } else {
+                Log.e("UPDATE FAILED", "Image date update failed");
+            }
+
+        }
+        public String updatePathAfterRename(String oldPath, String newFileName) {
+            // Find the last occurrence of '/' to determine the directory part of the path
+            int lastSeparatorIndex = oldPath.lastIndexOf("/");
+            if (lastSeparatorIndex != -1) {
+                // Extract the directory part of the path
+                String directory = oldPath.substring(0, lastSeparatorIndex + 1); // Include the separator
+                // Combine the directory path with the new file name
+                return directory + newFileName;
+            }
+            // If there's no separator, return the new file name only
+            return null;
+        }
+        private void updateExifMetadata(String newPath , Double latitude, Double longitude) {
             try {
-                Log.d("RUN", "Run in exiff");
-                exif = new ExifInterface(imagePath);
-                Log.d("EXIF DATA:", exif.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL));
-                exif.setAttribute(ExifInterface.TAG_DATETIME_ORIGINAL, "2024:04:02 14:37:52");
-                Log.d("RUN2", "Run in exiff setAttributr");
+                    // Create an ExifInterface instance to read and modify the Exif metadata
+                ExifInterface exifInterface = new ExifInterface(newPath);
 
-                exif.saveAttributes();
-                Log.d("RUN3", "Run in exiff save");
-
+                // Remove the GPS tags if latitude and longitude are null
+                if (latitude == null || longitude == null) {
+                    exifInterface.setAttribute(ExifInterface.TAG_GPS_LATITUDE, null);
+                    exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, null);
+                    exifInterface.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, null);
+                    exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, null);
+                    exifInterface.saveAttributes();
+                } else {
+                    // Set the GPS coordinates
+                    Location location = new Location(""); // Empty provider
+                    location.setLatitude(latitude);
+                    location.setLongitude(longitude);
+                    exifInterface.setGpsInfo(location);
+                    exifInterface.saveAttributes();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-
-        public void renameFile(String oldFilePath, String newFileName){
-
-            Path oldFile = Paths.get(oldFilePath);
-            try {
-                Files.move(oldFile, oldFile.resolveSibling(newFileName));
-                Log.d("renameFile", "File renamed successfully");
-            }catch (IOException e)
-            {
-                Log.e("ERROR", e.getMessage());
-            }
-//            File oldFile = new File(oldFilePath);
-//
-//            // Ensure the old file exists
-//            if (!oldFile.exists()) {
-//                return; // File does not exist
-//            }
-//
-//            // Construct the new file path
-//            String parentDirectory = oldFile.getParent();
-//
-//            String newFilePath = parentDirectory + File.separator + newFileName + "." + imageFormat.getText().toString();
-//            Log.d("NEW FILE PATH", newFilePath);
-//
-//            File newFile = new File(newFilePath);
-//
-//            if (newFile.exists()) {
-//                Log.e("renameFile", "File already exists: " + newFilePath);
-//            } else {
-//                if (oldFile.renameTo(newFile)) {
-//                    // File renamed successfully
-//                    Log.d("renameFile", "File renamed successfully to: " + newFilePath);
-//                    // If you want to update metadata, do it here
-//                } else {
-//                    // Failed to rename file
-//                    Log.e("renameFile", "Failed to rename file: " + oldFilePath);
-//                    Log.e("renameFile", "Failed to rename new file: " + newFilePath);
-//                }
-//            }
-        }
-
-        private boolean isExternalStorageReadable() {
-            String state = Environment.getExternalStorageState();
-            return Environment.MEDIA_MOUNTED.equals(state) || Environment.MEDIA_MOUNTED_READ_ONLY.equals(state);
         }
 
         private View.OnClickListener onCancelEdit = new View.OnClickListener() {
@@ -285,8 +263,6 @@
                 finish();
             }
         };
-
-
         public static String[] splitDateTime(String formattedDate) {
             // Split the formatted date string into date and time components
             String[] parts = formattedDate.split(" ");
@@ -297,34 +273,5 @@
 
             return new String[]{date, time};
         }
-
-        public String convertDatetime(String datetime)
-        {
-            DateFormat inputFormat = new SimpleDateFormat("MMMM dd, yyyy HH:mm", Locale.getDefault());
-            Date date;
-            try {
-                date = inputFormat.parse(datetime);
-            } catch (Exception e) {
-                return "Error parsing datetime";  // Return empty strings in case of parsing error
-            }
-
-            DateFormat outputFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.ENGLISH);
-            String formattedDateTime = outputFormat.format(date);
-
-            return formattedDateTime;
-
-
-        }
-        private View.OnClickListener onDateTimeClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.e("Click", "CLICK: ");
-                dateTimeFragment.startAtCalendarView();
-                dateTimeFragment.setDefaultDateTime(new GregorianCalendar(2017, Calendar.MARCH, 4, 15, 20).getTime());
-                dateTimeFragment.show(getSupportFragmentManager(), TAG_DATETIME_FRAGMENT);
-            }
-        };
-
-
 
     }

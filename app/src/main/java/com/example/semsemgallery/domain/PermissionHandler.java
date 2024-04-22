@@ -1,12 +1,14 @@
 package com.example.semsemgallery.domain;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Build;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
@@ -21,10 +23,14 @@ public class PermissionHandler {
         this.requestPermissionLauncher = launcher;
     }
 
+
     public void checkAndRequestPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             String[] permissions = new String[]{
                     Manifest.permission.READ_MEDIA_IMAGES,
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
             };
 
             List<String> permissionsToRequest = new ArrayList<>();
@@ -52,6 +58,38 @@ public class PermissionHandler {
                 }
             }
         }
+    }
+
+    public static void requestLocationPermissions(Activity activity, int requestCode, boolean rationale) {
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted
+            if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+                // Show an explanation to the user
+                if (rationale) {
+                    // You can show your own rationale message here
+                }
+                // Request the permission
+                ActivityCompat.requestPermissions(activity,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        requestCode);
+            } else {
+                // No explanation needed; request the permission
+                ActivityCompat.requestPermissions(activity,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        requestCode);
+            }
+        }
+    }
+
+    public static boolean isPermissionGranted(String[] permissions, int[] grantResults, String permission) {
+        for (int i = 0; i < permissions.length; i++) {
+            if (permission.equals(permissions[i])) {
+                return grantResults[i] == PackageManager.PERMISSION_GRANTED;
+            }
+        }
+        return false;
     }
 
     private void showPermissionRationaleDialog(final String[] permissions) {

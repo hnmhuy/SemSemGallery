@@ -5,9 +5,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/btn_icon_botsheet"
     android:orientation="vertical"
-    app:cardCornerRadius="12dp"
+    app:cardCornerRadius="24dp"
     app:behavior_hideable="true"
-    android:layout_margin="16dp"
+    app:cardBackgroundColor="@color/picture_view_bottom_bar_bg"
     android:layout_marginBottom="200dp"
     app:behavior_peekHeight="600dp"
     app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
@@ -19,54 +19,55 @@
         android:layout_height="wrap_content"
         android:baselineAligned="false"
         android:paddingTop="12dp"
+
         android:paddingBottom="12dp">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:orientation="vertical">
+        <!--        <LinearLayout-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:gravity="center"-->
+        <!--            android:layout_weight="1"-->
+        <!--            android:orientation="vertical">-->
 
-            <Button
-                android:id="@+id/location"
-                style="?attr/materialIconButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:icon="@drawable/ic_location" />
+        <!--            <Button-->
+        <!--                android:id="@+id/location"-->
+        <!--                style="?attr/materialIconButtonStyle"-->
+        <!--                android:layout_width="wrap_content"-->
+        <!--                android:layout_height="wrap_content"-->
+        <!--                app:icon="@drawable/ic_location" />-->
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/locations"
-                />
+        <!--            <TextView-->
+        <!--                android:layout_width="wrap_content"-->
+        <!--                android:layout_height="wrap_content"-->
+        <!--                android:gravity="center"-->
+        <!--                android:text="@string/locations"-->
+        <!--                />-->
 
-        </LinearLayout>
+        <!--        </LinearLayout>-->
 
-        <LinearLayout
-            android:clickable="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:orientation="vertical">
+        <!--        <LinearLayout-->
+        <!--            android:clickable="true"-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:gravity="center"-->
+        <!--            android:layout_weight="1"-->
+        <!--            android:orientation="vertical">-->
 
-            <Button
-                android:id="@+id/recents"
-                style="?attr/materialIconButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:icon="@drawable/ic_recent" />
+        <!--            <Button-->
+        <!--                android:id="@+id/recents"-->
+        <!--                style="?attr/materialIconButtonStyle"-->
+        <!--                android:layout_width="wrap_content"-->
+        <!--                android:layout_height="wrap_content"-->
+        <!--                app:icon="@drawable/ic_recent" />-->
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/recent"
-                />
+        <!--            <TextView-->
+        <!--                android:layout_width="wrap_content"-->
+        <!--                android:layout_height="wrap_content"-->
+        <!--                android:gravity="center"-->
+        <!--                android:text="@string/recent"-->
+        <!--                />-->
 
-        </LinearLayout>
+        <!--        </LinearLayout>-->
 
         <LinearLayout
             android:clickable="true"

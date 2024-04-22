@@ -50,6 +50,7 @@
 
     <string name="search">Search</string>
     <string name="select_all">Select all</string>
+    <string name="unselect_all">Unselect all</string>
     <string name="settings">Settings</string>
     <string name="share">Share</string>
     <string name="size">Size</string>
@@ -62,6 +63,7 @@
     <string name="videos">Videos</string>
 
     <string name="yes">Yes</string>
+    <string name="backup_setting">Backup setting</string>
 
     <!-- Top app bar -->
     <string name="cloud_sync">Sync with cloud</string>
@@ -73,8 +75,8 @@
     <string name="sync_title">Sync with OneDrive </string>
     <string name="sync_description">Sync your pictures and videos with the SemSem Gallery folder in OneDrive.</string>
     <string name="sync_switch_status_off">Auto sync turn off</string>
-    <string name="viewing_options">Viewing options</string>
-    <string name="full_screen_scrolling">Full screen scrolling</string>
+    <string name="theme_options">Theme options</string>
+    <string name="dark_mode">Dark mode</string>
     <string name="auto_play">Auto play motion photos</string>
     <string name="merge_album">Merge albums</string>
     <string name="merge_album_description">Albums with the same name will be shown as a single album.</string>
@@ -91,12 +93,20 @@
     <string name="x">x</string>
     <string name="add_tag"># Add tag</string>
 
+    <!--  OCR fragment  -->
+    <string name="all_text">All Text</string>
+
+    <!--  MAP fragment  -->
+    <string name="done">Done</string>
+
+
     <!--    Recently deleted screen-->
-    <string name="trash_description">Pictures deleted from Gallery, My Files, and some third party apps stay in the Trash for 30 days before being permanently deleted.</string>
+    <string name="trash_description">This feature can get the pictures which is trashed by this app only. Please use the default gallery for access all trash pictures.</string>
     <string name="empty">Empty</string>
     <string name="select_items">Select items</string>
     <string name="all">All</string>
     <string name="selected">selected</string>
+    <string name="restore">Restore</string>
 
 
     <!--    DateTimePicker -->
@@ -113,6 +123,36 @@
     <string name="lock_and_home_screens">Lock and Home screens</string>
     <string name="home_screen">Home screen</string>
     <string name="lock_screen">Lock screen</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
 
-
+    <string name="cloud_feature">This feature can get the pictures uploaded by this app only.</string>
+    <string name="client_id">764863812102-2ra6ljef2bq889f5hmdojipk6te2uggp.apps.googleusercontent.com</string>
+    <string name="tags">Tags</string>
+    <string name="create_new_tag">Create new tag</string>
+    <string name="gallery">Gallery</string>
+    <string name="bitmap">Bitmap</string>
+    <string name="prose_hint">Type something here to include in the report</string>
+    <string name="web_page">Web Page</string>
+    <string name="tps_report">TPS Report</string>
+    <string name="report_body"><![CDATA[
+        <html>
+        <body>
+        <h1>TPS Report for: {{reportDate}}</h1>
+        <p>Here are the contents of this week\'s TPS report:</p>
+        <p>{{message}}</p>
+        <p>If you have any questions regarding this report, please
+        do <b>not</b> ask Mark Murphy.</p>
+        </body>
+        </html>
+        ]]>
+	</string>
+    <string name="pdf">PDF</string>
+    <string name="sort">Sort</string>
+    <string name="date_added_ascending">Date added (ascending)</string>
+    <string name="date_added_descending">Date added (descending)</string>
+    <string name="name_a_to_z">Name (A to Z)</string>
+    <string name="name_z_to_a">Name (Z to A)</string>
 </resources>

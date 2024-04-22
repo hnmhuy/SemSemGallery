@@ -2,6 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="icon_color">#FF000000</color>
     <color name="track_on">#ff9999</color>
     <color name="track_off">#9a999e</color>
     <color name="thumb_color">#fdfdfd</color>
@@ -15,5 +16,10 @@
     <color name="add_tag_border">#d6d6d6</color>
     <color name="text_color_black">#FF000000</color>
     <color name="picture_view_bottom_bar_bg">#E6FFFFFF</color>
-
+    <color name="ocr">#ebd058</color>
+    <color name="ocr_background">#989a97</color>
+    <color name="navbar_map_background">#f5eff3</color>
+    <color name="text_map">#702e55</color>
+    <color name="tag_bg">#E3E1D9</color>
+    <color name="action_bar_background">#747679</color>
 </resources>

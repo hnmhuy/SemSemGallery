@@ -1,6 +1,17 @@
 package com.example.semsemgallery.activities.pictureview.fragment;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -8,35 +19,124 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.EditMetadataActivity;
+import com.example.semsemgallery.activities.pictureview.TagsAdapter;
+import com.example.semsemgallery.domain.TagUtils;
+import com.example.semsemgallery.models.Tag;
+import com.google.android.flexbox.FlexDirection;
+import com.google.android.flexbox.FlexWrap;
+import com.google.android.flexbox.FlexboxLayoutManager;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.Callable;
 
-public class MetaDataBottomSheet extends BottomSheetDialogFragment {
-    public TextView date, time, name, filePath, device, size, height, width, megaPixels, iso, focalLength, ev, fNumber, exTime;
-    public LinearLayout row1, row2;
-    public  MetaDataBottomSheet()
-    {}
-    public String path;
-    public String fileName;
-    public MetaDataBottomSheet(String path, String fileName)
+public class MetaDataBottomSheet extends BottomSheetDialogFragment implements TagsAdapter.TagClickListener{
+    private TextView date, time, name, filePath, device, size, height, width, megaPixels, iso, focalLength, ev, fNumber, exTime, locationTextView;
+    private LinearLayout row2, mapContainer;
+    private String path;
+    private String fileName;
+    private final Long id;
+    private final Long fileSize;
+    private final Date datetime;
+    private String updatedPath = null;
+    private String updatedName = null;
+    private ProgressBar progressBar;
+    private ArrayList<Tag>[] tags;
+    private onBottomSheetDismissInterface listner = null;
+    public void setListner(onBottomSheetDismissInterface listner) {
+        this.listner = listner;
+    }
+    public MetaDataBottomSheet(Long id, String path, String fileName, Date datetime, Long fileSize)
     {
+        this.id = id;
         this.path = path;
         this.fileName = fileName;
+        this.datetime = datetime;
+        this.fileSize = fileSize;
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
+
+    public boolean isUpdateFileName() {
+        return isUpdateFileName;
+    }
+
+    private boolean isUpdateFileName = false;
+
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if(listner!=null) {
+            listner.onDismissed(isUpdateFileName);
+        }
+    }
+
+    private final ActivityResultLauncher<Intent> editMetadataLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    if (data != null) {
+                        if(data.hasExtra("updatedName"))
+                        {
+                            updatedName = data.getStringExtra("updatedName");
+                            updatedPath = data.getStringExtra("updatedPath");
+                            isUpdateFileName = true;
+                            name.setText(updatedName);
+
+                        }
+                        if(data.hasExtra("latitude"))
+                        {
+                            double latitude = data.getDoubleExtra("latitude", 0.0);
+                            double longitude = data.getDoubleExtra("longitude", 0.0);
+                            Log.d("Test map sheet ", latitude + " - " + longitude);
+                            updateMapAndAddress(latitude, longitude);
+                        }
+                        if(data.hasExtra("noLocation"))
+                        {
+                            hideLocationMetadata();
+                        }
+                    }
+                }
+            }
+    );
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState)
@@ -59,17 +159,62 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
         ev = view.findViewById(R.id.view_metadata_ev);
         fNumber = view.findViewById(R.id.view_metadata_fnumber);
         exTime = view.findViewById(R.id.view_metadata_ex_time);
+        mapContainer = view.findViewById(R.id.meta_data_map_container);
+        locationTextView = view.findViewById(R.id.address_textView);
+        // add tag
+        Button addTagBtn = view.findViewById(R.id.view_metadata_add_tag_btn);
+        RecyclerView tagsRv = view.findViewById(R.id.tags_rv);
+        TagUtils tagUtils = new TagUtils(getContext());
+        SQLiteDatabase db = tagUtils.myGetDatabase(requireContext());
+        progressBar = view.findViewById(R.id.progressBar);
+
+        tags = new ArrayList[]{tagUtils.getTagsByPictureId(db, id.toString())};
+
         initMetaDate();
+
         editBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(requireContext(), EditMetadataActivity.class);
+                if (updatedName != null)
+                {
+                    fileName = updatedName;
+                    path = updatedPath;
+                }
                 intent.putExtra("name", fileName);
                 intent.putExtra("date", date.getText());
                 intent.putExtra("time", time.getText());
-                intent.putExtra("filePath", path);
-                startActivity(intent);
+                intent.putExtra("pictureId", id);
+                intent.putExtra("picturePath", path);
+                if (locationTextView.getText() != null) {
+                    intent.putExtra("locationAddress", locationTextView.getText());
+                }
+                isUpdateFileName = false;
+                editMetadataLauncher.launch(intent);
             }
+        });
+
+        if(!tags[0].isEmpty()) {
+            TagsAdapter adapter = new TagsAdapter(getContext(), tags[0]);
+            adapter.setAddTag(false);
+            tagsRv.setVisibility(View.VISIBLE);
+            FlexboxLayoutManager  flexboxLayout = new FlexboxLayoutManager(getContext());
+            @SuppressLint("UseCompatLoadingForColorStateLists") ColorStateList colorStateList = getResources().getColorStateList(R.color.tag_bg);
+            addTagBtn.setBackgroundTintList(colorStateList);
+            flexboxLayout.setFlexDirection(FlexDirection.ROW);
+            flexboxLayout.setFlexWrap(FlexWrap.WRAP);
+            tagsRv.setLayoutManager(flexboxLayout);
+            adapter.setOnItemListener(this);
+            tagsRv.setAdapter(adapter);
+        }
+
+
+        addTagBtn.setOnClickListener(view1 -> {
+            ArrayList<Long> pictureId = new ArrayList<>();
+            pictureId.add(id);
+            AddTagBottomSheet addTagBottomSheet = new AddTagBottomSheet(tags[0], pictureId);
+            addTagBottomSheet.show(requireActivity().getSupportFragmentManager(), addTagBottomSheet.getTag());
+            addTagBottomSheet.setOnTagAddedListener(tag -> {dismiss();});
         });
 
         return view;
@@ -78,133 +223,290 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
     public void initMetaDate()
     {
         try {
-//            GET the exif
-//            MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
-//            metadataRetriever.setDataSource(path);
-
             ExifInterface exifInterface = new ExifInterface(path);
-            String datetime = exifInterface.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL);
 
+            String[] dateTimeFormatted = splitDateTimeFormat(String.valueOf(datetime));
+            setDateAndTime(dateTimeFormatted);
+            appendId(name, fileName);
 
-
-            String datetimeTemp = convertDateTimeFormat(datetime);
-            Log.e("NEW ERROR", datetime);
-            String[] dateTimeFormatted = splitDateTime(datetimeTemp);
-
-
-            String Model = exifInterface.getAttribute(ExifInterface.TAG_MODEL);
-            String softWare = exifInterface.getAttribute(ExifInterface.TAG_SOFTWARE);
-
-            if(Model != null)
-            {
-                device.setText(Model);
-            }
-            else if (softWare != null && softWare.contains("Android"))
-            {
-                device.setText("Screenshots");
-            }
-            else device.setText("Image Info");
-
-
-
-//      ------- Case 1 & Case 2
-            String heightContent = exifInterface.getAttribute(ExifInterface.TAG_IMAGE_LENGTH);
-            String widthContent = exifInterface.getAttribute(ExifInterface.TAG_IMAGE_WIDTH);
-            Log.d("HEIGHT", heightContent);
-            Log.d("WIDTH", widthContent);
-
-//      ------- If megapixel is < 0 => hide it
-            int megaPixelsNumber = (int) (Integer.parseInt(heightContent) * Integer.parseInt(widthContent) / 1e6);
-            String megaPixelsContent = megaPixelsNumber > 0 ? String.format("%sMP", megaPixelsNumber) : "";
-
-
-//      ------- Case 3
-            String isoContent = exifInterface.getAttribute(ExifInterface.TAG_PHOTOGRAPHIC_SENSITIVITY);
-            if (isoContent == null) {
-                row2.setVisibility(View.INVISIBLE);
-            } else {
-                String focal = exifInterface.getAttribute(ExifInterface.TAG_FOCAL_LENGTH_IN_35MM_FILM);
-                String evContent = exifInterface.getAttribute(ExifInterface.TAG_EXPOSURE_TIME);
-
-                float evNumber = Float.parseFloat(evContent);
-                String evContentFormat = String.format("%.1f", evNumber);
-
-                String fNumberContent = exifInterface.getAttribute(ExifInterface.TAG_F_NUMBER);
-                Double exTimeNumber = Double.valueOf(exifInterface.getAttribute(ExifInterface.TAG_EXPOSURE_TIME));
-                String exTimeContent = convertDecimalToFraction(exTimeNumber);
-
-                iso.setText(String.format("ISO %s", isoContent));
-                focalLength.setText(String.format("%smm", focal));
-                ev.setText(String.format("%sev", evContentFormat));
-                fNumber.setText(String.format("F%s", fNumberContent));
-                exTime.setText(String.format("%s s", exTimeContent));
-            }
-
-
-//            Log.e("model", Model);
-
-//            Assign to TextView
-            date.setText(dateTimeFormatted[0]);
-            time.setText(dateTimeFormatted[1]);
-            name.setText(fileName);
-            filePath.setText(path);
-
-
-//            size.setText(bytesIntoHumanReadable(bytes));
-
-            height.setText(heightContent);
-            width.setText(widthContent);
-            megaPixels.setText(megaPixelsContent);
-
-
+            processDirectoryPath(path);
+            processFileSize(fileSize);
+//            processDeviceText(exifInterface);
+//            processImageDimensions(exifInterface);
+//            processImageInfoCamera(exifInterface);
+//            handleLocationMetadata(exifInterface);
+            exifInterfaceAsync(exifInterface);
+            locationAsync(exifInterface)
+                    .addOnSuccessListener(aVoid -> {
+                        // Handle success
+                        progressBar.setVisibility(View.GONE);
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle failure
+                        System.out.println("Failed to handle location metadata: " + e.getMessage());
+                    });
         }catch (Exception e)
         {
             Log.e("ERROR IN META DATA:", e.getMessage());
         }
     }
 
-    public static String convertDateTimeFormat(String datetime) {
-        try {
-            // Parse input datetime string
-            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
-            SimpleDateFormat outputFormat = new SimpleDateFormat("MMMM dd yyyy HH:mm");
+    private Task<Void> locationAsync(final ExifInterface exifInterface) {
+        Callable<Void> callable = () -> {
+            handleLocationMetadata(exifInterface);
+            return null; // Since the function doesn't return anything, return null
+        };
 
-            // Parse and format datetime
-            return outputFormat.format(Objects.requireNonNull(inputFormat.parse(datetime)));
-        } catch (Exception e) {
-            Log.e("ERROR IN META DATA:", e.getMessage());
-            return null;
+        return Tasks.call(callable);
+    }
+
+    private void exifInterfaceAsync(final ExifInterface exifInterface) {
+        Callable<Void> callable = () -> {
+            processDeviceText(exifInterface);
+            processImageDimensions(exifInterface);
+            processImageInfoCamera(exifInterface);
+            return null; // Since the function doesn't return anything, return null
+        };
+
+        Tasks.call(callable);
+    }
+    private void updateMapAndAddress(double latitude, double longitude) {
+        if (mapContainer.getVisibility() != View.VISIBLE) {
+            mapContainer.setVisibility(View.VISIBLE);
         }
 
+        // Update locationTextView with the new address
+        String address = getAddressFromLatLng(new LatLng(latitude, longitude));
+        locationTextView.setText(address);
+
+        // Update map marker position
+        displayMapWithMarker(latitude, longitude);
     }
 
-    public String[] splitDateTime(String datetimeContent) {
-        // Split the formatted date string into date and time components
-        String[] parts = datetimeContent.split(" ");
 
-        // Extract date and time components
-        String date = parts[0] + " " + parts[1] + ", " + parts[2]; // Date component
-        String time = parts[3]; // Time component
+    // [START] Set datetime content
+    private String[] splitDateTimeFormat(String dateTime) {
+        try {
+            Log.d("Date", dateTime.toString());
+            SimpleDateFormat inputFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
+            SimpleDateFormat outputFormat = new SimpleDateFormat("MMMM dd yyyy HH:mm", Locale.ENGLISH);
+            Date date = inputFormat.parse(dateTime);
+            String formattedDateTime = outputFormat.format(date);
+            String[] temp = formattedDateTime.split(" ");
+            String dateTemp = temp[0] + " " + temp[1] + ", " + temp[2];
+            return new String[]{dateTemp, temp[3]};
 
-        return new String[]{date, time};
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return new String[]{"", ""};
+        }
+    }
+    private void setDateAndTime(String[] dateTimeFormatted) {
+        appendId(date, dateTimeFormatted[0]);
+        appendId(time, dateTimeFormatted[1]);
+    }
+    // [END] Set datetime content
+
+    private void appendId(TextView view, String content) {
+        view.setText(content);
     }
 
-    private String bytesIntoHumanReadable(int bytes) {
-        long kilobyte = 1024;
-        long megabyte = kilobyte * 1024;
-        long gigabyte = megabyte * 1024;
+    // [START] Set path
+    private void processDirectoryPath(String fullPath) {
+        int lastSlashIndex = fullPath.lastIndexOf("/");
+        if (lastSlashIndex != -1) {
+            appendId(filePath,fullPath.substring(0, lastSlashIndex));
+        } else {
+            // No directory path found
+            appendId(filePath," ");
+        }
+    }
+    // [END] Set path
+
+    // [START] Set Device content
+    private void processDeviceText(ExifInterface exifInterface) {
+        String model = exifInterface.getAttribute(ExifInterface.TAG_MODEL);
+        String software = exifInterface.getAttribute(ExifInterface.TAG_SOFTWARE);
+        if (model != null) {
+            appendId(device, model);
+        } else if (software != null && software.contains("Android")) {
+            appendId(device, "Screenshots");
+        } else {
+            appendId(device, "Image Info");
+        }
+    }
+    // [END] Set Device content
+
+    // [START] Set fileSize content
+    private void processFileSize(long bytes)
+    {
+        String sizeContent = bytesIntoHumanReadable(bytes);
+        appendId(size, sizeContent);
+    }
+    // [END] Set fileSize content
+
+
+    // [START] Set Dimension content
+    private void processImageDimensions(ExifInterface exifInterface) {
+        String heightContent = exifInterface.getAttribute(ExifInterface.TAG_IMAGE_LENGTH);
+        String widthContent = exifInterface.getAttribute(ExifInterface.TAG_IMAGE_WIDTH);
+        Log.d("HEIGHT", heightContent);
+        Log.d("WIDTH", widthContent);
+
+        int megaPixelsNumber = calculateMegaPixels(heightContent, widthContent);
+        String megaPixelsContent = megaPixelsNumber > 0 ? String.format("%sMP", megaPixelsNumber) : "";
+        setDimensionViews(heightContent, widthContent, megaPixelsContent);
+    }
+    private int calculateMegaPixels(String heightContent, String widthContent) {
+        return (int) (Integer.parseInt(heightContent) * Integer.parseInt(widthContent) / 1e6);
+    }
+
+    private void setDimensionViews(String heightContent, String widthContent, String megaPixelsContent) {
+        appendId(height, heightContent);
+        appendId(width, widthContent);
+        appendId(megaPixels, megaPixelsContent);
+    }
+    // [END] Set Dimension
+
+    // [START] Set row2: Detail Information of image: focal, ev,..
+    private void processImageInfoCamera(ExifInterface exifInterface) {
+        String isoContent = exifInterface.getAttribute(ExifInterface.TAG_PHOTOGRAPHIC_SENSITIVITY);
+        if (isoContent == null) {
+            row2.setVisibility(View.INVISIBLE);
+        } else {
+            String focal = exifInterface.getAttribute(ExifInterface.TAG_FOCAL_LENGTH_IN_35MM_FILM);
+            String evContent = exifInterface.getAttribute(ExifInterface.TAG_EXPOSURE_TIME);
+            float evNumber = Float.parseFloat(evContent);
+            String evContentFormat = String.format("%.1f", evNumber);
+            String fNumberContent = exifInterface.getAttribute(ExifInterface.TAG_F_NUMBER);
+            Double exTimeNumber = Double.valueOf(exifInterface.getAttribute(ExifInterface.TAG_EXPOSURE_TIME));
+            String exTimeContent = convertDecimalToFraction(exTimeNumber);
+
+            setImageInfoCameraViews(isoContent, focal, evContentFormat, fNumberContent, exTimeContent);
+        }
+    }
+
+    private void handleLocationMetadata(ExifInterface exifInterface) {
+        String gpsLatitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
+        String gpsLongitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
+        String gpsLatitudeRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE_REF);
+        String gpsLongitudeRef = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF);
+        Double lat = null,  lng = null;
+
+        if (gpsLatitude != null && gpsLongitude != null && gpsLatitudeRef != null && gpsLongitudeRef != null) {
+//            Double gpsLatitude = convertRationalToDecimal(gpsLatitudeRational);
+//            Double gpsLongitude = convertRationalToDecimal(gpsLongitudeRational);
+
+            if(gpsLatitudeRef.equals("N")){
+                lat = convertToDegree(gpsLatitude);
+            }
+            else{
+                lat = 0 - convertToDegree(gpsLatitude);
+            }
+            if(gpsLongitudeRef.equals("E")){
+                lng = convertToDegree(gpsLongitude);
+            }
+            else{
+                lng = 0 - convertToDegree(gpsLongitude);
+            }
+            if(lat != null && lng != null)
+            {
+                showLocationMetadata(lat, lng);
+            }
+            else {
+                Log.e("Map", "ERROR NO LATLNG");
+            }
+        } else {
+            hideLocationMetadata();
+        }
+    }
+
+    private void showLocationMetadata(Double gpsLatitude, Double gpsLongitude) {
+        mapContainer.setVisibility(View.VISIBLE);
+        LatLng curPoint = new LatLng(gpsLatitude, gpsLongitude);
+        String address = getAddressFromLatLng(curPoint);
+        locationTextView.setText(address);
+
+        displayMapWithMarker(gpsLatitude, gpsLongitude);
+    }
+
+    private String getAddressFromLatLng(LatLng point) {
+        Geocoder geocoder = new Geocoder(requireContext());
+        String curAddress = "";
+        try {
+            List<Address> addresses = geocoder.getFromLocation(point.latitude, point.longitude, 1);
+            Log.d("Map Address",addresses.get(0).getAddressLine(0));
+            if (!addresses.isEmpty()) {
+                Address address = addresses.get(0);
+                curAddress = address.getAddressLine(0);
+                Log.d("Map Address", curAddress);
+                return curAddress;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return curAddress;
+    }
+
+    private void hideLocationMetadata() {
+        locationTextView.setText("No location information");
+        mapContainer.setVisibility(View.GONE);
+
+    }
+
+    private void displayMapWithMarker(Double gpsLatitude, Double gpsLongitude) {
+        FragmentManager fm = getChildFragmentManager();
+        SupportMapFragment mapFragment = (SupportMapFragment) fm.findFragmentById(R.id.meta_data_mapFragment);
+        if (mapFragment == null) {
+            mapFragment = SupportMapFragment.newInstance();
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.replace(R.id.mapFragment, mapFragment).commit();
+            fm.executePendingTransactions();
+        }
+        mapFragment.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                googleMap.clear();
+                LatLng pictureLocation = new LatLng(gpsLatitude, gpsLongitude);
+                if(updatedPath != null)
+                    path = updatedPath;
+                Bitmap imageBitmap = pathToBitmap(path, 140);
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pictureLocation, 15));
+                if (imageBitmap != null) {
+                    BitmapDescriptor customMarker = createCustomMarker(requireContext(), pathToBitmap(path, 140));
+                    googleMap.addMarker(new MarkerOptions().position(pictureLocation).title("Picture Location").icon(customMarker));
+                } else {
+                    googleMap.addMarker(new MarkerOptions().position(pictureLocation).title("Picture Location"));
+                }
+            }
+        });
+    }
+    private void setImageInfoCameraViews(String isoContent, String focal, String evContentFormat, String fNumberContent, String exTimeContent) {
+        iso.setText(String.format("ISO %s", isoContent));
+        focalLength.setText(String.format("%smm", focal));
+        ev.setText(String.format("%sev", evContentFormat));
+        fNumber.setText(String.format("F%s", fNumberContent));
+        exTime.setText(String.format("%s s", exTimeContent));
+    }
+    // [END] Set row2: Detail Information of image: focal, ev,..
+
+    private String bytesIntoHumanReadable(long _bytes) {
+        float kilobyte = 1024;
+        float megabyte = kilobyte * 1024;
+        float gigabyte = megabyte * 1024;
+        float bytes = (float) _bytes;
 
         if ((bytes >= 0) && (bytes < kilobyte)) {
-            return bytes + " B";
+            return String.format("%.2f", bytes) + " B";
 
         } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
-            return (bytes / kilobyte) + " KB";
+            return String.format("%.2f", bytes / kilobyte) + " KB";
 
         } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
-            return (bytes / megabyte) + " MB";
+            return String.format("%.2f", bytes / megabyte) + " MB";
 
         } else {
-            return bytes + " Bytes";
+            return String.format("%.2f", bytes / gigabyte) + " GB";
         }
     }
 
@@ -223,8 +525,94 @@ public class MetaDataBottomSheet extends BottomSheetDialogFragment {
         return numerator + "/" + denominator;
     }
 
+    private Double convertToDegree(String stringDMS){
+        Double result = null;
+        String[] DMS = stringDMS.split(",", 3);
+
+        String[] stringD = DMS[0].split("/", 2);
+        Double D0 = new Double(stringD[0]);
+        Double D1 = new Double(stringD[1]);
+        Double FloatD = D0/D1;
+
+        String[] stringM = DMS[1].split("/", 2);
+        Double M0 = new Double(stringM[0]);
+        Double M1 = new Double(stringM[1]);
+        Double FloatM = M0/M1;
+
+        String[] stringS = DMS[2].split("/", 2);
+        Double S0 = new Double(stringS[0]);
+        Double S1 = new Double(stringS[1]);
+        Double FloatS = S0/S1;
+
+        result = new Double(FloatD + (FloatM/60) + (FloatS/3600));
+
+        return result;
+
+
+    };
+
+    private BitmapDescriptor createCustomMarker(Context context, Bitmap bitmap) {
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
+    private Bitmap pathToBitmap(String path, int size) {
+        File imgFile = new File(path);
+        if (imgFile.exists()) {
+            Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+
+            try {
+                ExifInterface exifInterface = new ExifInterface(path);
+                int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+                int rotationAngle = switch (orientation) {
+                    case ExifInterface.ORIENTATION_ROTATE_90 -> 90;
+                    case ExifInterface.ORIENTATION_ROTATE_180 -> 180;
+                    case ExifInterface.ORIENTATION_ROTATE_270 -> 270;
+                    default -> 0;
+                };
+
+                Matrix matrix = new Matrix();
+                matrix.postRotate(rotationAngle);
+
+                // Rotate the bitmap if necessary
+                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+
+                // Crop the bitmap into a square with width = height
+                int width = bitmap.getWidth();
+                int height = bitmap.getHeight();
+                int cropSize = Math.min(width, height);
+                int startX = (width - cropSize) / 2;
+                int startY = (height - cropSize) / 2;
+                bitmap = Bitmap.createBitmap(bitmap, startX, startY, cropSize, cropSize);
+
+                // Resize the cropped bitmap to the desired size
+                bitmap = Bitmap.createScaledBitmap(bitmap, size, size, false);
+
+                return bitmap;
+            } catch (IOException e) {
+                e.printStackTrace();
+                // Handle the error if ExifInterface fails to read the file
+                return null;
+            }
+        } else {
+            // If the file doesn't exist, return null or handle the error
+            return null;
+        }
+    }
+
+
     // Method to find the greatest common divisor (gcd) of two integers
     public static int gcd(int a, int b) {
         return b == 0 ? a : gcd(b, a % b);
     }
+
+    @Override
+    public void onTagClick(View view, int position) {
+        Toast.makeText(getContext(), "Search by " + tags[0].get(position).getName(), Toast.LENGTH_SHORT).show();
+    }
+
+    static public interface onBottomSheetDismissInterface {
+        public void onDismissed(boolean isUpdateFileName);
+    }
+
 }

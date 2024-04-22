@@ -1,11 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:orientation="vertical"
     android:layout_height="match_parent">
-    <include layout="@layout/top_bar_pictures" />
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/picture_recycler_view"
+
+    <!-- Your content here -->
+    <include
+        layout="@layout/top_bar_pictures"
+        android:id="@+id/top_bar" />
+    <com.google.android.material.appbar.MaterialToolbar
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-</LinearLayout>
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        android:id="@+id/selecting_top_bar"
+        app:title="@string/select_items" />
+
+    <RelativeLayout
+        android:layout_below="@+id/top_bar"
+        android:layout_above="@+id/action_bar"
+        android:id="@+id/contentGroup"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            app:tint="@color/text_color_black"
+            android:id="@+id/progressBar"
+            android:layout_centerInParent="true"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/picture_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+        <!-- FloatingActionButton -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/add_fab"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:background="#6851a0"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.MyApp.FloatingActionButton"
+            android:src="@drawable/baseline_photo_camera_24"
+            app:elevation="2dp"
+            android:contentDescription="@string/camera"
+            app:pressedTranslationZ="0dp" />
+    </RelativeLayout>
+
+
+    <LinearLayout
+        android:id="@id/action_bar"
+        android:visibility="gone"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_weight="4">
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            style="?attr/materialIconButtonStyle"
+            android:textColor="@color/text_color_black"
+            android:layout_weight="1"
+            android:text="@string/share"
+            android:id="@+id/btnShare"
+            android:drawableTop="@drawable/ic_share" />
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            style="?attr/materialIconButtonStyle"
+            android:textColor="@color/text_color_black"
+            android:layout_weight="1"
+            android:id="@+id/btnAddTag"
+            android:text="@string/add_tag"
+            android:drawableTop="@drawable/ic_hash_tag" />
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            style="?attr/materialIconButtonStyle"
+            android:textColor="@color/text_color_black"
+            android:layout_weight="1"
+            android:id="@+id/btnDelete"
+            android:text="@string/delete"
+            android:drawableTop="@drawable/ic_delete" />
+        <Button
+            android:layout_width="0dp"
+            android:id="@+id/btnMore"
+            android:layout_height="wrap_content"
+            style="?attr/materialIconButtonStyle"
+            android:layout_weight="1"
+            android:text="@string/more"
+            android:textColor="@color/text_color_black"
+            android:drawableTop="@drawable/ic_more_vert" />
+    </LinearLayout>
+</RelativeLayout>

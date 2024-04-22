@@ -1,9 +1,0 @@
-package com.example.semsemgallery.activities.interfaces;
-
-import com.example.semsemgallery.models.People;
-
-import com.example.semsemgallery.models.People;
-
-public interface FragmentCallbacks {
-    public abstract void onMsgFromMainToFragment(People people);
-}

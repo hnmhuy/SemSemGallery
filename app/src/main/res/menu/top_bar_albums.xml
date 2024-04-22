@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/add"
-        android:icon="@drawable/ic_add"
+        android:icon="@drawable/ic_add_40px"
         android:title="@string/add"
         app:showAsAction="ifRoom" />
 
@@ -22,11 +22,5 @@
         android:id="@+id/select_all"
         android:title="@string/select_all"
         app:showAsAction="never" />
-
-    <item
-        android:id="@+id/hide_album"
-        android:title="@string/hide_albums"
-        app:showAsAction="never" />
-
 
 </menu>
