@@ -20,6 +20,7 @@ import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.base.GridMode;
 import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.main2.fragment.PicturesFragment;
+import com.example.semsemgallery.activities.main2.viewholder.DateHeaderItem;
 import com.example.semsemgallery.activities.main2.viewholder.GalleryItem;
 import com.example.semsemgallery.activities.main2.viewholder.GalleryItemViewHolder;
 import com.example.semsemgallery.activities.pictureview.PictureViewActivity;
@@ -78,22 +79,26 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryItemViewHolder> 
         return null;
     }
 
+    private void onBindData(Picture data, GalleryItemViewHolder holder, boolean isChecked) {
+        holder.selector.setVisibility(observableGridMode.getCurrentMode() == GridMode.NORMAL ? View.INVISIBLE : View.VISIBLE);
+        holder.selector.setChecked(isChecked);
+        holder.isFav.setVisibility(data.isFav() ? View.VISIBLE : View.INVISIBLE);
+        Glide.with(context).load(data.getPath()).skipMemoryCache(true).into(holder.thumnail);
+    }
+
+    private void onBindData(DateHeaderItem data, GalleryItemViewHolder holder) {
+        holder.selector.setVisibility(View.INVISIBLE);
+        holder.groupDisplayText.setText(data.getDateFormatted());
+    }
+
 
     @Override
     public void onBindViewHolder(@NonNull GalleryItemViewHolder holder, int position) {
         GalleryItem item = observableGridMode.getDataAt(position).data;
-        holder.selector.setChecked(observableGridMode.getDataAt(position).isSelected);
-        if (observableGridMode.getCurrentMode() == GridMode.SELECTING) {
-            if (item.getType() == GalleryItem.GROUPDATE)
-                holder.selector.setVisibility(View.INVISIBLE);
-            else holder.selector.setVisibility(View.VISIBLE);
-        }
         if (item.getType() == GalleryItem.GROUPDATE) {
-            holder.groupDisplayText.setText(item.getDateFormatted());
+            onBindData((DateHeaderItem) item.getData(), holder);
         } else {
-            Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ((Picture)item.getData()).getPictureId());
-            Glide.with(context).load(imageUri).skipMemoryCache(true).into(holder.thumnail);
-            holder.isFav.setVisibility(((Picture) item.getData()).isFav() ? View.VISIBLE : View.INVISIBLE);
+            onBindData((Picture) item.getData(), holder, observableGridMode.getDataAt(position).isSelected);
         }
     }
 

@@ -227,9 +227,6 @@ class PictureViewActivity : AppCompatActivity() {
         return dialog
     }
 
-
-
-
     private var albumId: String? = null
     private var loadMode: String? = null
     private lateinit var fragmentActivity: PictureViewActivity
@@ -242,6 +239,7 @@ class PictureViewActivity : AppCompatActivity() {
     private lateinit var ocrBtn: ImageButton
     private var linesText: List<String> = emptyList()
     private val aiHandler: AIHandler = AIHandler.getInstance()
+    private var index: Int = -1
     private val treeSet: TreeSet<Picture> = TreeSet(Comparator.reverseOrder<Picture>())
     private fun createPesdkSettingsList() =
         PhotoEditorSettingsList(false)
@@ -342,6 +340,7 @@ class PictureViewActivity : AppCompatActivity() {
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(pos: Int) {
                 super.onPageSelected(pos)
+                index = pos
                 if (pictureList.isNotEmpty()) {
                     val element = pictureList[0]
                     selectingPic = pictureList[pos];
@@ -405,10 +404,11 @@ class PictureViewActivity : AppCompatActivity() {
                         values.remove(MediaStore.Images.Media.IS_TRASHED)
                         values.put(MediaStore.Images.Media.IS_PENDING, 0)
                         this.contentResolver.update(imageUri, values, null, null)
-                        var index = pictureList.indexOf(selectingPic)
-                        Log.d("TrashForPictureViewActivity", "Index = $index")
-                        if (index != -1 && pictureList.remove(selectingPic)) {
-                            adapter.notifyItemRemoved(if (index - 1 >= 0) index - 1 else 0)
+                        if (index != -1) {
+                            treeSet.remove(selectingPic)
+                            if (pictureList.size == 0) {
+                                Toast.makeText(this, "No picture!", Toast.LENGTH_LONG)
+                            } else adapter.removePictureAt(index)
                         }
                     }
                 };
@@ -711,14 +711,6 @@ class PictureViewActivity : AppCompatActivity() {
                 dialog.show()
                 return true
             }
-
-            R.id.print -> {
-                // Handle print action
-
-                return true
-            }
-
-
             else -> return super.onOptionsItemSelected(item)
         }
     }

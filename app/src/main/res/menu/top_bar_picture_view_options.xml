@@ -18,9 +18,4 @@
         android:id="@+id/set_as_wallpaper"
         android:title="@string/set_as_wallpaper"
         app:showAsAction="never" />
-
-    <item
-        android:id="@+id/print"
-        android:title="@string/print"
-        app:showAsAction="never" />
 </menu>

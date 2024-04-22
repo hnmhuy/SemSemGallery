@@ -108,10 +108,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
     private ProgressBar progressBar;
     private final ActivityResultLauncher<Intent> activityCameraResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if (result.getResultCode() == Activity.RESULT_OK) {
-//                    loader.execute(PictureLoadMode.ALL.toString());
-                } else {
-                    // Image capture failed or was canceled
+                if (result.getResultCode() != Activity.RESULT_OK) {
                     PicturesFragment.this.context.getContentResolver().delete(finalUri, null, null);
                     Toast.makeText(getActivity(), "Image capture failed", Toast.LENGTH_SHORT).show();
                 }
@@ -141,6 +138,8 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 observableGridMode.reset();
                 galleryItems.clear();
                 adapter.notifyDataSetChanged();
+                recyclerView.setAdapter(null);
+                Log.d("PictureFragment", "HHH" + adapter.getItemCount());
             }
 
             @Override
@@ -159,8 +158,9 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 dataList = new ArrayList<>(galleryItems);
                 for (int i = 0; i < dataList.size(); i++) {
                     observableGridMode.addData(dataList.get(i));
+                    adapter.notifyItemInserted(i);
                 }
-                adapter.notifyDataSetChanged();
+                recyclerView.setAdapter(adapter);
                 progressBar.setVisibility(View.GONE);
             }
         };
@@ -185,6 +185,8 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
             Menu menu = topBar.getMenu();
             menu.removeItem(R.id.cloud);
         }
+        progressBar.setVisibility(View.VISIBLE);
+        loader.execute(PictureLoadMode.ALL.toString());
       //  loader.execute(PictureLoadMode.ALL.toString());
     }
 
@@ -262,8 +264,8 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 } else return false;
             }
         });
-        progressBar.setVisibility(View.VISIBLE);
-        loader.execute(PictureLoadMode.ALL.toString());
+//        progressBar.setVisibility(View.VISIBLE);
+//        loader.execute(PictureLoadMode.ALL.toString());
 
         return view;
     }
