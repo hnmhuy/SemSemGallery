@@ -31,6 +31,12 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder> {
         isAddTag = true;
     }
 
+    public TagsAdapter(Context context, ArrayList<Tag> tags, boolean isAddTag) {
+        this.context = context;
+        this.tags = tags;
+        this.isAddTag = isAddTag;
+    }
+
     public void setAddTag(boolean addTag) {
         isAddTag = addTag;
     }

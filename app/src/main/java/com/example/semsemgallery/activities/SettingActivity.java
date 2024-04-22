@@ -1,7 +1,11 @@
 package com.example.semsemgallery.activities;
 
+import android.app.UiModeManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
@@ -13,6 +17,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import com.bumptech.glide.Glide;
 import com.example.semsemgallery.R;
@@ -40,6 +45,7 @@ public class SettingActivity extends AppCompatActivity {
     FirebaseAuth auth = FirebaseAuth.getInstance();
     GoogleSignInClient googleSignInClient;
     private MaterialSwitch materialSwitch;
+    private MaterialSwitch switchThemeMode;
     private MaterialToolbar appTopBar;
     private TextView syncStatus;
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
@@ -84,6 +90,22 @@ public class SettingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
         View include = (View) findViewById(R.id.included_setting);
+        switchThemeMode = findViewById(R.id.switch_theme_mode);
+        switchThemeMode.setChecked(isDarkModeEnabled());
+        switchThemeMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // Handle switch state change
+                if (isChecked) {
+                    // Dark mode is enabled
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                } else {
+                    // Light mode is enabled
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                }
+                recreate();
+            }
+        });
 
         FirebaseApp.initializeApp(SettingActivity.this);
         appTopBar = findViewById(R.id.setting_topAppBar);
@@ -136,6 +158,28 @@ public class SettingActivity extends AppCompatActivity {
         if (auth.getCurrentUser() != null) {
             materialSwitch.setChecked(true);
             syncStatus.setText(auth.getCurrentUser().getEmail());
+        }
+
+
+
+    }
+
+    private boolean isDarkModeEnabled() {
+        int currentNightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        switch (currentNightMode) {
+            case Configuration.UI_MODE_NIGHT_NO:
+                Log.d("Mode", "Light mode: " + String.valueOf(currentNightMode));
+                // Night mode is not active, we're using the light theme
+                return false;
+            case Configuration.UI_MODE_NIGHT_YES:
+                Log.d("Mode", "Dark mode: " + String.valueOf(currentNightMode));
+
+                // Night mode is active, we're using dark theme
+                return true;
+            default:
+                // Night mode is not specified, return false as default
+                Log.d("Mode", "No mode: " + String.valueOf(currentNightMode));
+                return false;
         }
     }
 }

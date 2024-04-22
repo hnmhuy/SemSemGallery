@@ -75,8 +75,8 @@
     <string name="sync_title">Sync with OneDrive </string>
     <string name="sync_description">Sync your pictures and videos with the SemSem Gallery folder in OneDrive.</string>
     <string name="sync_switch_status_off">Auto sync turn off</string>
-    <string name="viewing_options">Viewing options</string>
-    <string name="full_screen_scrolling">Full screen scrolling</string>
+    <string name="theme_options">Theme options</string>
+    <string name="dark_mode">Dark mode</string>
     <string name="auto_play">Auto play motion photos</string>
     <string name="merge_album">Merge albums</string>
     <string name="merge_album_description">Albums with the same name will be shown as a single album.</string>

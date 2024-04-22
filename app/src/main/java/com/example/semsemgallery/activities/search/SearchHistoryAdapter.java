@@ -25,10 +25,10 @@ public class SearchHistoryAdapter extends RecyclerView.Adapter<SearchHistoryAdap
     private SearchedTagClickListener tagClickListener;
     private SearchedTagLongLickListener tagLongClickListener;
 
-    public SearchHistoryAdapter(Context context, ArrayList<Tag> tags) {
+    public SearchHistoryAdapter(Context context, ArrayList<Tag> tags, boolean isAddTag) {
         this.context = context;
         this.tags = tags;
-        isAddTag = true;
+        this.isAddTag = isAddTag;
     }
 
     public void setAddTag(boolean addTag) {

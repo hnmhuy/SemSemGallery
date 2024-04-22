@@ -109,7 +109,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
     private final ActivityResultLauncher<Intent> activityCameraResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
-                    loader.execute(PictureLoadMode.ALL.toString());
+//                    loader.execute(PictureLoadMode.ALL.toString());
                 } else {
                     // Image capture failed or was canceled
                     PicturesFragment.this.context.getContentResolver().delete(finalUri, null, null);
