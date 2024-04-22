@@ -6,13 +6,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="visible"
-        app:tint="@color/text_color_black"
-        android:id="@+id/progressBar"
-        android:layout_centerInParent="true" />
+<!--    <ProgressBar-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:visibility="visible"-->
+<!--        app:tint="@color/text_color_black"-->
+<!--        android:id="@+id/progressBar"-->
+<!--        android:layout_centerInParent="true" />-->
 
     <include
         layout="@layout/top_bar_search_result"
@@ -54,16 +54,6 @@
             android:text="@string/share"
             android:id="@+id/btnShare"
             android:drawableTop="@drawable/ic_share" />
-
-        <Button
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            style="?attr/materialIconButtonStyle"
-            android:textColor="@color/text_color_black"
-            android:layout_weight="1"
-            android:id="@+id/btnAddTag"
-            android:text="@string/add_tag"
-            android:drawableTop="@drawable/ic_hash_tag" />
 
         <Button
             android:layout_width="0dp"

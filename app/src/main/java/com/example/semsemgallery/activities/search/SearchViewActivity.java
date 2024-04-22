@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -43,7 +44,9 @@ import java.util.Set;
 
 public class SearchViewActivity extends AppCompatActivity implements TagsAdapter.TagClickListener, SearchHistoryAdapter.SearchedTagClickListener{
     FragmentTransaction ft;
+    private TextView erase;
     ListView listView;
+    SearchHistoryAdapter newAdapter;
     private ArrayList<String> tagName = new ArrayList<>();
     private ArrayList<Tag> searchedKeyword = new ArrayList<>();
     Tag searchResult;
@@ -84,7 +87,7 @@ public class SearchViewActivity extends AppCompatActivity implements TagsAdapter
         }
 
         if(!tagData.isEmpty()) {
-            TagsAdapter adapter = new TagsAdapter(this, tagData);
+            TagsAdapter adapter = new TagsAdapter(this, tagData, false);
             tagsRv.setVisibility(View.VISIBLE);
             FlexboxLayoutManager flexboxLayout = new FlexboxLayoutManager(this);
             flexboxLayout.setFlexDirection(FlexDirection.ROW);
@@ -108,20 +111,45 @@ public class SearchViewActivity extends AppCompatActivity implements TagsAdapter
                 searchResult = tagSQL.searchTag(db, selectedItem);
                 if(searchResult != null){
                     searchedKeyword.add(searchResult);
+                    newAdapter.notifyDataSetChanged();
                     saveSearchQuery(selectedItem);
                     Intent intent = new Intent(SearchViewActivity.this, SearchResultActivity.class);
                     Bundle bundle = new Bundle();
                     bundle.putString("tagName", searchResult.getName());
                     intent.putExtras(bundle);
                     startActivity(intent);
+                    duringSearch.setVisibility(View.GONE);
                 }
             }
         });
 
-
         search = findViewById(R.id.search_history);
+        erase = findViewById(R.id.erase_all);
+        erase.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchedKeyword.clear();
+                newAdapter.notifyDataSetChanged();
+                // Retrieve existing search history
+                Set<String> searchHistory = sharedPreferences.getStringSet("searchHistory", new HashSet<>());
 
-        SearchHistoryAdapter newAdapter = new SearchHistoryAdapter(this, searchedKeyword);
+                // Create a copy of the searchHistory set
+                Set<String> newSearchHistory = new HashSet<>(searchHistory);
+
+                // Convert set to list and add new query
+                LinkedList<String> searchHistoryList = new LinkedList<>(newSearchHistory);
+                searchHistoryList.clear();
+
+                // Convert list back to set
+                newSearchHistory = new HashSet<>(searchHistoryList);
+
+                // Save updated search history to SharedPreferences
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putStringSet("searchHistory", newSearchHistory);
+                editor.apply();
+            }
+        });
+        newAdapter = new SearchHistoryAdapter(this, searchedKeyword, false);
         FlexboxLayoutManager newFlexboxLayout = new FlexboxLayoutManager(this);
         newFlexboxLayout.setFlexDirection(FlexDirection.ROW);
         newFlexboxLayout.setFlexWrap(FlexWrap.WRAP);
@@ -139,6 +167,7 @@ public class SearchViewActivity extends AppCompatActivity implements TagsAdapter
                             // Handle collapse
                             beforeSearch.setVisibility(View.VISIBLE);
                             afterSearch.setVisibility(View.GONE);
+                            duringSearch.setVisibility(View.GONE);
                             return true; // Returning true will allow the collapse action to occur
                         }
 
@@ -147,11 +176,21 @@ public class SearchViewActivity extends AppCompatActivity implements TagsAdapter
                             // Handle expand
                             beforeSearch.setVisibility(View.GONE);
                             afterSearch.setVisibility(View.VISIBLE);
+                            duringSearch.setVisibility(View.GONE);
                             return true; // Returning true will allow the expand action to occur
                         }
                     });
 
                     SearchView search = (SearchView) item.getActionView();
+                    search.setOnCloseListener(new SearchView.OnCloseListener() {
+                        @Override
+                        public boolean onClose() {
+                            beforeSearch.setVisibility(View.VISIBLE);
+                            afterSearch.setVisibility(View.GONE);
+                            duringSearch.setVisibility(View.GONE);
+                            return false;
+                        }
+                    });
                     search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                         @Override
                         public boolean onQueryTextSubmit(String query) {
@@ -186,13 +225,14 @@ public class SearchViewActivity extends AppCompatActivity implements TagsAdapter
         });
     }
     private void saveSearchQuery(String query) {
-        Set<String> searchHistory;
-
         // Retrieve existing search history
-        searchHistory = sharedPreferences.getStringSet("searchHistory", new HashSet<>());
+        Set<String> searchHistory = sharedPreferences.getStringSet("searchHistory", new HashSet<>());
+
+        // Create a copy of the searchHistory set
+        Set<String> newSearchHistory = new HashSet<>(searchHistory);
 
         // Convert set to list and add new query
-        LinkedList<String> searchHistoryList = new LinkedList<>(searchHistory);
+        LinkedList<String> searchHistoryList = new LinkedList<>(newSearchHistory);
         searchHistoryList.addFirst(query);
 
         // Remove oldest query if more than 10
@@ -200,11 +240,12 @@ public class SearchViewActivity extends AppCompatActivity implements TagsAdapter
             searchHistoryList.removeLast();
         }
 
+        // Convert list back to set
+        newSearchHistory = new HashSet<>(searchHistoryList);
+
         // Save updated search history to SharedPreferences
-        searchHistory.clear();
-        searchHistory.addAll(searchHistoryList);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putStringSet("searchHistory", searchHistory);
+        editor.putStringSet("searchHistory", newSearchHistory);
         editor.apply();
     }
 
