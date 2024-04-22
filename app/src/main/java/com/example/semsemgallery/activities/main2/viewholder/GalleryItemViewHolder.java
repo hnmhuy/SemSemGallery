@@ -3,6 +3,7 @@ package com.example.semsemgallery.activities.main2.viewholder;
 import static com.example.semsemgallery.activities.base.GridMode.SELECTING;
 
 import android.content.Intent;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -16,14 +17,18 @@ import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.base.SelectableItem;
 
 public abstract class GalleryItemViewHolder extends SelectableItem<GalleryItem> {
-
+    public View itemView;
     private int type;
+    public void setType(int newType) {
+        this.type = newType;
+    }
     public ImageView thumnail = null;
     public TextView groupDisplayText = null;
     public ImageView isFav = null;
 
     public GalleryItemViewHolder(@NonNull View itemView, ObservableGridMode<GalleryItem> observedObj, int type) {
         super(itemView, observedObj);
+        this.itemView = itemView;
         this.type = type;
         isFav = itemView.findViewById(R.id.isFav);
         if (type == GalleryItem.THUMBNAIL) {
@@ -41,24 +46,24 @@ public abstract class GalleryItemViewHolder extends SelectableItem<GalleryItem> 
 
     @Override
     public void onModeChange(GridModeEvent event) {
-        if (event.getGridMode() == SELECTING) {
-            if (type == GalleryItem.GROUPDATE) {
-                selector.setVisibility(View.INVISIBLE);
-            } else if (type == GalleryItem.THUMBNAIL) {
-                selector.setVisibility(View.VISIBLE);
-            }
-        } else if (event.getGridMode() == GridMode.NORMAL) selector.setVisibility(View.INVISIBLE);
+//        if (event.getGridMode() == SELECTING) {
+//            if (type == GalleryItem.GROUPDATE) {
+//                selector.setVisibility(View.INVISIBLE);
+//            } else if (type == GalleryItem.THUMBNAIL) {
+//                selector.setVisibility(View.VISIBLE);
+//            }
+//        } else if (event.getGridMode() == GridMode.NORMAL) selector.setVisibility(View.INVISIBLE);
+        Log.d("GalleryItemViewHolder", "Type = " + this.type);
+        if (type == GalleryItem.THUMBNAIL) {
+            selector.setVisibility(event.getGridMode() == GridMode.NORMAL ? View.INVISIBLE : View.VISIBLE);
+        } else {
+            selector.setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override
     public void onSelectingAll(GridModeEvent event) {
         super.onSelectingAll(event);
-        if (event.getGridMode() == SELECTING) {
-            if (type == GalleryItem.GROUPDATE) {
-                selector.setVisibility(View.INVISIBLE);
-            } else if (type == GalleryItem.THUMBNAIL) {
-                selector.setVisibility(View.VISIBLE);
-            }
-        } else if (event.getGridMode() == GridMode.NORMAL) selector.setVisibility(View.INVISIBLE);
+        selector.setChecked(event.getNewSelectionForAll());
     }
 }

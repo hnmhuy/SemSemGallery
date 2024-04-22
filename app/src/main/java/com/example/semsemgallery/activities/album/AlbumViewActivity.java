@@ -216,7 +216,6 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
         });
     }
 
-
     // ====== Activity Result Launcher for Photo Picker
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -243,7 +242,6 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
                 }
             }
     );
-
     private PictureLoader loader = new PictureLoader(this) {
         @Override
         public void onProcessUpdate(Picture... picturesList) {

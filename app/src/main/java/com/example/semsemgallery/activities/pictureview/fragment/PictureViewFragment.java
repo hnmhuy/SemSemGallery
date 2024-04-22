@@ -21,12 +21,16 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class PictureViewFragment extends Fragment {
-    private View view;
 
+    private PhotoView ptv;
+
+    public PhotoView getPhotoView() {
+        return this.ptv;
+    }
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.component_picture_view, container, false);
+        View view = inflater.inflate(R.layout.component_picture_view, container, false);
 
         // Retrieve data from arguments
         Bundle args = getArguments();
@@ -35,7 +39,7 @@ public class PictureViewFragment extends Fragment {
             int position = args.getInt("position");
 
             // Use the retrieved data as needed
-            PhotoView ptv = view.findViewById(R.id.iv_image);
+            ptv = view.findViewById(R.id.iv_image);
             Glide.with(this).load(picture.getPath()).into(ptv);
         }
         return view;
