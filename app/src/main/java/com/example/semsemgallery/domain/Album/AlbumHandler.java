@@ -24,15 +24,18 @@ import java.util.ArrayList;
 
 public class AlbumHandler {
     private static boolean isHandling = false;
-    public static ArrayList<Uri> duplicatedImages = new ArrayList<>();
-
     public static void stopHandling() {
         isHandling = false;
     }
 
+    public static boolean isDuplicateHandling = false;
+    public static Uri currentDuplicateImageUri = null;
+    public static String duplicateHandleChoice = "";
+
     public interface OnLoadingListener {
         void onLoadingComplete();
         void onLoadingProgressUpdate(int progress);
+        void onLoadingException();
     }
 
     // ====== Check if Album Exists
@@ -99,10 +102,8 @@ public class AlbumHandler {
         Handler handler = new Handler(Looper.getMainLooper());
         new Thread(() -> {
             int totalImages = imageUris.size();
-            if (duplicatedImages.size() != 0) {
-                duplicatedImages.clear();
-            }
             isHandling = true;
+            isDuplicateHandling = false;
 
             // Get DCIM Folder in device & Album with name as albumName
             File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
@@ -121,9 +122,18 @@ public class AlbumHandler {
                 try {
                     String fileName = getFileName(context, imageUri);
                     File destFile = new File(albumDirectory, fileName);
+
+                    // If exist -> Waiting for choosing SKIP or REPLACE
                     if (destFile.exists()) {
-                        duplicatedImages.add(imageUri);
-                        continue;
+                        isDuplicateHandling = true;
+                        currentDuplicateImageUri = imageUri;
+
+                        listener.onLoadingException();
+
+                        while (true) { if (!isDuplicateHandling) break; }
+
+                        if (duplicateHandleChoice == "skip") { continue;}
+                        else if (duplicateHandleChoice == "replace") { destFile.delete(); }
                     }
 
                     InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
@@ -204,6 +214,7 @@ public class AlbumHandler {
         new Thread(() -> {
             int totalImages = imageUris.size();
             isHandling = true;
+            isDuplicateHandling = false;
 
             // Get DCIM Folder in device & Album with name as albumName
             File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
@@ -222,7 +233,19 @@ public class AlbumHandler {
                 try {
                     String fileName = getFileName(context, imageUri);
                     File destFile = new File(albumDirectory, fileName);
-                    if (destFile.exists()) { continue; }
+
+                    // If exist -> Waiting for choosing SKIP or REPLACE
+                    if (destFile.exists()) {
+                        isDuplicateHandling = true;
+                        currentDuplicateImageUri = imageUri;
+
+                        listener.onLoadingException();
+
+                        while (true) { if (!isDuplicateHandling) break; }
+
+                        if (duplicateHandleChoice == "skip") { continue;}
+                        else if (duplicateHandleChoice == "replace") { destFile.delete(); }
+                    }
 
                     InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
                     if (inputStream != null) {
@@ -248,7 +271,6 @@ public class AlbumHandler {
                 }
             }
             AlbumHandler.scanAlbumForMediaStoreRegister(context, albumDirectory.getAbsolutePath(), handler);
-
             listener.onLoadingComplete();
         }).start();
     }
@@ -358,36 +380,6 @@ public class AlbumHandler {
         );
     }
 
-
-//    // ====== Delete Album (Remembers to check if the album exists before deleting)
-//    public static void deleteAlbumHandler(Context context, String albumName, OnLoadingListener listener) {
-//        new Thread(() -> {
-//            isHandling = true;
-//
-//            File dcimDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-//            File albumDirectory = new File(dcimDirectory, albumName);
-//
-//            if (albumDirectory.exists()) {
-//                File[] files = albumDirectory.listFiles();
-//                int totalFiles = files != null ? files.length : 0;
-//                int deletedFiles = 0;
-//
-//                if (files != null) {
-//                    for (File file : files) {
-//                        if (!isHandling) break;
-//                        file.delete();
-//                        deletedFiles++;
-//
-//                        int progress = (int) (((float) deletedFiles / totalFiles) * 100);
-//                        listener.onLoadingProgressUpdate(progress);
-//                    }
-//                }
-//                albumDirectory.delete();
-//            }
-//
-//            listener.onLoadingComplete();
-//        }).start();
-//    }
 
 }
 

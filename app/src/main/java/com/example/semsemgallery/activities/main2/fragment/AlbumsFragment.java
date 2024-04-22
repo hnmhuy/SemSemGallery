@@ -5,6 +5,7 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -260,21 +261,25 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
                 @Override
                 public void onLoadingComplete() {
                     Log.d("AlbumsFM", "Finish Copy");
-                    loadingDialog.dismiss();
-                    loader.execute();
                     mHandler.post(() -> {
-                        if (AlbumHandler.duplicatedImages.size() != 0) {
-                            showExceptionHandlerDialog();
-                        }
+                        loader.execute();
+                        loadingDialog.dismiss();
                     });
                 }
 
                 @Override
                 public void onLoadingProgressUpdate(int progress) {
-                    Log.d("AlbumsFM", "Update Copy progres");
+                    Log.d("AlbumsFM", "Update Copy progress");
                     ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
+                }
+
+                @Override
+                public void onLoadingException() {
+                    Log.d("AlbumsFM", "Show Exception dialog");
                     mHandler.post(() -> {
-                        progressBar.setProgress(progress);
+                        if (AlbumHandler.isDuplicateHandling) {
+                            showExceptionHandlerDialog();
+                        }
                     });
                 }
             };
@@ -296,15 +301,26 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
             AlbumHandler.OnLoadingListener loadingListener = new AlbumHandler.OnLoadingListener() {
                 @Override
                 public void onLoadingComplete() {
-                    loadingDialog.dismiss();
-                    loader.execute();
+                    Log.d("AlbumsFM", "Finish Copy");
+                    mHandler.post(() -> {
+                        loader.execute();
+                        loadingDialog.dismiss();
+                    });
                 }
 
                 @Override
                 public void onLoadingProgressUpdate(int progress) {
+                    Log.d("AlbumsFM", "Update Copy progress");
                     ProgressBar progressBar = loadingDialog.findViewById(R.id.component_loading_dialog_progressBar);
+                }
+
+                @Override
+                public void onLoadingException() {
+                    Log.d("AlbumsFM", "Show Exception dialog");
                     mHandler.post(() -> {
-                        progressBar.setProgress(progress);
+                        if (AlbumHandler.isDuplicateHandling) {
+                            showExceptionHandlerDialog();
+                        }
                     });
                 }
             };
@@ -320,10 +336,11 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
         dialog.setCanceledOnTouchOutside(false);
         dialog.show();
 
-        TextView description = dialogView.findViewById(R.id.component_exception_handler_dialog_description);
         CheckBox applyCheckbox = dialogView.findViewById(R.id.component_exception_handler_dialog_checkbox);
         TextView skipBtn = dialogView.findViewById(R.id.component_exception_handler_dialog_skip);
         TextView replaceBtn = dialogView.findViewById(R.id.component_exception_handler_dialog_replace);
+        TextView description = dialogView.findViewById(R.id.component_exception_handler_dialog_description);
+        description.setText("There is already an item name " + AlbumHandler.getFileName(context, AlbumHandler.currentDuplicateImageUri) + " in the selected album");
 
         applyCheckbox.setOnClickListener(v -> {
             if (applyCheckbox.isChecked()) {
@@ -336,19 +353,21 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
 
         // ====== Listener for CancelButton in Delete Confirm Dialog clicked
         skipBtn.setOnClickListener(v -> {
-            // Log.d("AlbumsFM", "Skip");
-            for (Uri imageUri : AlbumHandler.duplicatedImages) {
-               Log.d("AlbumsFM", "Exist file : " + AlbumHandler.getFileName(context, imageUri));
-            }
+             Log.d("AlbumsFM", "Skip " + AlbumHandler.getFileName(context, AlbumHandler.currentDuplicateImageUri));
+            dialog.dismiss();
+            AlbumHandler.duplicateHandleChoice = "skip";
+            AlbumHandler.isDuplicateHandling = false;
         });
 
         // ====== Listener for DeleteButton in Delete Confirm Dialog clicked
         replaceBtn.setOnClickListener(v -> {
-            Log.d("AlbumsFM", "Replace");
+            Log.d("AlbumsFM", "Replace " + AlbumHandler.getFileName(context, AlbumHandler.currentDuplicateImageUri));
+            dialog.dismiss();
+            AlbumHandler.duplicateHandleChoice = "replace";
+            AlbumHandler.isDuplicateHandling = false;
         });
-
-
     }
+
 
     // ==== Just only able to init Dialog in Fragment/Activity
     private AlertDialog myLoadingDialog() {
