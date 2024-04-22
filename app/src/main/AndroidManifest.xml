@@ -16,6 +16,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.CHANGE_CONFIGURATION"
+        tools:ignore="ProtectedPermissions" />
 
     <application
         android:allowBackup="true"
@@ -65,6 +67,7 @@
             android:name=".activities.deleted.RecentlyDeletedActivity"
             android:exported="true" />
         <activity
+            android:configChanges="uiMode"
             android:name=".activities.SettingActivity"
             android:exported="true" />
         <activity
