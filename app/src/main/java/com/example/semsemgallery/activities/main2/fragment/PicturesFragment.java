@@ -185,9 +185,9 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
             Menu menu = topBar.getMenu();
             menu.removeItem(R.id.cloud);
         }
-        recyclerView.setVisibility(View.INVISIBLE);
-        progressBar.setVisibility(View.VISIBLE);
-        loader.execute(PictureLoadMode.ALL.toString());
+//        recyclerView.setVisibility(View.INVISIBLE);
+//        progressBar.setVisibility(View.VISIBLE);
+//        loader.execute(PictureLoadMode.ALL.toString());
     }
 
     @Nullable
@@ -264,6 +264,11 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                 } else return false;
             }
         });
+
+        recyclerView.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.VISIBLE);
+        loader.execute(PictureLoadMode.ALL.toString());
+
         return view;
     }
 
@@ -414,6 +419,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                                             observableGridMode.fireSelectionChangeForAll(false);
                                             observableGridMode.setGridMode(GridMode.NORMAL);
                                             isSelectingAll = false;
+                                            loader.execute(PictureLoadMode.ALL.toString());
                                         });
                                     }
 
@@ -441,6 +447,7 @@ public class PicturesFragment extends Fragment implements FragmentCallBack, Grid
                                             observableGridMode.fireSelectionChangeForAll(false);
                                             observableGridMode.setGridMode(GridMode.NORMAL);
                                             isSelectingAll = false;
+                                            loader.execute(PictureLoadMode.ALL.toString());
                                         });
                                     }
 
