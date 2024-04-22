@@ -19,6 +19,7 @@ import com.bumptech.glide.Glide;
 import com.example.semsemgallery.R;
 import com.example.semsemgallery.activities.base.GridMode;
 import com.example.semsemgallery.activities.base.ObservableGridMode;
+import com.example.semsemgallery.activities.main2.fragment.PicturesFragment;
 import com.example.semsemgallery.activities.main2.viewholder.GalleryItem;
 import com.example.semsemgallery.activities.main2.viewholder.GalleryItemViewHolder;
 import com.example.semsemgallery.activities.pictureview.PictureViewActivity;
