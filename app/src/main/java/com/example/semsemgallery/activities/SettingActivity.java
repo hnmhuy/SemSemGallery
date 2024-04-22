@@ -3,8 +3,10 @@ package com.example.semsemgallery.activities;
 import android.app.UiModeManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -91,20 +93,31 @@ public class SettingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_setting);
         View include = (View) findViewById(R.id.included_setting);
         switchThemeMode = findViewById(R.id.switch_theme_mode);
+
         switchThemeMode.setChecked(isDarkModeEnabled());
-        switchThemeMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // Handle switch state change
-                if (isChecked) {
-                    // Dark mode is enabled
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                } else {
-                    // Light mode is enabled
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                }
-                recreate();
+
+        try {
+            SharedPreferences sharedPreferences = getSharedPreferences("theme_preferences", Context.MODE_PRIVATE);
+            boolean isDarkModeEnabled = sharedPreferences.getBoolean("isDarkModeEnabled", false);
+            switchThemeMode.setChecked(isDarkModeEnabled);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        switchThemeMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            // Handle switch state change
+            if (isChecked) {
+                // Dark mode is enabled
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+            } else {
+                // Light mode is enabled
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
             }
+            finish();
+            SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("theme_preferences", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("isDarkModeEnabled", isChecked); // isChecked is the boolean indicating whether dark mode is enabled
+            editor.apply();
         });
 
         FirebaseApp.initializeApp(SettingActivity.this);

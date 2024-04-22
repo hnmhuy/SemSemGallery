@@ -32,13 +32,14 @@
         android:background="@color/picture_view_bottom_bar_bg"
         android:layout_height="wrap_content"
         android:minHeight="?attr/actionBarSize">
-
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/activity_picture_view_topAppBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:tint="@color/text_color_black"
+            android:theme="@style/MyThemeOverlay_Toolbar"
             android:layout_alignParentTop="true"
-            android:minHeight="?attr/actionBarSize"
+            app:navigationIconTint="@color/text_color_black"
             app:menu="@menu/top_bar_picture_view_options"
             app:navigationIcon="@drawable/ic_backward" />
     </RelativeLayout>

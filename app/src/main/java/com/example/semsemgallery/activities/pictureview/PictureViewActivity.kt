@@ -362,7 +362,7 @@ class PictureViewActivity : AppCompatActivity() {
 
         if (loadMode != null) {
             if (loadMode == PictureLoadMode.BY_ALBUM.toString() && albumId != null) {
-                loader.execute(loadMode, albumId);
+                loader.execute(loadMode, albumId, "");
             } else if(loadMode == PictureLoadMode.ID.toString()){
                 loader.execute(loadMode, tagName);
             }
@@ -533,8 +533,7 @@ class PictureViewActivity : AppCompatActivity() {
             favBtn.setColorFilter(color)
         } else {
             favBtn.setImageResource(R.drawable.ic_heart)
-            val color = ContextCompat.getColor(applicationContext, R.color.text_color_black)
-            favBtn.setColorFilter(color)
+            favBtn.colorFilter = null
         }
     }
 

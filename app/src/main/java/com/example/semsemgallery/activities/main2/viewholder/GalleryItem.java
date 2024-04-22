@@ -89,7 +89,5 @@ public class GalleryItem implements Comparable<GalleryItem> {
         if (comparison == 0) {
             return 1;
         } else return comparison;
-
     }
-
 }

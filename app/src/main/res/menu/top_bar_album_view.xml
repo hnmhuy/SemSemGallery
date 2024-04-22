@@ -20,5 +20,8 @@
         android:id="@+id/rename"
         android:title="@string/rename"
         app:showAsAction="never" />
-
+    <item
+        android:id="@+id/sort"
+        android:title="@string/sort"
+        app:showAsAction="never" />
 </menu>

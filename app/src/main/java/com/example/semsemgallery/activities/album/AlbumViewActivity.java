@@ -13,6 +13,7 @@ import android.os.Looper;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -21,6 +22,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -80,7 +83,8 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
     private MaterialToolbar topBar;
     private boolean isSelectingAll = false;
     private ArrayList<Uri> selectedImages;
-
+    private String sortMode = "";
+    private List<GalleryItem> pictures;
     //====== Choose album activity
     private final ActivityResultLauncher<Intent> chooseAlbumResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -114,7 +118,7 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
                                             observedObj.fireSelectionChangeForAll(false);
                                             observedObj.setGridMode(GridMode.NORMAL);
                                             isSelectingAll = false;
-                                            loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId);
+                                            loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId, sortMode);
                                         });
                                     }
 
@@ -148,7 +152,7 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
                                             loadingDialog.dismiss();
                                             observedObj.fireSelectionChangeForAll(false);
                                             observedObj.setGridMode(GridMode.NORMAL);
-                                            loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId);
+                                            loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId, sortMode);
                                             isSelectingAll = false;
                                         });
                                     }
@@ -242,13 +246,19 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
 
     private PictureLoader loader = new PictureLoader(this) {
         @Override
-        public void onProcessUpdate(Picture... pictures) {
-            galleryItems.add(new GalleryItem(pictures[0]));
+        public void onProcessUpdate(Picture... picturesList) {
+            if(sortMode.isEmpty()) {
+                galleryItems.add(new GalleryItem(picturesList[0]));
+            } else {
+                pictures.add(new GalleryItem(picturesList[0]));
+            }
         }
 
         @Override
         public void postExecute(Boolean res) {
-            List<GalleryItem> pictures = new ArrayList<>(galleryItems);
+            if (sortMode.isEmpty()) {
+                pictures = new ArrayList<>(galleryItems);
+            }
 //            observedObj = new ObservableGridMode<>(pictures, GridMode.NORMAL);
             for (GalleryItem g : pictures) {
                 observedObj.addData(g);
@@ -261,6 +271,7 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
         @Override
         public void preExecute(String... strings) {
             super.preExecute(strings);
+            pictures = new ArrayList<>();
             adapter.setAlbumId(strings[1]);
             observedObj.reset();
             galleryItems.clear();
@@ -532,15 +543,51 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
             else if (item.getItemId() == R.id.rename) { // === Rename this Album
                 showRenameDialog();
                 return true;
+            } else if (item.getItemId() == R.id.sort) {
+                showSortDialog();
+                return true;
             }
-
             return false;
         });
 
         // ====== Check and load picture from album
         if (albumId != null) {
-            loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId);
+            loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId, sortMode);
         }
+    }
+
+    private void showSortDialog() {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.component_radio_group_sort, null);
+        RadioGroup radioGroup = dialogView.findViewById(R.id.sort_radio_group);
+
+        builder.setView(dialogView);
+
+        // Add action buttons
+        builder.setPositiveButton("Done", (dialog, which) -> {
+            int selectedId = radioGroup.getCheckedRadioButtonId();
+
+            if(selectedId == R.id.added_asc) {
+                sortMode = PictureLoadMode.DATE_ADDED_ASC.toString();
+            } else if (selectedId == R.id.added_desc) {
+                sortMode = PictureLoadMode.DATE_ADDED_DESC.toString();
+            }  else if (selectedId == R.id.name_asc) {
+                sortMode = PictureLoadMode.NAME_ASC.toString();
+            }  else if (selectedId == R.id.name_desc) {
+                sortMode = PictureLoadMode.NAME_DESC.toString();
+            }
+            loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId, sortMode);
+            dialog.dismiss();
+        });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> {
+            // Handle Cancel button click
+            dialog.dismiss();
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     private void showPhotoPicker() {
@@ -586,7 +633,7 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
                     loadingDialog.dismiss();
                     // ====== Check and load picture from album
                     if (albumId != null) {
-                        loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId);
+                        loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId, sortMode);
                     }
                 }
 
@@ -626,7 +673,7 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
                     loadingDialog.dismiss();
                     // ====== Check and load picture from album
                     if (albumId != null) {
-                        loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId);
+                        loader.execute(PictureLoadMode.BY_ALBUM.toString(), albumId, sortMode);
                     }
                 }
 

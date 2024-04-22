@@ -9,4 +9,8 @@
     <style name="ShapeAppearanceOverlay.MyApp.FloatingActionButton" parent="">
         <item name="cornerSize">50%</item> <!-- Make the corners 50% to create a circle -->
     </style>
+    <style name="MyThemeOverlay_Toolbar" parent="ThemeOverlay.MaterialComponents.Toolbar.Primary">
+        <!-- color used by navigation icon and overflow icon -->
+        <item name="colorOnPrimary">@color/text_color_black</item>
+    </style>
 </resources>

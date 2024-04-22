@@ -1,6 +1,8 @@
 package com.example.semsemgallery.activities.main2;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
@@ -85,6 +87,14 @@ public class MainActivity extends AppCompatActivity implements MainCallBack {
         navbar = findViewById(R.id.navigation_bar);
         highlighting = findViewById(R.id.highlighting);
         setUpNavigationBar();
+
+        SharedPreferences sharedPreferences = getSharedPreferences("theme_preferences", Context.MODE_PRIVATE);
+        boolean isDarkModeEnabled = sharedPreferences.getBoolean("isDarkModeEnabled", false);
+        if (isDarkModeEnabled) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
     }
 
     private void selectNavButton(Button button) {

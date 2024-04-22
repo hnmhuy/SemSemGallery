@@ -50,6 +50,11 @@ public abstract class PictureLoader extends TaskBase<String, Picture, Boolean> {
     private static final String BY_ALBUM = MediaStore.Images.Media.BUCKET_ID + "=?";
     private static final String ORDER_DEFAULT = MediaStore.Images.Media.DATE_TAKEN + " DESC, " + MediaStore.Images.Media.DATE_ADDED + " DESC";
 
+    private static final String ORDER_DATE_ADDED_ASC =  MediaStore.Images.Media.DATE_ADDED + " ASC";
+    private static final String ORDER_DATE_ADDED_DESC = MediaStore.Images.Media.DATE_ADDED + " DESC";
+    private static final String ORDER_NAME_ASC = MediaStore.Images.Media.DISPLAY_NAME + " ASC";
+    private static final String ORDER_NAME_DESC = MediaStore.Images.Media.DISPLAY_NAME + " DESC";
+
     public PictureLoader(Context _context) {
         this.context = _context;
     }
@@ -66,7 +71,7 @@ public abstract class PictureLoader extends TaskBase<String, Picture, Boolean> {
         if (Objects.equals(mode, PictureLoadMode.ALL.toString())) {
             LoadAll();
         } else if (Objects.equals(mode, PictureLoadMode.BY_ALBUM.toString())) {
-            LoadByAlbum(strings[1]);
+            LoadByAlbum(strings[1], strings[2]);
         } else if (Objects.equals(mode, PictureLoadMode.FAVORITE.toString())) {
             LoadFavorite();
         } else if(Objects.equals(mode, PictureLoadMode.ID.toString())){
@@ -119,14 +124,28 @@ public abstract class PictureLoader extends TaskBase<String, Picture, Boolean> {
         CoreLoader(cursor);
     }
 
-    protected void LoadByAlbum(String bucketId) {
+    protected void LoadByAlbum(String bucketId, String order) {
         String[] args = {bucketId};
+
+        String orderSQL = "";
+        if(order.equals(PictureLoadMode.DATE_ADDED_ASC.toString())) {
+            orderSQL  = ORDER_DATE_ADDED_ASC;
+        } else if (order.equals(PictureLoadMode.DATE_ADDED_DESC.toString())) {
+            orderSQL  = ORDER_DATE_ADDED_DESC;
+        } else if (order.equals(PictureLoadMode.NAME_ASC.toString())) {
+            orderSQL  = ORDER_NAME_ASC;
+        } else if (order.equals(PictureLoadMode.NAME_DESC.toString())) {
+            orderSQL  = ORDER_NAME_DESC;
+        } else {
+            orderSQL = ORDER_DEFAULT;
+        }
+
         Cursor cursor = context.getContentResolver().query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 PROJECTION_TRASHED,
                 BY_ALBUM,
                 args,
-                ORDER_DEFAULT
+                orderSQL
         );
         CoreLoader(cursor);
     }
