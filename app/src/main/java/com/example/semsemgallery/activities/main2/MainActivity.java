@@ -13,14 +13,17 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.graphics.Insets;
+import androidx.core.view.MenuProvider;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
@@ -76,6 +79,9 @@ public class MainActivity extends AppCompatActivity implements MainCallBack {
         });
         PermissionHandler permissionHandler = new PermissionHandler(this, requestPermissionLauncher);
         permissionHandler.checkAndRequestPermissions();
+        navbar = findViewById(R.id.navigation_bar);
+        highlighting = findViewById(R.id.highlighting);
+        setUpNavigationBar();
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .setReorderingAllowed(true)
@@ -83,10 +89,22 @@ public class MainActivity extends AppCompatActivity implements MainCallBack {
                     .commit();
 
             currentFragment = PicturesFragment.class;
+        } else {
+            String fragmentName = savedInstanceState.getString("currentFragment");
+            line1.setVisibility(View.INVISIBLE);
+            line2.setVisibility(View.INVISIBLE);
+            line3.setVisibility(View.INVISIBLE);
+            if (fragmentName.equals(PicturesFragment.class.getName())) {
+                line1.setVisibility(View.VISIBLE);
+            } else if (fragmentName.equals(AlbumsFragment.class.getName())) {
+                line2.setVisibility(View.VISIBLE);
+            } else if (fragmentName.equals((FavoritesFragment.class.getName()))) {
+                line3.setVisibility(View.VISIBLE);
+            } else {
+                line1.setVisibility(View.VISIBLE);
+            }
         }
-        navbar = findViewById(R.id.navigation_bar);
-        highlighting = findViewById(R.id.highlighting);
-        setUpNavigationBar();
+
 
         SharedPreferences sharedPreferences = getSharedPreferences("theme_preferences", Context.MODE_PRIVATE);
         boolean isDarkModeEnabled = sharedPreferences.getBoolean("isDarkModeEnabled", false);
@@ -138,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements MainCallBack {
         if (fragment == currentFragment) return;
         getSupportFragmentManager().beginTransaction()
                 .setReorderingAllowed(true)
-                .replace(R.id.main_content, fragment, null)
+                .replace(R.id.main_content, fragment, null, "f" + fragment.getName())
                 .commit();
 
         currentFragment = fragment;
@@ -153,6 +171,14 @@ public class MainActivity extends AppCompatActivity implements MainCallBack {
         } else if (Objects.equals(data[0], GridMode.NORMAL.toString())) {
             navbar.setVisibility(View.VISIBLE);
             highlighting.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        if (currentFragment != null) {
+            savedInstanceState.putString("currentFragment", currentFragment.getName());
         }
     }
 }
