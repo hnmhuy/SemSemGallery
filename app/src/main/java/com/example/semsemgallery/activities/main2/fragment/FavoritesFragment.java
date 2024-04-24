@@ -47,7 +47,9 @@ import com.example.semsemgallery.activities.base.ObservableGridMode;
 import com.example.semsemgallery.activities.cloudbackup.CloudActivity;
 import com.example.semsemgallery.activities.main2.MainActivity;
 import com.example.semsemgallery.activities.main2.adapter.FavoriteAdapter;
+import com.example.semsemgallery.activities.main2.viewholder.GalleryItem;
 import com.example.semsemgallery.activities.pictureview.ChooseAlbumActivity;
+import com.example.semsemgallery.activities.pictureview.fragment.AddTagBottomSheet;
 import com.example.semsemgallery.activities.search.SearchViewActivity;
 import com.example.semsemgallery.domain.Album.AlbumHandler;
 import com.example.semsemgallery.domain.Picture.GarbagePictureCollector;
@@ -515,7 +517,17 @@ public class FavoritesFragment extends Fragment implements GridModeListener {
         btnAddTag.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                List<ObservableGridMode<Picture>.DataItem> temp = data.getSelectedDataItem();
+                ArrayList<Long> pictureIds = new ArrayList<>();
+                for (int i = 0; i < temp.size(); i++) {
+                    pictureIds.add((temp.get(i).data.getPictureId()));
+                }
+                AddTagBottomSheet addTagBottomSheet = new AddTagBottomSheet(new ArrayList<>() ,pictureIds);
+                addTagBottomSheet.setOnTagAddedListener(tags -> {
+                    data.fireSelectionChangeForAll(false);
+                    data.setGridMode(GridMode.NORMAL);
+                });
+                addTagBottomSheet.show(requireActivity().getSupportFragmentManager(), addTagBottomSheet.getTag());
             }
         });
 
