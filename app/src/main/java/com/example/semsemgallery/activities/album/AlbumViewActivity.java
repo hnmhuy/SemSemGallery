@@ -272,11 +272,13 @@ public class AlbumViewActivity extends AppCompatActivity implements GridModeList
         public void preExecute(String... strings) {
             super.preExecute(strings);
             pictures = new ArrayList<>();
-            adapter.setAlbumId(strings[1]);
-            observedObj.reset();
-            galleryItems.clear();
-            adapter.notifyDataSetChanged();
-            recyclerView.setAdapter(null);
+            mHandler.post(() -> {
+                adapter.setAlbumId(strings[1]);
+                observedObj.reset();
+                galleryItems.clear();
+                adapter.notifyDataSetChanged();
+                recyclerView.setAdapter(null);
+            });
         }
     };
 
