@@ -515,7 +515,7 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
             };
 
             for (Album album : albumList) {
-                pictureLoader.execute(PictureLoadMode.BY_ALBUM.toString(), album.getAlbumId());
+                pictureLoader.execute(PictureLoadMode.BY_ALBUM.toString(), album.getAlbumId(), "");
             }
 
         });
