@@ -261,8 +261,8 @@ public class AlbumsFragment extends Fragment implements GridModeListener {
                 @Override
                 public void onLoadingComplete() {
                     mHandler.post(() -> {
-                        loader.execute();
                         loadingDialog.dismiss();
+                        loader.execute();
                     });
                 }
 
