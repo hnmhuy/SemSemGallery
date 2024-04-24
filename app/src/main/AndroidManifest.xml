@@ -34,9 +34,6 @@
             android:name=".activities.search.SearchResultActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.pictureview.PrintActivity"
-            android:exported="false" />
-        <activity
             android:name=".activities.cloudbackup.CloudActivity"
             android:exported="true" />
         <activity
@@ -56,7 +53,6 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="org.androidprinting.intent.action.PRINT" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -78,9 +74,6 @@
             android:exported="true" />
         <activity
             android:name=".activities.EditMetadataActivity"
-            android:exported="true" />
-        <activity
-            android:name=".activities.main.MainActivity"
             android:exported="true" />
         <activity
             android:name=".activities.MapActivity"
